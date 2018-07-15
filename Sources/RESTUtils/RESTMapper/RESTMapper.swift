@@ -20,10 +20,15 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 		restMapping = mapping
 	}
 	
+	public func restPath(forEntity entity: DbEntityDescription, additionalRESTInfo: AdditionalRESTRequestInfo<DbPropertyDescription>?) -> RESTPath? {
+		if let p = additionalRESTInfo?.forcedRESTPath {return p}
+		if let i = additionalRESTInfo?.paginatorInfo, let p = _paginator(forEntity: entity)?.forcedRESTPath(withPaginatorInfo: i) {return p}
+		return _restPath(forEntity: entity)
+	}
+	
+	@available(*, deprecated, message: "Use restPath(forEntity:additionalRESTInfo:) now")
 	public func restPath(forEntity entity: DbEntityDescription) -> RESTPath? {
-		if let r = restMapping.entitiesMapping[entity]?.restPath {return r}
-		if let s = entity.superentity {return restPath(forEntity: s as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)}
-		return nil
+		return restPath(forEntity: entity, additionalRESTInfo: nil)
 	}
 	
 	public func parameters(fromAdditionalRESTInfo additionalRESTInfo: AdditionalRESTRequestInfo<DbPropertyDescription>?, forEntity entity: DbEntityDescription, forcedPagniator: RESTPaginator? = nil) -> [String: Any] {
@@ -225,6 +230,18 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 			guard canUseSuperentities, let superentity = expectedEntity.superentity else {return nil}
 			return actualLocalEntity(forRESTRepresentation: restRepresentation, expectedEntity: superentity as! DbEntityDescription, canUseSuperentities: canUseSuperentities, visitedEntities: &visitedEntities)
 		}
+	}
+	
+	private func _paginator(forEntity entity: DbEntityDescription) -> RESTPaginator? {
+		if let p = restMapping.entitiesMapping[entity]?.paginator {return p}
+		if let s = entity.superentity {return _paginator(forEntity: s as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)}
+		return nil
+	}
+	
+	private func _restPath(forEntity entity: DbEntityDescription) -> RESTPath? {
+		if let r = restMapping.entitiesMapping[entity]?.restPath {return r}
+		if let s = entity.superentity {return _restPath(forEntity: s as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)}
+		return nil
 	}
 	
 	private func _parameters(fromAdditionalRESTInfo additionalRESTInfo: AdditionalRESTRequestInfo<DbPropertyDescription>?, forEntity entity: DbEntityDescription?, firstLevel: Bool, forcedFieldsKeyName: String? = nil, forcedPaginator: RESTPaginator? = nil) -> [String: Any] {

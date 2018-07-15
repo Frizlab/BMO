@@ -33,7 +33,11 @@ public class RESTMaxIdPaginator : RESTPaginator {
 		countKey = ck
 	}
 	
-	public func paginationParams(withPaginatorInfo info: Any?) -> [String: String]? {
+	public func forcedRESTPath(withPaginatorInfo: Any) -> RESTPath? {
+		return nil
+	}
+	
+	public func paginationParams(withPaginatorInfo info: Any) -> [String: String]? {
 		guard let info = info as? RESTMaxIdPaginatorInfo else {return nil}
 		
 		var ret = [countKey: String(info.count)]

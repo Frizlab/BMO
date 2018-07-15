@@ -57,6 +57,10 @@
 /* Begin PBXBuildFile section */
 		7B013601201F769000CE0893 /* CoreDataUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B013600201F769000CE0893 /* CoreDataUtils.swift */; };
 		7B013609201F7D2300CE0893 /* ImportError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B013608201F7D2300CE0893 /* ImportError.swift */; };
+		7B01D6FE20FB99B000F0E967 /* RESTURLPaginator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B01D6FD20FB99B000F0E967 /* RESTURLPaginator.swift */; };
+		7B01D6FF20FB99B000F0E967 /* RESTURLPaginator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B01D6FD20FB99B000F0E967 /* RESTURLPaginator.swift */; };
+		7B01D70020FB99B000F0E967 /* RESTURLPaginator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B01D6FD20FB99B000F0E967 /* RESTURLPaginator.swift */; };
+		7B01D70120FB99B000F0E967 /* RESTURLPaginator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B01D6FD20FB99B000F0E967 /* RESTURLPaginator.swift */; };
 		7B0AB0A520210E3300AC083A /* ParameterizedStringSetParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B0AB0A420210E3300AC083A /* ParameterizedStringSetParser.swift */; };
 		7B0AB0A620210E3300AC083A /* ParameterizedStringSetParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B0AB0A420210E3300AC083A /* ParameterizedStringSetParser.swift */; };
 		7B0AB0A720210E3300AC083A /* ParameterizedStringSetParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B0AB0A420210E3300AC083A /* ParameterizedStringSetParser.swift */; };
@@ -1242,6 +1246,7 @@
 		7B013600201F769000CE0893 /* CoreDataUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataUtils.swift; sourceTree = "<group>"; };
 		7B013608201F7D2300CE0893 /* ImportError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImportError.swift; sourceTree = "<group>"; };
 		7B01360A201F7EC500CE0893 /* AdditionalRequestInfo+RESTCoreData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AdditionalRequestInfo+RESTCoreData.swift"; sourceTree = "<group>"; };
+		7B01D6FD20FB99B000F0E967 /* RESTURLPaginator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RESTURLPaginator.swift; sourceTree = "<group>"; };
 		7B0AB08B2020BAE500AC083A /* RESTCoreDataFetchRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RESTCoreDataFetchRequest.swift; sourceTree = "<group>"; };
 		7B0AB08C2020BB1900AC083A /* RESTCoreDataSaveRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RESTCoreDataSaveRequest.swift; sourceTree = "<group>"; };
 		7B0AB08D2020BEDF00AC083A /* CoreData+RESTPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreData+RESTPath.swift"; sourceTree = "<group>"; };
@@ -2155,6 +2160,7 @@
 				7BB9660A20223A1E00024DE1 /* RESTPaginator.swift */,
 				7BB9660C20223A1E00024DE1 /* RESTOffsetLimitPaginator.swift */,
 				7BB9660B20223A1E00024DE1 /* RESTMaxIdPaginator.swift */,
+				7B01D6FD20FB99B000F0E967 /* RESTURLPaginator.swift */,
 			);
 			path = Paginators;
 			sourceTree = "<group>";
@@ -3955,6 +3961,7 @@
 				7BB9662320223DDA00024DE1 /* AnyEquatable.swift in Sources */,
 				7BB9661720223A1F00024DE1 /* RESTOffsetLimitPaginator.swift in Sources */,
 				7BB4E57120C0BEAC003A0977 /* RESTURLTransformer.swift in Sources */,
+				7B01D6FF20FB99B000F0E967 /* RESTURLPaginator.swift in Sources */,
 				7BEEDB8520C162B300275BCE /* RESTColorTransformer.swift in Sources */,
 				7BB966352022410700024DE1 /* RESTMapping.swift in Sources */,
 				7BB9660F20223A1F00024DE1 /* RESTPaginator.swift in Sources */,
@@ -3998,6 +4005,7 @@
 				7BB9662420223DDA00024DE1 /* AnyEquatable.swift in Sources */,
 				7BB9661820223A1F00024DE1 /* RESTOffsetLimitPaginator.swift in Sources */,
 				7BB4E57220C0BEAC003A0977 /* RESTURLTransformer.swift in Sources */,
+				7B01D70020FB99B000F0E967 /* RESTURLPaginator.swift in Sources */,
 				7BEEDB8620C162B300275BCE /* RESTColorTransformer.swift in Sources */,
 				7BB966362022410700024DE1 /* RESTMapping.swift in Sources */,
 				7BB9661020223A1F00024DE1 /* RESTPaginator.swift in Sources */,
@@ -4041,6 +4049,7 @@
 				7BB9662520223DDA00024DE1 /* AnyEquatable.swift in Sources */,
 				7BB9661920223A1F00024DE1 /* RESTOffsetLimitPaginator.swift in Sources */,
 				7BB4E57320C0BEAC003A0977 /* RESTURLTransformer.swift in Sources */,
+				7B01D70120FB99B000F0E967 /* RESTURLPaginator.swift in Sources */,
 				7BEEDB8720C162B300275BCE /* RESTColorTransformer.swift in Sources */,
 				7BB966372022410700024DE1 /* RESTMapping.swift in Sources */,
 				7BB9661120223A1F00024DE1 /* RESTPaginator.swift in Sources */,
@@ -4222,6 +4231,7 @@
 				7BB9662220223DDA00024DE1 /* AnyEquatable.swift in Sources */,
 				7BB9661620223A1F00024DE1 /* RESTOffsetLimitPaginator.swift in Sources */,
 				7BB4E57020C0BEAC003A0977 /* RESTURLTransformer.swift in Sources */,
+				7B01D6FE20FB99B000F0E967 /* RESTURLPaginator.swift in Sources */,
 				7BEEDB8420C162B300275BCE /* RESTColorTransformer.swift in Sources */,
 				7BB966342022410700024DE1 /* RESTMapping.swift in Sources */,
 				7BB9660E20223A1F00024DE1 /* RESTPaginator.swift in Sources */,
