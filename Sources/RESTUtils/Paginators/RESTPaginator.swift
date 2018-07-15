@@ -20,6 +20,7 @@ import Foundation
 
 public protocol RESTPaginator {
 	
-	func paginationParams(withPaginatorInfo: Any?) -> [String: String]?
+	func forcedRESTPath(withPaginatorInfo: Any) -> RESTPath?
+	func paginationParams(withPaginatorInfo: Any) -> [String: String]?
 	
 }

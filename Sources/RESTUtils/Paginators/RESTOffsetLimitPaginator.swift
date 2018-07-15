@@ -54,7 +54,11 @@ public class RESTOffsetLimitPaginator : RESTPaginator {
 		limitKey = lk
 	}
 	
-	public func paginationParams(withPaginatorInfo info: Any?) -> [String: String]? {
+	public func forcedRESTPath(withPaginatorInfo: Any) -> RESTPath? {
+		return nil
+	}
+	
+	public func paginationParams(withPaginatorInfo info: Any) -> [String: String]? {
 		guard let info = info as? RESTOffsetLimitPaginatorInfo else {return nil}
 		
 		return [
