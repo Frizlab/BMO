@@ -1,6 +1,6 @@
 /*
  * RESTColorTransformerTests.swift
- * BMO
+ * RESTUtilsTests
  *
  * Created by François Lamboley on 01/06/2018.
  * Copyright © 2018 happn. All rights reserved.

@@ -95,6 +95,9 @@
 		7B0AB1622021175D00AC083A /* BMO_RESTCoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B0AB0CD2021147300AC083A /* BMO_RESTCoreData.framework */; };
 		7B0AB1652021177F00AC083A /* BMO_RESTCoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B0AB0E62021147D00AC083A /* BMO_RESTCoreData.framework */; };
 		7B0AB1682021179100AC083A /* BMO_RESTCoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B0AB0FF2021148000AC083A /* BMO_RESTCoreData.framework */; };
+		7B14711D210DC4BD00B1621C /* LinkHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B14711C210DC4BD00B1621C /* LinkHeaderParserTests.swift */; };
+		7B14711E210DC4BD00B1621C /* LinkHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B14711C210DC4BD00B1621C /* LinkHeaderParserTests.swift */; };
+		7B14711F210DC4BD00B1621C /* LinkHeaderParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B14711C210DC4BD00B1621C /* LinkHeaderParserTests.swift */; };
 		7B3192C12019F1CC0088312B /* ParameterizedStringSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3192BC2019F1CC0088312B /* ParameterizedStringSet.swift */; };
 		7B3192C32019F2640088312B /* RESTPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3192C22019F2640088312B /* RESTPath.swift */; };
 		7B34DB6D20E927C300E16DF1 /* AsyncOperationResult.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B672C0720E923060041213D /* AsyncOperationResult.framework */; };
@@ -243,8 +246,8 @@
 		7B51623F201FBDFF00B94FB3 /* BMO_CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B516236201FBDFE00B94FB3 /* BMO_CoreData.framework */; };
 		7B51625A201FBF7100B94FB3 /* BMO_CoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83326620192808005184FE /* BMO_CoreDataTests.swift */; };
 		7B51625B201FBF7100B94FB3 /* BMO_CoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83326620192808005184FE /* BMO_CoreDataTests.swift */; };
-		7B51625C201FBF7400B94FB3 /* RESTUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83328920192A61005184FE /* RESTUtilsTests.swift */; };
-		7B51625D201FBF7500B94FB3 /* RESTUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83328920192A61005184FE /* RESTUtilsTests.swift */; };
+		7B51625C201FBF7400B94FB3 /* RESTPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83328920192A61005184FE /* RESTPathTests.swift */; };
+		7B51625D201FBF7500B94FB3 /* RESTPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83328920192A61005184FE /* RESTPathTests.swift */; };
 		7B51625F201FBF8200B94FB3 /* Db+CoreData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BDB4E582019234900D1D5F2 /* Db+CoreData.swift */; };
 		7B516260201FBF8200B94FB3 /* CoreDataFetchRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83323E201924C3005184FE /* CoreDataFetchRequest.swift */; };
 		7B516261201FBF8200B94FB3 /* CoreDataSaveRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83324320192501005184FE /* CoreDataSaveRequest.swift */; };
@@ -326,6 +329,10 @@
 		7B672C3D20E9246D0041213D /* AsyncOperationResult.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B672BF220E923060041213D /* AsyncOperationResult.framework */; };
 		7B672C3E20E9246D0041213D /* CollectionLoader.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B672BF120E923060041213D /* CollectionLoader.framework */; };
 		7B672C3F20E9246D0041213D /* KVObserver.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B672BF820E923060041213D /* KVObserver.framework */; };
+		7B74061420FBB48800C22503 /* LinkHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B74061320FBB48800C22503 /* LinkHeaderParser.swift */; };
+		7B74061520FBB48800C22503 /* LinkHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B74061320FBB48800C22503 /* LinkHeaderParser.swift */; };
+		7B74061620FBB48800C22503 /* LinkHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B74061320FBB48800C22503 /* LinkHeaderParser.swift */; };
+		7B74061720FBB48800C22503 /* LinkHeaderParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B74061320FBB48800C22503 /* LinkHeaderParser.swift */; };
 		7B75E6AF201E5E3D00D88635 /* RESTPathProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B75E6AE201E5E3D00D88635 /* RESTPathProtocols.swift */; };
 		7B7A34C820027B4700348DF4 /* BMO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B7A34BF20027B4600348DF4 /* BMO.framework */; };
 		7B7A34D620027B6700348DF4 /* BMOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8BD034200274B9009BE667 /* BMOTests.swift */; };
@@ -340,7 +347,7 @@
 		7B83326420192758005184FE /* BackResultsImporterForCoreDataWithFastImportRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B817F102019168100625427 /* BackResultsImporterForCoreDataWithFastImportRepresentation.swift */; };
 		7B83326720192808005184FE /* BMO_CoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83326620192808005184FE /* BMO_CoreDataTests.swift */; };
 		7B83327A2019296C005184FE /* RESTUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B8332712019296C005184FE /* RESTUtils.framework */; };
-		7B83328A20192A62005184FE /* RESTUtilsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83328920192A61005184FE /* RESTUtilsTests.swift */; };
+		7B83328A20192A62005184FE /* RESTPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83328920192A61005184FE /* RESTPathTests.swift */; };
 		7B83328E2019310D005184FE /* AdditionalRESTRequestInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B83328D2019310D005184FE /* AdditionalRESTRequestInfo.swift */; };
 		7B8BD02320026E8C009BE667 /* BMO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B8BD01A20026E8C009BE667 /* BMO.framework */; };
 		7B8BD036200274B9009BE667 /* BMOTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B8BD034200274B9009BE667 /* BMOTests.swift */; };
@@ -1261,6 +1268,7 @@
 		7B0AB1322021148A00AC083A /* BMO+RESTCoreData-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "BMO+RESTCoreData-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B0AB13F2021148E00AC083A /* BMO+RESTCoreData-iOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "BMO+RESTCoreData-iOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B0B8D5920E920A5006E622D /* StaticCarthageBuild.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = StaticCarthageBuild.xcconfig; sourceTree = "<group>"; };
+		7B14711C210DC4BD00B1621C /* LinkHeaderParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkHeaderParserTests.swift; sourceTree = "<group>"; };
 		7B21BACE2003B2C600DFF758 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Readme.md; sourceTree = "<group>"; };
 		7B21BAD02003BBC700DFF758 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		7B21BAD12003BF0600DFF758 /* License.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = License.txt; sourceTree = "<group>"; };
@@ -1319,6 +1327,7 @@
 		7B672C0E20E923060041213D /* CollectionLoader.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CollectionLoader.framework; sourceTree = "<group>"; };
 		7B672C0F20E923060041213D /* AsyncOperationResult.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = AsyncOperationResult.framework; sourceTree = "<group>"; };
 		7B672C1220E923070041213D /* KVObserver.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = KVObserver.framework; sourceTree = "<group>"; };
+		7B74061320FBB48800C22503 /* LinkHeaderParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkHeaderParser.swift; sourceTree = "<group>"; };
 		7B75E6AE201E5E3D00D88635 /* RESTPathProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RESTPathProtocols.swift; sourceTree = "<group>"; };
 		7B7A34BF20027B4600348DF4 /* BMO.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BMO.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B7A34C720027B4700348DF4 /* BMO-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "BMO-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1335,7 +1344,7 @@
 		7B83326620192808005184FE /* BMO_CoreDataTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BMO_CoreDataTests.swift; sourceTree = "<group>"; };
 		7B8332712019296C005184FE /* RESTUtils.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RESTUtils.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B8332792019296C005184FE /* RESTUtils-macOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "RESTUtils-macOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7B83328920192A61005184FE /* RESTUtilsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RESTUtilsTests.swift; sourceTree = "<group>"; };
+		7B83328920192A61005184FE /* RESTPathTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RESTPathTests.swift; sourceTree = "<group>"; };
 		7B83328D2019310D005184FE /* AdditionalRESTRequestInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdditionalRESTRequestInfo.swift; sourceTree = "<group>"; };
 		7B8BD01A20026E8C009BE667 /* BMO.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BMO.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B8BD01D20026E8C009BE667 /* Framework-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Framework-Info.plist"; sourceTree = "<group>"; };
@@ -2024,6 +2033,40 @@
 			path = watchOS;
 			sourceTree = "<group>";
 		};
+		7B74061020FBB40800C22503 /* ParameterizedStringSet */ = {
+			isa = PBXGroup;
+			children = (
+				7B3192BC2019F1CC0088312B /* ParameterizedStringSet.swift */,
+				7B0AB0A420210E3300AC083A /* ParameterizedStringSetParser.swift */,
+				7B0AB0A920210EF800AC083A /* StandardRESTParameterizedStringSetParser.swift */,
+			);
+			path = ParameterizedStringSet;
+			sourceTree = "<group>";
+		};
+		7B74061120FBB41A00C22503 /* RESTTransformers */ = {
+			isa = PBXGroup;
+			children = (
+				7BDB847820C0D359001684D7 /* RESTBoolTransformer.swift */,
+				7BD6276A20C0BBCE0011ED8E /* RESTNumericTransformer.swift */,
+				7BD6275D20C0BBC50011ED8E /* RESTDateAndTimeTransformer.swift */,
+				7BB4E56220C0BE3E003A0977 /* RESTUUIDTransformer.swift */,
+				7BB4E56F20C0BEAC003A0977 /* RESTURLTransformer.swift */,
+				7BB4E57420C0BF15003A0977 /* RESTBase64DataTransformer.swift */,
+				7BEEDB8320C162B300275BCE /* RESTColorTransformer.swift */,
+				7BB4E57920C0C05F003A0977 /* RESTEnumTransformer.swift */,
+			);
+			path = RESTTransformers;
+			sourceTree = "<group>";
+		};
+		7B74061220FBB45100C22503 /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				7BB9662120223DD900024DE1 /* AnyEquatable.swift */,
+				7B74061320FBB48800C22503 /* LinkHeaderParser.swift */,
+			);
+			path = Other;
+			sourceTree = "<group>";
+		};
 		7B817EFA2019158200625427 /* BMO+FastImportRepresentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -2062,8 +2105,9 @@
 		7B83328820192A3A005184FE /* RESTUtilsTests */ = {
 			isa = PBXGroup;
 			children = (
-				7B83328920192A61005184FE /* RESTUtilsTests.swift */,
+				7B83328920192A61005184FE /* RESTPathTests.swift */,
 				7B37122621026D71000E6124 /* RESTNumericTransformer.swift */,
+				7B14711C210DC4BD00B1621C /* LinkHeaderParserTests.swift */,
 				7B93F6EA20C1DC7400D74742 /* RESTColorTransformerTests.swift */,
 			);
 			path = RESTUtilsTests;
@@ -2168,18 +2212,9 @@
 		7BB9662620223DDD00024DE1 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				7BB9662120223DD900024DE1 /* AnyEquatable.swift */,
-				7B3192BC2019F1CC0088312B /* ParameterizedStringSet.swift */,
-				7B0AB0A420210E3300AC083A /* ParameterizedStringSetParser.swift */,
-				7B0AB0A920210EF800AC083A /* StandardRESTParameterizedStringSetParser.swift */,
-				7BDB847820C0D359001684D7 /* RESTBoolTransformer.swift */,
-				7BD6276A20C0BBCE0011ED8E /* RESTNumericTransformer.swift */,
-				7BD6275D20C0BBC50011ED8E /* RESTDateAndTimeTransformer.swift */,
-				7BB4E56220C0BE3E003A0977 /* RESTUUIDTransformer.swift */,
-				7BB4E56F20C0BEAC003A0977 /* RESTURLTransformer.swift */,
-				7BB4E57420C0BF15003A0977 /* RESTBase64DataTransformer.swift */,
-				7BEEDB8320C162B300275BCE /* RESTColorTransformer.swift */,
-				7BB4E57920C0C05F003A0977 /* RESTEnumTransformer.swift */,
+				7B74061020FBB40800C22503 /* ParameterizedStringSet */,
+				7B74061120FBB41A00C22503 /* RESTTransformers */,
+				7B74061220FBB45100C22503 /* Other */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -3961,6 +3996,7 @@
 				7BB9662320223DDA00024DE1 /* AnyEquatable.swift in Sources */,
 				7BB9661720223A1F00024DE1 /* RESTOffsetLimitPaginator.swift in Sources */,
 				7BB4E57120C0BEAC003A0977 /* RESTURLTransformer.swift in Sources */,
+				7B74061520FBB48800C22503 /* LinkHeaderParser.swift in Sources */,
 				7B01D6FF20FB99B000F0E967 /* RESTURLPaginator.swift in Sources */,
 				7BEEDB8520C162B300275BCE /* RESTColorTransformer.swift in Sources */,
 				7BB966352022410700024DE1 /* RESTMapping.swift in Sources */,
@@ -3982,8 +4018,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7B51625C201FBF7400B94FB3 /* RESTUtilsTests.swift in Sources */,
+				7B14711E210DC4BD00B1621C /* LinkHeaderParserTests.swift in Sources */,
 				7B37122821026D71000E6124 /* RESTNumericTransformer.swift in Sources */,
+				7B51625C201FBF7400B94FB3 /* RESTPathTests.swift in Sources */,
 				7B93F6EC20C1DC7400D74742 /* RESTColorTransformerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4005,6 +4042,7 @@
 				7BB9662420223DDA00024DE1 /* AnyEquatable.swift in Sources */,
 				7BB9661820223A1F00024DE1 /* RESTOffsetLimitPaginator.swift in Sources */,
 				7BB4E57220C0BEAC003A0977 /* RESTURLTransformer.swift in Sources */,
+				7B74061620FBB48800C22503 /* LinkHeaderParser.swift in Sources */,
 				7B01D70020FB99B000F0E967 /* RESTURLPaginator.swift in Sources */,
 				7BEEDB8620C162B300275BCE /* RESTColorTransformer.swift in Sources */,
 				7BB966362022410700024DE1 /* RESTMapping.swift in Sources */,
@@ -4026,8 +4064,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7B51625D201FBF7500B94FB3 /* RESTUtilsTests.swift in Sources */,
+				7B14711F210DC4BD00B1621C /* LinkHeaderParserTests.swift in Sources */,
 				7B37122921026D71000E6124 /* RESTNumericTransformer.swift in Sources */,
+				7B51625D201FBF7500B94FB3 /* RESTPathTests.swift in Sources */,
 				7B93F6ED20C1DC7400D74742 /* RESTColorTransformerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4049,6 +4088,7 @@
 				7BB9662520223DDA00024DE1 /* AnyEquatable.swift in Sources */,
 				7BB9661920223A1F00024DE1 /* RESTOffsetLimitPaginator.swift in Sources */,
 				7BB4E57320C0BEAC003A0977 /* RESTURLTransformer.swift in Sources */,
+				7B74061720FBB48800C22503 /* LinkHeaderParser.swift in Sources */,
 				7B01D70120FB99B000F0E967 /* RESTURLPaginator.swift in Sources */,
 				7BEEDB8720C162B300275BCE /* RESTColorTransformer.swift in Sources */,
 				7BB966372022410700024DE1 /* RESTMapping.swift in Sources */,
@@ -4231,6 +4271,7 @@
 				7BB9662220223DDA00024DE1 /* AnyEquatable.swift in Sources */,
 				7BB9661620223A1F00024DE1 /* RESTOffsetLimitPaginator.swift in Sources */,
 				7BB4E57020C0BEAC003A0977 /* RESTURLTransformer.swift in Sources */,
+				7B74061420FBB48800C22503 /* LinkHeaderParser.swift in Sources */,
 				7B01D6FE20FB99B000F0E967 /* RESTURLPaginator.swift in Sources */,
 				7BEEDB8420C162B300275BCE /* RESTColorTransformer.swift in Sources */,
 				7BB966342022410700024DE1 /* RESTMapping.swift in Sources */,
@@ -4252,8 +4293,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7B83328A20192A62005184FE /* RESTUtilsTests.swift in Sources */,
+				7B14711D210DC4BD00B1621C /* LinkHeaderParserTests.swift in Sources */,
 				7B37122721026D71000E6124 /* RESTNumericTransformer.swift in Sources */,
+				7B83328A20192A62005184FE /* RESTPathTests.swift in Sources */,
 				7B93F6EB20C1DC7400D74742 /* RESTColorTransformerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

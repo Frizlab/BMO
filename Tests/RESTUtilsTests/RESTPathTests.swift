@@ -1,5 +1,5 @@
 /*
- * RESTUtilsTests.swift
+ * RESTPathTests.swift
  * RESTUtilsTests
  *
  * Created by François Lamboley on 1/24/18.
@@ -11,7 +11,7 @@ import XCTest
 
 
 
-class RESTUtilsTests: XCTestCase {
+class RESTPathTests: XCTestCase {
 	
 	func testInvalidPath1() {
 		XCTAssertNil(RESTPath("("))

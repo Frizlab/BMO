@@ -10,7 +10,9 @@ import XCTest
 
 XCTMain([
 	testCase(BMOTests.allTests),
-	testCase(RESTUtilsTests.allTests),
+	testCase(RESTPathTests.allTests),
+	testCase(LinkHeaderParserTests.allTests),
+	testCase(RESTColorTransformerTests.allTests),
 	testCase(BMO_FastImportRepresentationTests.allTests),
 	testCase(BMO_CoreDataTests.allTests),
 	testCase(BMO_RESTCoreDataTests.allTests),
