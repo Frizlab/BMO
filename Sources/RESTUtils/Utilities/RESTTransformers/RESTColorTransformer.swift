@@ -91,37 +91,37 @@ public class RESTColorTransformer : ValueTransformer {
 			assert(startIndex <= string.endIndex)
 			
 			switch self {
-			case .constant(value: let constant, optional: let optional):
+			case .constant(value: let constant, optional: let isOptional):
 				/* Let's parse the given constant using a Scanner */
-				return scan(in: string, at: &startIndex, with: { $0.scanString(constant, into: nil) }) || optional
+				return scan(in: string, at: &startIndex, with: { $0.scanString(constant, into: nil) }) || isOptional
 				
-			case .string(from: let characterSet, id: let id, optional: let optional):
+			case .string(from: let characterSet, id: let id, optional: let isOptional):
 				/* Let's parse the given constant */
 				var res: NSString?
 				guard scan(in: string, at: &startIndex, with: { $0.scanCharacters(from: characterSet, into: &res) }) else {
-					return optional
+					return isOptional
 				}
 				
 				vars[id] = res! as String
 				return true
 				
-			case .hexInt(nChars: let nChars, transform: let transform, id: let id, optional: let optional):
+			case .hexInt(nChars: let nChars, transform: let transform, id: let id, optional: let isOptional):
 				var res: Int = 0
 				if let nChars = nChars {
-					guard let endSubStrIdx = string.index(startIndex, offsetBy: nChars, limitedBy: string.endIndex) else {return optional}
+					guard let endSubStrIdx = string.index(startIndex, offsetBy: nChars, limitedBy: string.endIndex) else {return isOptional}
 					
 					let subStr = String(string[startIndex..<endSubStrIdx])
 					var subStrStartIdx = subStr.startIndex
 					var uint64: UInt64 = 0
 					guard scan(in: subStr, at: &subStrStartIdx, with: { $0.scanHexInt64(&uint64) }), subStrStartIdx == subStr.endIndex, let i = Int(exactly: uint64) else {
-						return optional
+						return isOptional
 					}
 					startIndex = endSubStrIdx
 					res = i
 				} else {
 					var uint64: UInt64 = 0
 					guard scan(in: string, at: &startIndex, with: { $0.scanHexInt64(&uint64) }), let i = Int(exactly: uint64) else {
-						return optional
+						return isOptional
 					}
 					res = i
 				}

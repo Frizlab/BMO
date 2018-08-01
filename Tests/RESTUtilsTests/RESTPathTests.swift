@@ -18,7 +18,7 @@ import XCTest
 
 
 
-class RESTUtilsTests: XCTestCase {
+class RESTPathTests: XCTestCase {
 	
 	func testInvalidPath1() {
 		XCTAssertNil(RESTPath("("))
