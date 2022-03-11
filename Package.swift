@@ -8,10 +8,8 @@ import PackageDescription
 let package = Package(
 	name: "BMO",
 	products: [
-		.library(
-			name: "Jake",
-			targets: ["Jake"]
-		)
+		.library(name: "Jake", targets: ["Jake"]),
+		.library(name: "RESTUtils", targets: ["RESTUtils"])
 	],
 	dependencies: [
 		.package(url: "git@github.com:happn-app/AsyncOperationResult.git", from: "1.0.0"),
