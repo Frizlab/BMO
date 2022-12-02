@@ -32,15 +32,11 @@ public struct LinkValue : Equatable {
 	public var context: URL?
 	
 	public var rel: [String]
-	public var rev: [String]? /* Deprecated by RFC 8288. */
+	public var rev: [String]? /* Deprecated by RFC 8288 */
 	
-	/**
-	 The unparsed `hreflang` values.
-	 To parse, use ABNF `Language-Tag`. */
+	/** The unparsed “hreflang” values. To parse, use ABNF “Language-Tag.” */
 	public var hreflang: [String]?
-	/**
-	 The unparsed `media` value.
-	 To parse, use ABNF `media-query-list`. */
+	/** The unparsed “media” value. To parse, use ABNF “media-query-list.” */
 	public var mediaQuery: String?
 	/**
 	 The `title` and/or `title*` attribute.
@@ -48,16 +44,17 @@ public struct LinkValue : Equatable {
 	public var title: String?
 	/**
 	 The unparsed `type` value.
-	 To parse, use ABNF: `type-name "/" subtype-name` (see Section 4.2 of [RFC6838]). */
+	 To parse, use ABNF: `type-name "/" subtype-name ; see Section 4.2 of [RFC6838]`. */
 	public var type: String?
 	
 	/**
 	 The target attributes extensions (non-listed in rfc8828) for the given link.
 	 Because rfc8828 states the names of the target attributes “MUST be compared in a case-insensitive fashion,”
-	  all the keys in this dictionary are lowercased.
+	 all the keys in this dictionary are lowercased.
 	 It has been a design choice not to give access to the original-cased attribute names.
 	 
-	 The `*` attributes are **not** parsed, but the `parseRFC8187EncodedString` method exists in ``LinkHeaderParser`` to parse these kind of values (only UTF-8 is supported). */
+	 The `*` attributes are **not** parsed,
+	 but the `parseRFC8187EncodedString` method exists in LinkHeaderParser to parse these kind of values (only UTF-8 is supported). */
 	public var extensions: [String: [String]]
 	
 }
@@ -86,7 +83,13 @@ public struct LinkHeaderParser {
 	/* In lax mode, any invalid link value (whether from the anchor or from the <> part) will be skipped.
 	 * A previous version of this method just returned nil whenever it encountered an invalid link.
 	 * However, at the time of writing (2018-08-01), GitHub returns invalid links in some of their “Link” headers.
-	 * To make life easier for people using this library for parsing GitHub’s “Link” headers, we simply skip invalid links… */
+	 * To make life easier for people using this library for parsing GitHub’s “Link” headers, we simply skip invalid links…
+	 *
+	 * We do NOT support obs-text in link values.
+	 * The rationale for this is we parse the header from the String type, which uses an UTF-8 view of the header, with grapheme clusters.
+	 * We do not have access to the raw data, and thus cannot check 0x80-0xff bytes.
+	 * One solution would be to convert the string to its original encoding, but we cannot be 100% it’s ISO-latin-1 (though it probably is),
+	 *  and we’d have to assume reverse encoding conversion would indeed give the actual original bytes. */
 	public static func parseLinkHeader(_ linkHeader: String, defaultContext: URL?, contentLanguageHeader: String?, lax: Bool = true) -> [LinkValue]? {
 		/* If we’re “lax” parsing, we trim whitespaces from the input. */
 		let linkHeader = (lax ? linkHeader.trimmingCharacters(in: spaceCharacterSet) : linkHeader)
@@ -152,7 +155,12 @@ public struct LinkHeaderParser {
 				
 				/* There shouldn’t be any spaces after the key, but we allow it in lax mode (the RFC says there might be “bad” spaces). */
 				if lax {scanner.scanCharacters(from: spaceCharacterSet, into: nil)}
-				guard scanner.scanString("=", into: nil) else {return nil}
+				guard scanner.scanString("=", into: nil) else {
+					/* ABNF says the “=value” part is optional.
+					 * It does not say what the value should be when it is not defined, but we can assume it is an empty string. */
+					rawAttributes[key.lowercased(), default: []].append("")
+					continue
+				}
 				if lax {scanner.scanCharacters(from: spaceCharacterSet, into: nil)}
 				
 				let value: String
@@ -331,7 +339,7 @@ public struct LinkHeaderParser {
 		}
 		
 		/* Note: If the Content-Location header contains a different value than the request URL, we _assume_ the context is the one given by the header,
-		 *       but we implement no means of verifying such a claim (see rfc7231, § 3.1.4.1). */
+		 *        but we implement no means of verifying such a claim (see rfc7231, § 3.1.4.1). */
 		return contentLocationHeader.flatMap{ URL(string: $0) }
 	}
 	
@@ -340,14 +348,12 @@ public struct LinkHeaderParser {
 	private static let tokenCharacterSet = CharacterSet(charactersIn: "!#$%&'*+-.^_`|~").union(digitCharacterSet).union(alphaCharacterSet)
 	private static let spaceCharacterSet = CharacterSet(charactersIn: " \t")
 	
-	private static let quotedTextCharacterSet = CharacterSet(charactersIn: "\t ")
+	private static let quotedTextCharacterSet = spaceCharacterSet
 		.union(CharacterSet(arrayLiteral: Unicode.Scalar(0x21)))
 		.union(CharacterSet(charactersIn: Unicode.Scalar(0x23)...Unicode.Scalar(0x5b)))
 		.union(CharacterSet(charactersIn: Unicode.Scalar(0x5d)...Unicode.Scalar(0x7e)))
-		.union(CharacterSet(charactersIn: Unicode.Scalar(0x80)...Unicode.Scalar(0xff)))
-	private static let quotedPairSecondCharCharacterSet = CharacterSet(charactersIn: "\t ")
+	private static let quotedPairSecondCharCharacterSet = spaceCharacterSet
 		.union(CharacterSet(charactersIn: Unicode.Scalar(0x21)...Unicode.Scalar(0x7e)))
-		.union(CharacterSet(charactersIn: Unicode.Scalar(0x80)...Unicode.Scalar(0xff)))
 	
 	/* For RFC 8187. */
 	private static let mimeCharacterSet = CharacterSet(charactersIn: "!#$%&+-^_`{}~").union(digitCharacterSet).union(alphaCharacterSet)
