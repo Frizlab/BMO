@@ -21,7 +21,7 @@ import CoreData
 
 
 class BMO_CoreDataTests: XCTestCase {
-    
+	
 	func testCompoundPredicateConstantsEnumeration() {
 		let expectedKeyPath = ["toto", "titi", "tata"]
 		let predicate = NSPredicate(format: "%K == TRUE AND %K == TRUE AND %K == %@", expectedKeyPath[0], expectedKeyPath[1], expectedKeyPath[2], NSManagedObject())

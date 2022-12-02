@@ -25,26 +25,20 @@ import RESTUtils
 
 
 
-/* Interesting Note (Might Be TODO...): If the request makes the API (or the
- * bridge) return elements that are not kind of the requested entity (eg. with
- * happn we have the request for the conversations that might return an
- * FLHPConversationsCount object within the list of conversations; with
- * Instagram we might have an FLIGVideo elements when we ask for FLIGImage only)
- * the number of elements returned from the pre-completion result (and also
- * incidentally but it matters less the results from the finished loading
- * operation) will contain those elements.
- *
- * Because of this, when computing whether we have more elements to load——and
- * deleting the previously loaded elements on a “first page” load, those
- * “ghosts” will be taken into account in the calculation! Which is not what we
- * want.
- *
- * One solution would be to filter the pre-results to only contain elements kind
- * of the expected entity. */
+/* Interesting Note (Might Be TODO...):
+ * If the request makes the API (or the bridge) return elements that are not kind of the requested entity
+ *  (eg. with happn we have the request for the conversations that might return an FLHPConversationsCount object within the list of conversations;
+ *   with Instagram we might have an FLIGVideo elements when we ask for FLIGImage only),
+ *  the number of elements returned from the pre-completion result (and also incidentally but it matters less the results from the finished loading operation) will contain those elements.
+ *
+ * Because of this, when computing whether we have more elements to load–and deleting the previously loaded elements on a “first page” load, those “ghosts” will be taken into account in the calculation!
+ * Which is not what we want.
+ *
+ * One solution would be to filter the pre-results to only contain elements kind of the expected entity. */
 
 @available(OSX 10.12, *)
 public class CoreDataSearchCLH<FetchedObjectsType : NSManagedObject, BridgeType, PageInfoRetrieverType : PageInfoRetriever> : CoreDataCLH
-	where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestInfoType == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetrieverType.BridgeType == BridgeType
+where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestInfoType == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetrieverType.BridgeType == BridgeType
 {
 	
 	public let bridge: BridgeType
@@ -75,7 +69,7 @@ public class CoreDataSearchCLH<FetchedObjectsType : NSManagedObject, BridgeType,
 		apiOrderDelta = aod
 		deletionDateProperty = ddp
 		
-		let controllerFetchRequest = fr.copy() as! NSFetchRequest<FetchedObjectsType> /* Must still copy because of ObjC legacy... */
+		let controllerFetchRequest = fr.copy() as! NSFetchRequest<FetchedObjectsType> /* Must still copy because of ObjC legacy… */
 		if let apiOrderProperty = aop {
 			var sd = controllerFetchRequest.sortDescriptors ?? []
 			sd.insert(NSSortDescriptor(key: apiOrderProperty.name, ascending: true), at: 0)
@@ -151,7 +145,7 @@ public class CoreDataSearchCLH<FetchedObjectsType : NSManagedObject, BridgeType,
 	private let additionalFetchInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?
 	
 	private let apiOrderProperty: NSAttributeDescription?
-	private let apiOrderDelta: Int /* Must be > 0 */
+	private let apiOrderDelta: Int /* Must be > 0. */
 	private let deletionDateProperty: NSAttributeDescription?
 	
 	public struct PageInfo {

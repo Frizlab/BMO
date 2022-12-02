@@ -55,12 +55,11 @@ public final class ImportBridgeOperationResultsRequestOperation<BridgeType : Bri
 			try importer.createAndPrepareDbImporter(rootMetadata: metadata)
 			
 			/* I don't think NOT waiting is justified here.
-			 * - We do not care about hogging the queue we're on because while the
-			 *   stuff we have to do in the context is not done, the operation will
-			 *   not be finished and will hog the queue.
-			 * - Not waiting would make us convert the operation to an asynchronous
-			 *   operation, which is not a trivial task, and not justified as per
-			 *   the previous point. */
+			 * - We do not care about hogging the queue we're on because while the stuff we have to do in the context is not done,
+			 *    the operation will not be finished and will hog the queue.
+			 * - Not waiting would make us convert the operation to an asynchronous operation,
+			 *    which is not a trivial task
+			 *    and is not justified as per the previous point. */
 			try request.db.performAndWait {
 				try self.throwIfCancelled()
 				

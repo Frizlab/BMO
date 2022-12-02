@@ -28,12 +28,10 @@ public struct CoreDataSaveRequest<AdditionalInfoType> : BackRequest {
 	public enum SaveWorkflow {
 		case saveBeforeBackReturns
 		/* TODO: Technically this mode is not fully supported yet.
-		 * - Because we want to always have a non-modified Core Data view context,
-		 *   we have to allow using this workflow from a child context.
-		 * - When using a sub-context, the back results are not imported because
-		 *   the importer we use today do not support sub-contexts (no inter-
-		 *   context locking). A modification to BMO would allow us to change the
-		 *   importer per request part. See TODO in Request. */
+		 * - Because we want to always have a non-modified Core Data view context, we have to allow using this workflow from a child context.
+		 * - When using a sub-context, the back results are not imported because the importer we use today do not support sub-contexts (no inter-context locking).
+		 *   A modification to BMO would allow us to change the importer per request part.
+		 *   See TODO in Request. */
 		case saveAfterBackReturns
 		case rollbackBeforeBackReturns
 		case doNothing
@@ -44,7 +42,7 @@ public struct CoreDataSaveRequest<AdditionalInfoType> : BackRequest {
 	
 	public let objectsToSave: [NSManagedObject]?
 	
-	/* TODO: Implement this properly */
+	/* TODO: Implement this properly. */
 	public let saveWorkflow: SaveWorkflow
 	
 	public init(db database: NSManagedObjectContext, additionalInfo i: AdditionalInfoType?, objectsToSave o: [NSManagedObject]?, saveWorkflow w: SaveWorkflow) {

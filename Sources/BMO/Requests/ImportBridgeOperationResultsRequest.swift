@@ -22,9 +22,9 @@ public struct ImportBridgeOperationResultsRequest<BridgeType : Bridge> {
 	let db: BridgeType.DbType
 	
 	let bridge: BridgeType
-	/** The operation from which the results will be extracted to be processed.
-	The operation does not have to be finished when creating the request, only
-	when processing it. */
+	/**
+	 The operation from which the results will be extracted to be processed.
+	 The operation does not have to be finished when creating the request, only when processing it. */
 	let operation: BridgeType.BackOperationType
 	
 	let expectedEntity: BridgeType.DbType.EntityDescriptionType
@@ -34,8 +34,9 @@ public struct ImportBridgeOperationResultsRequest<BridgeType : Bridge> {
 	
 	let importPreparationBlock: (() throws -> Bool)?
 	let importSuccessBlock: ((_ importResults: ImportResult<BridgeType.DbType>) throws -> Void)?
-	/* Also called if `fastImportSuccessBlock` or `fastImportPreparationBlock`
-	 * fail. NOT called if `fastImportPreparationBlock` returns `false` though. */
+	/**
+	 Also called if `fastImportSuccessBlock` or `fastImportPreparationBlock` fail.
+	 __NOT__ called if `fastImportPreparationBlock` returns `false` though. */
 	let importErrorBlock: ((_ error: Swift.Error) -> Void)?
 	
 }

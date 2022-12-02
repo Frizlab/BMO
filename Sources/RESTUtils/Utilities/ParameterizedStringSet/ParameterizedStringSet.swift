@@ -56,7 +56,7 @@ public struct ParameterizedStringSet {
 		return false
 	}
 	
-	/* Returns nil if value is not in set */
+	/* Returns nil if value is not in set. */
 	public func params(forValue value: String) -> [String: ParameterizedStringSet]? {
 		return valuesAndParams[value]
 	}
@@ -70,8 +70,9 @@ public struct ParameterizedStringSet {
 		for v in values {insert(v)}
 	}
 	
-	/** Inserts the given value with the given params if not in set. If the value
-	was already in the set, updates the params for the given value. */
+	/**
+	 Inserts the given value with the given params if not in set.
+	 If the value was already in the set, updates the params for the given value. */
 	public mutating func add(simpleParams: [String: String], forValue value: String) {
 		var currentParams = valuesAndParams[value] ?? [:]
 		for (k, v) in simpleParams {currentParams[k] = ParameterizedStringSet(simpleValue: v)}
@@ -105,7 +106,7 @@ public struct ParameterizedStringSet {
 		return ret
 	}
 	
-	/* TODO: Force certain values to have only one parameter in their parameters */
+	/* TODO: Force certain values to have only one parameter in their parameters. */
 	public func merged(_ otherSet: ParameterizedStringSet) -> ParameterizedStringSet {
 		var ret = self
 		ret.merge(otherSet)
@@ -122,12 +123,12 @@ public struct ParameterizedStringSet {
 		guard let newValue = newValue else {return ParameterizedStringSet()}
 		
 		switch newValue {
-		case let pss as ParameterizedStringSet: return pss
-		case let set as Set<String>:            return ParameterizedStringSet(simpleSequence: set)
-		case let array as [String]:             return ParameterizedStringSet(simpleSequence: array)
-		case let string as String:              return ((try? pssParser.parse(flatifiedParam: string)) ?? ParameterizedStringSet(simpleValue: string))
-		case let int as Int:                    return ParameterizedStringSet(simpleValue: String(int))
-		default: return nil
+			case let pss as ParameterizedStringSet: return pss
+			case let set as Set<String>:            return ParameterizedStringSet(simpleSequence: set)
+			case let array as [String]:             return ParameterizedStringSet(simpleSequence: array)
+			case let string as String:              return ((try? pssParser.parse(flatifiedParam: string)) ?? ParameterizedStringSet(simpleValue: string))
+			case let int as Int:                    return ParameterizedStringSet(simpleValue: String(int))
+			default: return nil
 		}
 	}
 	

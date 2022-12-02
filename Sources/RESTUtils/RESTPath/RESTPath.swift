@@ -24,10 +24,10 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 	case components([RESTPath], isRoot: Bool)
 	
 	/* Format: parent_element/|relationshipToParent.remoteId|/child_element(/|remoteId|)
-	 *    The special characters "|", "(", ")" and "\" can be escaped with a
-	 *    backslash ("\"). A non-special character being escaped will result in
-	 *    an error (failed initialization). Parenthesis can be nested.
-	 *    See the resolvedPath* methods for a description of the substitution. */
+	 * The special characters "|", "(", ")" and "\" can be escaped with a backslash ("\").
+	 * A non-special character being escaped will result in an error (failed initialization).
+	 * Parenthesis can be nested.
+	 * See the resolvedPath* methods for a description of the substitution. */
 	public init?(_ string: String) {
 		guard !string.isEmpty else {
 			self = .constant("")
@@ -38,31 +38,31 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 		guard let p = RESTPath(string: &mstring, isSubParse: false) else {return nil}
 		let r: RESTPath
 		switch p {
-		case .components(let components, isRoot: _ /* We already know its false */):
-			if components.count == 1 {r = components.first!}
-			else                     {r = p}
-			
-		default:
-			r = p
+			case .components(let components, isRoot: _ /* We already know its false. */):
+				if components.count == 1 {r = components.first!}
+				else                     {r = p}
+				
+			default:
+				r = p
 		}
 		
 		self = r
 		assert(mstring.isEmpty)
-		assert(serialized() == string) /* We can be LosslessStringConvertible because this assert is true */
+		assert(serialized() == string) /* We can be LosslessStringConvertible because this assert is true. */
 	}
 	
 	/* For constant REST Path (no variables), this will return a non-nil value. */
 	public var resolvedConstant: String? {
 		switch self {
-		case .variable: return nil
-		case .constant(let str): return str
-		case .components(let components, isRoot: _):
-			var res = ""
-			for c in components {
-				guard let str = c.resolvedConstant else {return nil}
-				res += str
-			}
-			return res
+			case .variable: return nil
+			case .constant(let str): return str
+			case .components(let components, isRoot: _):
+				var res = ""
+				for c in components {
+					guard let str = c.resolvedConstant else {return nil}
+					res += str
+				}
+				return res
 		}
 	}
 	
@@ -71,50 +71,48 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 	}
 	
 	/* The substitution is done as follow:
-	 *   - Parts between pipes are key path, that must be resolved from the given
-	 *     sources. A key path here is a simple dot-separated path of properties.
-	 *     Source objects must conform to the RESTPathKeyResovable protocol or be
-	 *     compatible [String: Any];
-	 *   - If the key path is found, the value is replaced;
-	 *   - If not, behavior will differ depending on whether the replacement is
-	 *     in a subgroup (between parenthesis):
-	 *     - If it is, the whole subgroup is dropped;
-	 *     - Otherwise, the whole string is dropped. */
+	 *   - Parts between pipes are key path, that must be resolved from the given sources.
+	 *     A key path here is a simple dot-separated path of properties.
+	 *     Source objects must conform to the RESTPathKeyResovable protocol or be compatible [String: Any];
+	 *   - If the key path is found, the value is replaced;
+	 *   - If not, behavior will differ depending on whether the replacement is in a subgroup (between parenthesis):
+	 *     - If it is, the whole subgroup is dropped;
+	 *     - Otherwise, the whole string is dropped. */
 	public func resolvedPath(sources: [Any]) -> String? {
 		switch self {
-		case .constant(let str):
-			return str
-			
-		case .variable(let variable):
-			for source in sources {
-				if let resolved = string(for: variable, in: source) {
-					return resolved
-				}
-			}
-			return nil
-			
-		case .components(let components, isRoot: _):
-			var res = ""
-			for component in components {
-				if let resolved = component.resolvedPath(sources: sources) {
-					res += resolved
-				} else {
-					switch component {
-					case .components: (/*nop*/)
-					default: return nil
+			case .constant(let str):
+				return str
+				
+			case .variable(let variable):
+				for source in sources {
+					if let resolved = string(for: variable, in: source) {
+						return resolved
 					}
 				}
-			}
-			return res
+				return nil
+				
+			case .components(let components, isRoot: _):
+				var res = ""
+				for component in components {
+					if let resolved = component.resolvedPath(sources: sources) {
+						res += resolved
+					} else {
+						switch component {
+							case .components: (/*nop*/)
+							default: return nil
+						}
+					}
+				}
+				return res
 		}
 	}
 	
 	public func serialized() -> String {
 		switch self {
-		case .constant(let str): return       str.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "(", with: "\\(").replacingOccurrences(of: ")", with: "\\)").replacingOccurrences(of: "|", with: "\\|")
-		case .variable(let str): return "|" + str.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "(", with: "\\(").replacingOccurrences(of: ")", with: "\\)").replacingOccurrences(of: "|", with: "\\|") + "|"
-		case .components(let components, isRoot: let root):
-			return components.reduce(root ? "" : "(", { $0 + $1.serialized() }) + (root ? "" : ")")
+			case .constant(let str): return       str.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "(", with: "\\(").replacingOccurrences(of: ")", with: "\\)").replacingOccurrences(of: "|", with: "\\|")
+			case .variable(let str): return "|" + str.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "(", with: "\\(").replacingOccurrences(of: ")", with: "\\)").replacingOccurrences(of: "|", with: "\\|") + "|"
+			case .components(let components, isRoot: let root):
+				return components.reduce(root ? "" : "(", { $0 + $1.serialized() }) + (root ? "" : ")")
 		}
 	}
 	
@@ -127,8 +125,8 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 	}
 	
 	/* ***************
-      MARK: - Private
-	   *************** */
+	   MARK: - Private
+	   *************** */
 	
 	private enum Engine {
 		
@@ -136,7 +134,7 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 		case backslashedCharInConstant
 		case waitEndVariable
 		case backslashedCharInVariable
-
+		
 	}
 	
 	private struct EngineState {
@@ -145,10 +143,9 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 		
 	}
 	
-	/* After the init returns, string will contain what's left of the string
-	 * after parsing. Will always be an empty string in case of a non-subparsing
-	 * init.
-	 * Sub-parsing imply an optional components. */
+	/* After the init returns, string will contain what's left of the string after parsing.
+	 * Will always be an empty string in case of a non-subparsing init.
+	 * Sub-parsing imply an optional components. */
 	private init?(string: inout String, isSubParse: Bool) {
 		assert(!string.isEmpty || isSubParse)
 		if string.isEmpty {return nil}
@@ -167,70 +164,70 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 			string.replaceSubrange(...string.startIndex, with: "")
 			
 			switch engine {
-			case .waitEndConstant:
-				switch c {
-				case "\\": engine = .backslashedCharInConstant
+				case .waitEndConstant:
+					switch c {
+						case "\\": engine = .backslashedCharInConstant
+							
+						case "|":
+							endCurrentConstant()
+							engine = .waitEndVariable
+							
+						case "(":
+							endCurrentConstant()
+							
+							guard let o = RESTPath(string: &string, isSubParse: true) else {return nil}
+							componentsBuilding.append(o)
+							
+						case ")":
+							guard isSubParse else {return nil}
+							endCurrentConstant()
+							self = .components(componentsBuilding, isRoot: false)
+							return
+							
+						default:
+							engineState.curStringBuilding.append(c)
+					}
 					
-				case "|":
-					endCurrentConstant()
-					engine = .waitEndVariable
-					
-				case "(":
-					endCurrentConstant()
-					
-					guard let o = RESTPath(string: &string, isSubParse: true) else {return nil}
-					componentsBuilding.append(o)
-					
-				case ")":
-					guard isSubParse else {return nil}
-					endCurrentConstant()
-					self = .components(componentsBuilding, isRoot: false)
-					return
-					
-				default:
+				case .backslashedCharInConstant:
+					switch c {
+						case "\\", "|", "(", ")": (/*nop*/)
+						default: return nil
+					}
 					engineState.curStringBuilding.append(c)
-				}
-				
-			case .backslashedCharInConstant:
-				switch c {
-				case "\\", "|", "(", ")": (/*nop*/)
-				default: return nil
-				}
-				engineState.curStringBuilding.append(c)
-				engine = .waitEndConstant
-				
-			case .waitEndVariable:
-				switch c {
-				case "\\": engine = .backslashedCharInVariable
-					
-				case "|":
-					componentsBuilding.append(.variable(engineState.curStringBuilding))
-					engineState.curStringBuilding = ""
 					engine = .waitEndConstant
 					
-				case "(", ")":
-					return nil
+				case .waitEndVariable:
+					switch c {
+						case "\\": engine = .backslashedCharInVariable
+							
+						case "|":
+							componentsBuilding.append(.variable(engineState.curStringBuilding))
+							engineState.curStringBuilding = ""
+							engine = .waitEndConstant
+							
+						case "(", ")":
+							return nil
+							
+						default:
+							engineState.curStringBuilding.append(c)
+					}
 					
-				default:
+				case .backslashedCharInVariable:
+					switch c {
+						case "\\", "|", "(", ")": (/*nop*/)
+						default: return nil
+					}
 					engineState.curStringBuilding.append(c)
-				}
-				
-			case .backslashedCharInVariable:
-				switch c {
-				case "\\", "|", "(", ")": (/*nop*/)
-				default: return nil
-				}
-				engineState.curStringBuilding.append(c)
-				engine = .waitEndVariable
+					engine = .waitEndVariable
 			}
 		}
 		
 		guard !isSubParse else {return nil}
 		
 		switch engine {
-		case .waitEndVariable, .backslashedCharInVariable: return nil
-		case .backslashedCharInConstant: engineState.curStringBuilding.append("\\")
-		case .waitEndConstant: (/*nop*/)
+			case .waitEndVariable, .backslashedCharInVariable: return nil
+			case .backslashedCharInConstant: engineState.curStringBuilding.append("\\")
+			case .waitEndConstant: (/*nop*/)
 		}
 		
 		endCurrentConstant()
@@ -245,9 +242,9 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 		for i in (0..<keyPathComponents.count).reversed() {
 			let firstLevelVal: Any?
 			switch source {
-			case let dic as [String: Any]:        firstLevelVal = dic[currentKey1]
-			case let kvr as RESTPathKeyResovable: firstLevelVal = kvr.restPathObject(for: currentKey1)
-			default:                              return nil /* If source is neither a dictionary nor a RESTPathKeyResovable, no need to even try resolving the path! */
+				case let dic as [String: Any]:        firstLevelVal = dic[currentKey1]
+				case let kvr as RESTPathKeyResovable: firstLevelVal = kvr.restPathObject(for: currentKey1)
+				default:                              return nil /* If source is neither a dictionary nor a RESTPathKeyResovable, no need to even try resolving the path! */
 			}
 			
 			let fullVal: Any?
@@ -266,27 +263,22 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 	}
 	
 	private func string(from object: Any) -> String? {
-		/* Note: The original ObjC implementation of this method used stringValue
-		 * on the given object to create the string value we want if the object
-		 * was not a String. With Swift, this is not possible anymore!
-		 *
-		 * Instead we check if the object is somehow “aware” that a RESTPath might
-		 * ask for its string value by checking for conformance of the
-		 * RESTPathStringConvertible protocol. If it is, we simply return the
-		 * given string value.
-		 * If not, we check for conformance to the LosslessStringConvertible
-		 * protocol and use the “description” property as a string value. We do
-		 * not check the CustomStringConvertible protocol because while it gives a
-		 * representation of an object, the representation often does not make
-		 * sense in a REST path (eg. all ObjC object conforms to the protocol
-		 * through NSObject). Even the LosslessStringConvertible protocol check is
-		 * far streched TBH. */
+		/* Note:
+		 * The original ObjC implementation of this method used stringValue on the given object to create the string value we want if the object was not a String.
+		 * With Swift, this is not possible anymore!
+		 *
+		 * Instead we check if the object is somehow “aware” that a RESTPath might ask for its string value by checking for conformance of the RESTPathStringConvertible protocol.
+		 * If it is, we simply return the given string value.
+		 * If not, we check for conformance to the LosslessStringConvertible protocol and use the “description” property as a string value.
+		 * We do not check the CustomStringConvertible protocol because while it gives a representation of an object, the representation often does not make sense in a REST path
+		 *  (eg. all ObjC object conforms to the protocol through NSObject).
+		 * Even the LosslessStringConvertible protocol check is far streched TBH. */
 		switch object {
-		case let str           as String:                    return str
-		case let str           as Substring:                 return String(str)
-		case let restPathAware as RESTPathStringConvertible: return restPathAware.stringValueForRESTPath
-		case let describable   as LosslessStringConvertible: return describable.description
-		default:                                             return nil
+			case let str           as String:                    return str
+			case let str           as Substring:                 return String(str)
+			case let restPathAware as RESTPathStringConvertible: return restPathAware.stringValueForRESTPath
+			case let describable   as LosslessStringConvertible: return describable.description
+			default:                                             return nil
 		}
 	}
 	

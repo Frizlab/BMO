@@ -17,17 +17,14 @@ import Foundation
 
 
 
-/** Must be initialized with a mapping (eg. `["male": Gender.male.rawValue,
-"female": Gender.female.rawValue]`). When doing the forward transformation, the
-string given in input will be compared case-insensitively. However, for a
-reverse transformation, the same case as the one given in the mapping will be
-returned.
-
-- Important: The `transformedValueClass` for this transformer will always return
-`AnyObject.self`. The actual transformed value will be `EnumRawValueType` which
-might not be an Objective-C compatible object… (But Swift will still make it
-available at run-time for Objective-C with a custom class depending on many
-rules.) */
+/**
+ Must be initialized with a mapping (eg. `["male": Gender.male.rawValue, "female": Gender.female.rawValue]`).
+ When doing the forward transformation, the string given in input will be compared case-insensitively.
+ However, for a reverse transformation, the same case as the one given in the mapping will be returned.
+ 
+ - Important: The `transformedValueClass` for this transformer will always return `AnyObject.self`.
+ The actual transformed value will be `EnumRawValueType` which might not be an Objective-C compatible object…
+ (But Swift will still make it available at run-time for Objective-C with a custom class depending on many rules.) */
 public class RESTEnumTransformer<EnumRawValueType : Hashable> : ValueTransformer {
 	
 	public override class func allowsReverseTransformation() -> Bool {
@@ -43,8 +40,7 @@ public class RESTEnumTransformer<EnumRawValueType : Hashable> : ValueTransformer
 	public let invalidValue: EnumRawValueType?
 	public let invalidReverseValue: String?
 	
-	/* If invalidValue is nil, the conversion will fail for the given input for
-	 * strings not in the mapping. */
+	/* If invalidValue is nil, the conversion will fail for the given input for strings not in the mapping. */
 	init(mapping m: [String: EnumRawValueType], invalidValue i: EnumRawValueType? = nil, invalidReverseValue ir: String? = nil) {
 		var mappingBuilding = [String: EnumRawValueType]()
 		var reverseMappingBuilding = [EnumRawValueType: String]()

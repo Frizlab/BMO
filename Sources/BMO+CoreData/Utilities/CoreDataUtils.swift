@@ -28,7 +28,7 @@ extension NSManagedObjectContext {
 		do {
 			try save()
 			
-			/* Let's save the parent contexts */
+			/* Let's save the parent contexts. */
 			guard let parent = parent else {return}
 			parent.performAndWait{ parent.saveToDiskOrRollback() }
 		} catch {

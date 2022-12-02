@@ -52,10 +52,10 @@ In order to have a clear separation of roles, this repository has many targets:
 ## Installation and Dependencies
 BMO is Carthage and SPM compatible.
 
-BMO is heavily `Operation`-based. Creating a network operation is not very hard, but we recommend
-using `URLRequestOperation` which takes care of a great deal of things in addition to providing
-`Operation`-based network requests (e.g. automatic retrying based on network availability for
-idempotent requests).
+BMO is heavily `Operation`-based. 
+Creating a network operation is not very hard, but we recommend using `URLRequestOperation`
+ which takes care of a great deal of things in addition to providing `Operation`-based network requests 
+ (e.g. automatic retrying based on network availability for idempotent requests).
 
 Here’s a basic Cartfile you can use for your BMO-based projects.
 ```ogdl
@@ -87,10 +87,14 @@ URLRequestOperation has the following dependencies:
 ## Getting started
 This Readme will focus on using the CoreData+REST implementation of BMO. An advanced usage will show later how to create new concrete implementations of BMO for other databases or APIs.
 
-The Readme here will give the general steps to follow to implement BMO in an app. If you want a more detailed and thorough guide, please see our [example project](https://github.com/happn-app/BMOSpotifyClient).
+The Readme here will give the general steps to follow to implement BMO in an app.
+If you want a more detailed and thorough guide, please see our [example project](https://github.com/happn-app/BMOSpotifyClient).
 
 ### The Core Data Stack
-There is only one requirement for your Core Data model: that all your mapped entities have a "uniquing property." This will be the property BMO will read and write to make sure you won't have duplicated instances in your stack. In effect, if you’re fetching an object already in the local database, the local and fetched objects will be merged together. The object that was already in the database will be updated.
+There is only one requirement for your Core Data model: that all your mapped entities have a "uniquing property."
+This will be the property BMO will read and write to make sure you won't have duplicated instances in your stack.
+In effect, if you’re fetching an object already in the local database, the local and fetched objects will be merged together.
+The object that was already in the database will be updated.
 The property can be named however you like, but must have the same name in all your entities.
 
 Example of a simple model with the uniquing property name `bmoId`:
@@ -98,7 +102,9 @@ Example of a simple model with the uniquing property name `bmoId`:
 ![CoreData Model](https://github.com/happn-app/BMO/blob/master/docs/images/CoreDataModelExample1.png)
 
 ### The BMO Bridge
-A bridge is an entity (class, struct, whatever) that implements the Bridge protocol. It is the interface between your local Core Data database and your API. This is the most important thing you have to provide to BMO.
+A bridge is an entity (class, struct, whatever) that implements the Bridge protocol.
+It is the interface between your local Core Data database and your API.
+This is the most important thing you have to provide to BMO.
 
 The bridge responsabilities:
 - From a Core Data fetch request, or an inserted, updated or deleted object, you'll have to provide an `Operation` that execute the given request on your API.  
@@ -107,7 +113,8 @@ _Note_: This is not a trivial task. The `RestMapper` is here to help you.
 - From a remote object representation you'll have to return a `MixedRepresentation`. We'll see later what this is. For this task too, the `RestMapper` is here to help.
 
 #### The RestMapper
-For a standard "REST bridge," you'll probably want to use the **RESTUtils** module (which is a part of BMO), and in particular the `RESTMapper` class. The module will provide you with conveniences to convert a fetch or save request to an URL Operation that you can return to BMO, as well as converting a parsed JSON to a `MixedRepresentation` (don't worry, we'll definitely explain what's a `MixedRepresentation` later).
+For a standard "REST bridge," you'll probably want to use the **RESTUtils** module (which is a part of BMO), and in particular the `RESTMapper` class.
+The module will provide you with conveniences to convert a fetch or save request to an URL Operation that you can return to BMO, as well as converting a parsed JSON to a `MixedRepresentation` (don't worry, we'll definitely explain what's a `MixedRepresentation` later).
 
 An example is worth a thousand words. Let's say we have a `User` entity in the Core Data model with the following properties:
 - bmoId (String)
@@ -157,7 +164,8 @@ Once more, we'll trust RESTUtils to do the heavy lifting for this work.
 TODO: Migrate connected http operation utils from happn to RESTUtils…
 
 #### Extract objects remote representations from a finished operation
-We must simply extract the remote representations (basically the parsed JSON from the API) and return it. BMO cannot guess how to retrieve the data from the operation that is finished as it does not have any information about it.
+We must simply extract the remote representations (basically the parsed JSON from the API) and return it.
+BMO cannot guess how to retrieve the data from the operation that is finished as it does not have any information about it.
 
 Example of implementation:
 ```swift
@@ -179,9 +187,12 @@ func remoteObjectRepresentations(fromFinishedOperation operation: BackOperationT
 #### The `MixedRepresentation`
 As promised, we explain here what is the `MixedRepresentation`!
 
-A `MixedRepresentation` is a structure representing an object to import into your local database. The properties in the `MixedRepresentation` are saved as a `Dictionary`, whose keys are the property names, and the values are the actual property values. The relationships of the object to import are saved as a `Dictionary` whose keys are the relationship names, but the values are an array of remote (aka. API) representation!
+A `MixedRepresentation` is a structure representing an object to import into your local database.
+The properties in the `MixedRepresentation` are saved as a `Dictionary`, whose keys are the property names, and the values are the actual property values.
+The relationships of the object to import are saved as a `Dictionary` whose keys are the relationship names, but the values are an array of remote (aka. API) representation!
 
-This weird structure exists because it acutally simplifies the import and convertion of the result of an API in your local database. Usually, the `MixedRepresentation` is easy to create from the remote representation using the [`RestMapper`](#the-restmapper).
+This weird structure exists because it acutally simplifies the import and convertion of the result of an API in your local database.
+Usually, the `MixedRepresentation` is easy to create from the remote representation using the [`RestMapper`](#the-restmapper).
 
 Here is an example of an implementation of this part of the bridge:
 ```swift
@@ -209,7 +220,8 @@ func mixedRepresentation(fromRemoteObjectRepresentation remoteRepresentation: Re
 ### Once the Bridge is done: Using BMO!
 
 #### Creating a Request Manager
-The request manager is the instance you'll use to send requests to BMO. You can keep it in your app delegate for instance.
+The request manager is the instance you'll use to send requests to BMO.
+You can keep it in your app delegate for instance.
 
 ```swift
 /* AppDelegate.swift */
@@ -259,7 +271,8 @@ private func refreshUser(username: String) {
 ```
 
 #### NSFetchedResultsController
-Using the NSFetchedResultsController is a great way to react to changes occurring in your CoreData database. Using this technology, you can ask BMO to fetch or update the local model, without needing even to setup a handler, and then react to the changes automatically.
+Using the NSFetchedResultsController is a great way to react to changes occurring in your CoreData database.
+Using this technology, you can ask BMO to fetch or update the local model, without needing even to setup a handler, and then react to the changes automatically.
 
 Please refer to Apple Documentation to implement and use an NSFetchedResultsController (https://developer.apple.com/documentation/coredata/nsfetchedresultscontroller).
 
@@ -269,7 +282,9 @@ happn provides a helper in order to use an NSFetchedResultsController in combina
 ## Advanced Usage
 The bridge has a support for user info and metadata.
 
-The user info are to be used inside the bridge and have a type you define. They are passed throughout the lifecycle of one request, from the conversion to the CoreData request into an `Operation`, to converting the results of the `Operation` to a `MixedRepresentation`, etc. You can use these user info to help you in the different tasks required in the bridge.
+The user info are to be used inside the bridge and have a type you define.
+They are passed throughout the lifecycle of one request, from the conversion to the CoreData request into an `Operation`, to converting the results of the `Operation` to a `MixedRepresentation`, etc.
+You can use these user info to help you in the different tasks required in the bridge.
 
 The metadata are additional information that are returned when the request returns from BMO.
 
@@ -285,9 +300,9 @@ The metadata are additional information that are returned when the request retur
 This project was originally created by [François Lamboley](https://github.com/Frizlab) while working at [happn](https://happn.com).
 
 Many thanks to the iOS devs at happn, without whom open-sourcing this project would not have been possible:
-- [Julien Séchaud](https://github.com/juliensechaud)
 - [Thomas le Gravier](https://github.com/Thomaslegravier)
 - [Romain le Drogo](https://github.com/StrawHara)
 - [Thibault le Cornec](https://github.com/juliensechaud)
 - [Romain Talleu](https://github.com/romaintalleu)
 - [Mathilde Henriot](https://github.com/Ptitematil2)
+- [Julien Séchaud](https://github.com/juliensechaud)

@@ -39,19 +39,18 @@ extension NSManagedObjectContext : Db {
 		}
 	}
 	
-	/** Warning: Might return a temporary object ID... */
+	/** Warning: Might return a temporary object ID… */
 	public func unsafeObjectID(forObject object: NSManagedObject) -> NSManagedObjectID {
 		return object.objectID
 	}
 	
-	/** Warning: Might return a deleted object (if the object was deleted and the
-	context not saved). */
+	/**
+	 - Warning: Might return a deleted object (if the object was deleted and the context not saved). */
 	public func unsafeRetrieveExistingObject(fromObjectID objectID: NSManagedObjectID) throws -> NSManagedObject {
 		return try existingObject(with: objectID)
 		
-		/* An alternative which does not return deleted objects. Another way to do
-		 * this would simply be to check the object for the isDeleted property
-		 * before returning it.
+		/* An alternative which does not return deleted objects.
+		 * Another way to do this would simply be to check the object for the isDeleted property before returning it.
 		let fetchRequest = NSFetchRequest<NSManagedObject>()
 		fetchRequest.entity = objectID.entity
 		fetchRequest.predicate = NSPredicate(format: "SELF == %@", objectID)

@@ -20,9 +20,10 @@ import os.log
 
 public struct RESTUtilsConfig {
 	
-	/** We use OSLog to log. When swift-log will be fully compatible with OSLog,
-	we’ll use swift-log. For the time being we don’t care about non-Apple
-	platforms, so we know OSLog is availble. */
+	/**
+	 We use OSLog to log.
+	 When swift-log will be fully compatible with OSLog, we’ll use swift-log.
+	 For the time being we don’t care about non-Apple platforms, so we know OSLog is availble. */
 	@available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
 	public static var oslog: OSLog? = .default
 	

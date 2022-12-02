@@ -20,8 +20,9 @@ import Foundation
 
 public struct AdditionalRESTRequestInfo<DbPropertyDescription : Hashable> {
 	
-	/** Only has meaning for a root additional REST info. If set to a non-nil
-	value, will replace the computed REST path from the REST mapping. */
+	/**
+	 Only has meaning for a root additional REST info.
+	 If set to a non-nil value, will replace the computed REST path from the REST mapping. */
 	public var forcedRESTPath: RESTPath?
 	public var forcedPaginator: RESTPaginator?
 	
@@ -32,11 +33,10 @@ public struct AdditionalRESTRequestInfo<DbPropertyDescription : Hashable> {
 	public var subAdditionalInfo: [DbPropertyDescription: AdditionalRESTRequestInfo<DbPropertyDescription>]
 	
 	/**
-	Access and modify the subAdditionalInfo. Strictly equivalent to accessing the
-	subAdditionalInfo dictionary directly, but kept for retro-compatibility w/
-	previous version where the CoreData Db conformance was made with the
-	NSPropertyDescription type directly, which caused problems because of a
-	CoreData bug. */
+	 Access and modify the subAdditionalInfo.
+	 Strictly equivalent to accessing the subAdditionalInfo dictionary directly,
+	  but kept for retro-compatibility w/ previous version where the CoreData Db conformance was made with the NSPropertyDescription type directly,
+	  which caused problems because of a CoreData bug. */
 	public subscript(property: DbPropertyDescription) -> AdditionalRESTRequestInfo<DbPropertyDescription>? {
 		get {subAdditionalInfo[property]}
 		set {subAdditionalInfo[property] = newValue}

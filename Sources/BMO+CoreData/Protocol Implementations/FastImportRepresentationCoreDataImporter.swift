@@ -23,7 +23,7 @@ import BMO_FastImportRepresentation
 
 
 final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleThreadDbRepresentationImporterResultBuilder> : DbRepresentationImporter
-	where ResultBuilderType.DbType == NSManagedObjectContext
+where ResultBuilderType.DbType == NSManagedObjectContext
 {
 	
 	typealias DbType = NSManagedObjectContext
@@ -54,8 +54,7 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleT
 			}
 		}
 		
-		/* The insertedObjects variable is only used to know the objects who need
-		 * a permanent ID retrieval. */
+		/* The insertedObjects variable is only used to know the objects who need a permanent ID retrieval. */
 		var insertedObjects = [NSManagedObject]()
 		_ = try unsafeImport(representations: representations, in: db, updatingObject: updatedObject, isRootImport: true, resultBuilder: resultBuilder, prefetchedObjectsByEntityAndUniquingIds: &objectsByEntityAndUniquingIds, insertedObjects: &insertedObjects)
 		return resultBuilder.result
@@ -89,11 +88,8 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleT
 				if let uid = r.uniquingId {
 					if let currentObjectForUID = uniqIdAndEntityToObject[r.entity]?[uid] {
 						if currentObjectForUID != updatedObject {
-							/* We're told to forcibly update an object, but another
-							 * object has already been created for the given UID. We
-							 * must delete the object we were told to update; the
-							 * caller will have to check whether its object has been
-							 * deleted before using it. */
+							/* We’re told to forcibly update an object, but another object has already been created for the given UID.
+							 * We must delete the object we were told to update; the caller will have to check whether its object has been deleted before using it. */
 							db.delete(updatedObject)
 						}
 					} else {
@@ -101,10 +97,8 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleT
 						let updatedObjectUID = updatedObject.value(forKey: uniquingPropertyName)
 						if updatedObjectUID as? AnyHashable != uid {
 							if updatedObjectUID != nil {
-								/* Object we're asked to update does not have the same
-								 * UID as the one we're given in the representation.
-								 * We'll update the UID of the object but print a
-								 * message in the logs first! */
+								/* Object we’re asked to update does not have the same UID as the one we're given in the representation.
+								 * We’ll update the UID of the object but print a message in the logs first! */
 								if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 									BMOConfig.oslog.flatMap{ os_log("Asked to update object %@ but representation has UID %@. Updating UID (property “%{public}@”) of updated object (experimental; might lead to unexpected results).", log: $0, type: .info, updatedObject, String(describing: uid), uniquingPropertyName) }
 								}
@@ -123,8 +117,7 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleT
 			if let uid = representation.uniquingId {
 				if let o = uniqIdAndEntityToObject[representation.entity]?[uid] {object = o}
 				else {
-					/* If the object is not in the uniqIdToObject dictionary we have
-					 * to create it. */
+					/* If the object is not in the uniqIdToObject dictionary we have to create it. */
 					object = NSEntityDescription.insertNewObject(forEntityName: representation.entity.name!, into: db)
 					object.setValue(uid, forKey: uniquingPropertyName)
 					uniqIdAndEntityToObject[representation.entity, default: [:]][uid] = object
@@ -132,12 +125,10 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleT
 					try resultBuilder.unsafeInserted(object: object, fromDb: db)
 				}
 			} else if let updatedObject = updatedObject, updatedObject.isUsable {
-				/* If there is an updated object but no uniquing the updated object
-				 * won't be in the uniqIdToObject dictionary. We have to treat this
-				 * case by checking if updatedObject is not nil.
-				 * We know we're updating the correct object as the representations
-				 * array is checked to contain only one element. (Checked at the
-				 * beginning of the method.) */
+				/* If there is an updated object but no uniquing the updated object won’t be in the uniqIdToObject dictionary.
+				 * We have to treat this case by checking if updatedObject is not nil.
+				 * We know we're updating the correct object as the representations array is checked to contain only one element.
+				 * (Checked at the beginning of the method.) */
 				assert(representations.count == 1)
 				object = updatedObject
 			} else {
@@ -163,7 +154,7 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleT
 				let importedRelationshipValue = try unsafeImport(representations: value, in: db, updatingObject: nil, isRootImport: false, resultBuilder: subBuilder, prefetchedObjectsByEntityAndUniquingIds: &uniqIdAndEntityToObject, insertedObjects: &insertedObjects)
 				let relationship = representation.entity.relationshipsByName[relationshipName]!
 				if !relationship.isToMany {
-					/* To-one relationship */
+					/* To-one relationship. */
 					if !mergeType.isReplace {
 						if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 							BMOConfig.oslog.flatMap{ os_log("Got merge type %{public}@ for a to-one relationship (%{public}@). Ignoring, using replace.", log: $0, type: .info, String(describing: mergeType), relationshipName) }
@@ -176,32 +167,31 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleT
 					}
 					object.setValue(importedRelationshipValue.first, forKey: relationshipName)
 				} else {
-					/* To-many relationship */
+					/* To-many relationship. */
 					let isOrdered = relationship.isOrdered
 					switch mergeType {
-					case .replace: object.setValue(isOrdered ? NSOrderedSet(array: importedRelationshipValue) : NSSet(array: importedRelationshipValue), forKey: relationshipName)
-					case .append:
-						if isOrdered {
-							let mutableRelationship = object.mutableOrderedSetValue(forKey: relationshipName)
-							mutableRelationship.addObjects(from: importedRelationshipValue)
-						} else {
-							let mutableRelationship = object.mutableSetValue(forKey: relationshipName)
-							mutableRelationship.addObjects(from: importedRelationshipValue)
-						}
-						
-					case .insertAtBeginning:
-						if isOrdered {
-							let mutableRelationship = object.mutableOrderedSetValue(forKey: relationshipName)
-							mutableRelationship.insert(importedRelationshipValue, at: IndexSet(integersIn: 0..<importedRelationshipValue.count))
-						} else {
-							let mutableRelationship = object.mutableSetValue(forKey: relationshipName)
-							/* Inserting at the beginning of a non-ordered relationship
-							 * does not mean much... */
-							mutableRelationship.addObjects(from: importedRelationshipValue)
-						}
-						
-					case .custom(mergeHandler: let handler):
-						handler(object, relationshipName, importedRelationshipValue)
+						case .replace: object.setValue(isOrdered ? NSOrderedSet(array: importedRelationshipValue) : NSSet(array: importedRelationshipValue), forKey: relationshipName)
+						case .append:
+							if isOrdered {
+								let mutableRelationship = object.mutableOrderedSetValue(forKey: relationshipName)
+								mutableRelationship.addObjects(from: importedRelationshipValue)
+							} else {
+								let mutableRelationship = object.mutableSetValue(forKey: relationshipName)
+								mutableRelationship.addObjects(from: importedRelationshipValue)
+							}
+							
+						case .insertAtBeginning:
+							if isOrdered {
+								let mutableRelationship = object.mutableOrderedSetValue(forKey: relationshipName)
+								mutableRelationship.insert(importedRelationshipValue, at: IndexSet(integersIn: 0..<importedRelationshipValue.count))
+							} else {
+								let mutableRelationship = object.mutableSetValue(forKey: relationshipName)
+								/* Inserting at the beginning of a non-ordered relationship does not mean much… */
+								mutableRelationship.addObjects(from: importedRelationshipValue)
+							}
+							
+						case .custom(mergeHandler: let handler):
+							handler(object, relationshipName, importedRelationshipValue)
 					}
 				}
 			}

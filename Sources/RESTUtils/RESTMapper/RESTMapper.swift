@@ -51,10 +51,10 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 	
 	public func uniquingId(forLocalRepresentation localRepresentation: [String: Any?], ofEntity entity: DbEntityDescription) -> String? {
 		switch restMapping.entityUniquingType(forEntity: entity) {
-		case .none:                                               return nil
-		case .singleton(let v):                                   return v
-		case .custom(let h):                                      return h(localRepresentation)
-		case .onProperty(constantPrefix: let c, property: let p): return localRepresentation[p.name].flatMap{ $0.flatMap{ (c ?? "") + String(describing: $0) } }
+			case .none:                                               return nil
+			case .singleton(let v):                                   return v
+			case .custom(let h):                                      return h(localRepresentation)
+			case .onProperty(constantPrefix: let c, property: let p): return localRepresentation[p.name].flatMap{ $0.flatMap{ (c ?? "") + String(describing: $0) } }
 		}
 	}
 	
@@ -64,7 +64,7 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 	}
 	
 	/* The user info is passthrough'd to the transformer/handler if it needs it.
-	 * It is never used by the method directly. */
+	 * It is never used by the method directly. */
 	public func mixedRepresentation(ofEntity entity: DbEntityDescription, fromRESTRepresentation restRepresentation: [String: Any?], userInfo: Any?) -> [String: Any?] {
 		var result = [String: Any?]()
 		var entity: DbEntityDescription? = entity
@@ -76,34 +76,34 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 				let newValue: Any??
 				
 				switch mapping.restToLocalMapping {
-				case .skipped: continue
-					
-				case .constant(let c):
-					newValue = .some(c)
-					
-				case .propertyMapping(sourcePropertyPath: let sourcePropertyPath):
-					guard let objcNewValue = value(forKeyPath: sourcePropertyPath, inRepresentation: restRepresentation) else {continue}
-					
-					/* nil is the new NSNull */
-					if objcNewValue is NSNull {newValue = .some(nil)}
-					else                      {newValue = objcNewValue}
-					
-				case .propertyTransformerMapping(sourcePropertyPath: let sourcePropertyPath, transformer: let restMapperTransformer):
-					guard let restValue = value(forKeyPath: sourcePropertyPath, inRepresentation: restRepresentation) else {continue}
-					newValue = restMapperTransformer.applyTransform(sourceValue: restValue, userInfo: userInfo)
-					
-				case .objectTransformerMapping(transformer: let restMapperTransformer):
-					newValue = restMapperTransformer.applyTransform(sourceValue: restRepresentation, userInfo: userInfo)
-					
-				case .propertyHandlerMapping(sourcePropertyPath: let sourcePropertyPath, transformer: let transformerHandler):
-					guard let restValueObjC = value(forKeyPath: sourcePropertyPath, inRepresentation: restRepresentation) else {continue}
-					
-					/* nil is the new NSNull */
-					let restValue: Any? = (restValueObjC is NSNull ? nil : restValueObjC)
-					newValue = transformerHandler(restValue, userInfo)
-					
-				case .objectHandlerMapping(transformer: let transformerHandler):
-					newValue = transformerHandler(restRepresentation, userInfo)
+					case .skipped: continue
+						
+					case .constant(let c):
+						newValue = .some(c)
+						
+					case .propertyMapping(sourcePropertyPath: let sourcePropertyPath):
+						guard let objcNewValue = value(forKeyPath: sourcePropertyPath, inRepresentation: restRepresentation) else {continue}
+						
+						/* nil is the new NSNull */
+						if objcNewValue is NSNull {newValue = .some(nil)}
+						else                      {newValue = objcNewValue}
+						
+					case .propertyTransformerMapping(sourcePropertyPath: let sourcePropertyPath, transformer: let restMapperTransformer):
+						guard let restValue = value(forKeyPath: sourcePropertyPath, inRepresentation: restRepresentation) else {continue}
+						newValue = restMapperTransformer.applyTransform(sourceValue: restValue, userInfo: userInfo)
+						
+					case .objectTransformerMapping(transformer: let restMapperTransformer):
+						newValue = restMapperTransformer.applyTransform(sourceValue: restRepresentation, userInfo: userInfo)
+						
+					case .propertyHandlerMapping(sourcePropertyPath: let sourcePropertyPath, transformer: let transformerHandler):
+						guard let restValueObjC = value(forKeyPath: sourcePropertyPath, inRepresentation: restRepresentation) else {continue}
+						
+						/* nil is the new NSNull */
+						let restValue: Any? = (restValueObjC is NSNull ? nil : restValueObjC)
+						newValue = transformerHandler(restValue, userInfo)
+						
+					case .objectHandlerMapping(transformer: let transformerHandler):
+						newValue = transformerHandler(restRepresentation, userInfo)
 				}
 				
 				if let newValue = newValue {
@@ -126,8 +126,8 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 		return result
 	}
 	
-	/* The user info is passthrough'd to the transformer/handler if it needs it.
-	 * It is never used by the method directly. */
+	/* The user info is passthrough’d to the transformer/handler if it needs it.
+	 * It is never used by the method directly. */
 	public func restRepresentation(ofEntity entity: DbEntityDescription, fromLocalRepresentation localRepresentation: [String: Any?], userInfo: Any?, didMapProperties: inout Bool) -> [String: Any?] {
 		didMapProperties = false
 		
@@ -143,50 +143,50 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 				let newValues: [String: Any?]
 				
 				switch mapping.localToRESTMapping {
-				case .skipped: continue
-					
-				case .propertyMapping(destinationPropertyPath: let destinationPropertyPath):
-					var newValuesBuilding = value
-					for curKey in destinationPropertyPath.reversed() {newValuesBuilding = [curKey: newValuesBuilding]}
-					newValues = (newValuesBuilding as! [String: Any?]) /* Internal logic error if cast is not true */
-					
-				case .propertyTransformerMapping(destinationPropertyPath: let destinationPropertyPath, transformer: let restMapperTransformer):
-					guard let newValue = restMapperTransformer.applyTransform(sourceValue: value, userInfo: userInfo) else {continue}
-					
-					var newValuesBuilding = newValue
-					for curKey in destinationPropertyPath.reversed() {newValuesBuilding = [curKey: newValuesBuilding]}
-					newValues = (newValuesBuilding as! [String: Any?]) /* Internal logic error if cast is not true */
-					
-				case .objectTransformerMapping(transformer: let restMapperTransformer):
-					guard let newValuesObjC = restMapperTransformer.applyTransform(sourceValue: value, userInfo: userInfo) as? [String: Any?] else {continue}
-					
-					var newValuesBuilding = [String: Any?]()
-					for (key, val) in newValuesObjC {newValuesBuilding[key] = (val is NSNull ? Optional<Any>.none : val)}
-					newValues = newValuesBuilding
-					
-				case .propertyHandlerMapping(destinationPropertyPath: let destinationPropertyPath, transformer: let handlerTransformer):
-					guard let newValue = handlerTransformer(value, userInfo) else {continue}
-					
-					var newValuesBuilding = newValue
-					for curKey in destinationPropertyPath.reversed() {newValuesBuilding = [curKey: newValuesBuilding]}
-					newValues = (newValuesBuilding as! [String: Any?]) /* Internal logic error if cast is not true */
-					
-				case .objectHandlerMapping(transformer: let handlerTransformer):
-					guard let newComputedValues = handlerTransformer(value, userInfo) else {continue}
-					newValues = newComputedValues
-					
-				case .objectToObjectHandlerMapping(transformer: let handlerTransformer):
-					guard let newComputedValues = handlerTransformer(localRepresentation, userInfo) else {continue}
-					newValues = newComputedValues
+					case .skipped: continue
+						
+					case .propertyMapping(destinationPropertyPath: let destinationPropertyPath):
+						var newValuesBuilding = value
+						for curKey in destinationPropertyPath.reversed() {newValuesBuilding = [curKey: newValuesBuilding]}
+						newValues = (newValuesBuilding as! [String: Any?]) /* Internal logic error if cast is not true */
+						
+					case .propertyTransformerMapping(destinationPropertyPath: let destinationPropertyPath, transformer: let restMapperTransformer):
+						guard let newValue = restMapperTransformer.applyTransform(sourceValue: value, userInfo: userInfo) else {continue}
+						
+						var newValuesBuilding = newValue
+						for curKey in destinationPropertyPath.reversed() {newValuesBuilding = [curKey: newValuesBuilding]}
+						newValues = (newValuesBuilding as! [String: Any?]) /* Internal logic error if cast is not true */
+						
+					case .objectTransformerMapping(transformer: let restMapperTransformer):
+						guard let newValuesObjC = restMapperTransformer.applyTransform(sourceValue: value, userInfo: userInfo) as? [String: Any?] else {continue}
+						
+						var newValuesBuilding = [String: Any?]()
+						for (key, val) in newValuesObjC {newValuesBuilding[key] = (val is NSNull ? Optional<Any>.none : val)}
+						newValues = newValuesBuilding
+						
+					case .propertyHandlerMapping(destinationPropertyPath: let destinationPropertyPath, transformer: let handlerTransformer):
+						guard let newValue = handlerTransformer(value, userInfo) else {continue}
+						
+						var newValuesBuilding = newValue
+						for curKey in destinationPropertyPath.reversed() {newValuesBuilding = [curKey: newValuesBuilding]}
+						newValues = (newValuesBuilding as! [String: Any?]) /* Internal logic error if cast is not true. */
+						
+					case .objectHandlerMapping(transformer: let handlerTransformer):
+						guard let newComputedValues = handlerTransformer(value, userInfo) else {continue}
+						newValues = newComputedValues
+						
+					case .objectToObjectHandlerMapping(transformer: let handlerTransformer):
+						guard let newComputedValues = handlerTransformer(localRepresentation, userInfo) else {continue}
+						newValues = newComputedValues
 				}
 				
-				/* Merging the new values with the current rest representation */
+				/* Merging the new values with the current rest representation. */
 				merge(restRepresentation: &result, newValues: newValues)
 				didMapProperties = true
 			}
 			/* Adding forced values for current entity to the current forcedValues.
-			 * Note: We do not overwrite current forced values: The forced values
-			 *       of the lowest entity in the hierarchy prime over the others. */
+			 * Note:
+			 * We do not overwrite current forced values: the forced values of the lowest entity in the hierarchy prime over the others. */
 			for (k, v) in mapping.forcedValuesOnSave {
 				guard forcedValues[k] == nil else {continue}
 				forcedValues[k] = v
@@ -194,22 +194,22 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 		}
 		
 		/* Adding forced values for global mapping to the current forcedValues.
-		 * Note: We do not overwrite current forced values: The previous forced
-		 *       values prime over the others. */
+		 * Note:
+		 * We do not overwrite current forced values: the previous forced values prime over the others. */
 		for (k, v) in restMapping.forcedValuesOnSave {
 			guard forcedValues[k] == nil else {continue}
 			forcedValues[k] = v
 		}
 		
-		/* Adding forced values to the result. The forced values overwrite values
-		 * in the result. */
+		/* Adding forced values to the result.
+		 * The forced values overwrite values in the result. */
 		merge(restRepresentation: &result, newValues: forcedValues)
 		return result
 	}
 	
 	/* ***************
-	   MARK: - Private
-	   *************** */
+	   MARK: - Private
+	   *************** */
 	
 	private func actualLocalEntity(forRESTRepresentation restRepresentation: [String: Any?], expectedEntity: DbEntityDescription, canUseSuperentities: Bool, visitedEntities: inout Set<DbEntityDescription>) -> DbEntityDescription? {
 		guard !visitedEntities.contains(expectedEntity) else {return nil}
@@ -221,12 +221,12 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 			}
 			
 			switch representationDescription {
-			case .abstract: throw noMatchError
-			case .noSpecificities: (/*nop: Anything matches*/)
-			case .hasProperties(let p):          guard Set(restRepresentation.keys).isSuperset(of: p)   else {throw noMatchError}
-			case .doesNotHaveProperties(let p):  guard Set(restRepresentation.keys).isDisjoint(with: p) else {throw noMatchError}
-			case .matchesProperties(let p):      for (k, v) in p {guard let tO = restRepresentation[k], let t = tO, t == v else {throw noMatchError}}
-			case .complex(matchesEntity: let h): guard h(restRepresentation) else {throw noMatchError}
+				case .abstract: throw noMatchError
+				case .noSpecificities: (/*nop: Anything matches*/)
+				case .hasProperties(let p):          guard Set(restRepresentation.keys).isSuperset(of: p)   else {throw noMatchError}
+				case .doesNotHaveProperties(let p):  guard Set(restRepresentation.keys).isDisjoint(with: p) else {throw noMatchError}
+				case .matchesProperties(let p):      for (k, v) in p {guard let tO = restRepresentation[k], let t = tO, t == v else {throw noMatchError}}
+				case .complex(matchesEntity: let h): guard h(restRepresentation) else {throw noMatchError}
 			}
 			
 			return expectedEntity
@@ -280,15 +280,13 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 			
 			result.removeValue(forKey: fieldsKeyName)
 			
-			/* Forced fields priority: Client, Paginator, Entity Mapping, Mapping */
+			/* Forced fields priority: Client, Paginator, Entity Mapping, Mapping. */
 			let tmp1         = merge(forcedFields: clientForcedFields, withLowerPriorityForcedFields: paginatorForcedFields,     pssParser: pssParser)
 			let tmp2         = merge(forcedFields: tmp1,               withLowerPriorityForcedFields: mappingEntityForcedFields, pssParser: pssParser)
 			let forcedFields = merge(forcedFields: tmp2,               withLowerPriorityForcedFields: mappingForcedFields,       pssParser: pssParser)
 			
-			/* Let's try and get a ParameterizedStringSet from what's been given us
-			 * in the forced params. If we cannot get a ParameterizedStringSet, we
-			 * set the fields value to the forced fields and we won't compute the
-			 * fields from the fetched properties. */
+			/* Let’s try and get a ParameterizedStringSet from what's been given us in the forced params.
+			 * If we cannot get a ParameterizedStringSet, we set the fields value to the forced fields and we won't compute the fields from the fetched properties. */
 			if var computedFields = ParameterizedStringSet.fromAny(forcedFields, withPSSParser: pssParser) {
 				var properties = additionalRESTInfo?.fetchedProperties ?? Set()
 				var curEntityO = entity
@@ -302,9 +300,8 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 					let destinationEntity = property.destinationEntity.flatMap{ ($0 as! DbEntityDescription) /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */ }
 					
 					guard let propertyPathInFields = propertyMapping?.restPropertyPathInFields else {
-						/* We do not have a path for the fields. We move the params
-						 * for sub-additional REST info to the current level instead
-						 * of them being a sub-level. */
+						/* We do not have a path for the fields.
+						 * We move the params for sub-additional REST info to the current level instead of them being a sub-level. */
 						merge(queryParams: &result, newValues: _parameters(fromAdditionalRESTInfo: subinfo, forEntity: destinationEntity, firstLevel: firstLevel, forcedFieldsKeyName: fieldsKeyName, forcedPaginator: propertyMapping?.relationshipPaginator), pssParser: pssParser)
 						continue
 					}
@@ -343,9 +340,9 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 		let val = representation[keyPath.first!]
 		guard keyPath.count > 1 else {return val}
 		switch val {
-		case let dic as [String: Any?]: return value(forKeyPath: Array(keyPath.dropFirst()), inRepresentation: dic)
-		case let arr as [Any?]:         return value(forKeyPath: Array(keyPath.dropFirst()), inRepresentation: arr)
-		default:                        return nil
+			case let dic as [String: Any?]: return value(forKeyPath: Array(keyPath.dropFirst()), inRepresentation: dic)
+			case let arr as [Any?]:         return value(forKeyPath: Array(keyPath.dropFirst()), inRepresentation: arr)
+			default:                        return nil
 		}
 	}
 	
@@ -353,9 +350,9 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 		var res = [Any?]()
 		for v in representation {
 			switch v {
-			case let dic as [String: Any?]: guard let v = value(forKeyPath: Array(keyPath), inRepresentation: dic) else {return nil}; res.append(v)
-			case let arr as [Any?]:         guard let v = value(forKeyPath: Array(keyPath), inRepresentation: arr) else {return nil}; res.append(v)
-			default:                        return nil
+				case let dic as [String: Any?]: guard let v = value(forKeyPath: Array(keyPath), inRepresentation: dic) else {return nil}; res.append(v)
+				case let arr as [Any?]:         guard let v = value(forKeyPath: Array(keyPath), inRepresentation: arr) else {return nil}; res.append(v)
+				default:                        return nil
 			}
 		}
 		return res
@@ -364,9 +361,8 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 	private func merge(restRepresentation: inout [String: Any?], newValues: [String: Any?]) {
 		for (key, val) in newValues {
 			if let valAsDic = val as? [String: Any?], var newValue = restRepresentation[key] as? [String: Any?] {
-				/* The value is a dictionary and the original REST representation
-				 * contains a dictionary for the given key. We merge both
-				 * dictionaries. */
+				/* The value is a dictionary and the original REST representation contains a dictionary for the given key.
+				 * We merge both dictionaries. */
 				merge(restRepresentation: &newValue, newValues: valAsDic)
 				restRepresentation[key] = newValue
 			} else {
@@ -389,34 +385,34 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 		
 		for (k, v) in newValues {
 			switch queryParams[k] {
-			case nil:                                      queryParams[k] = v
-			case .some(let pss as ParameterizedStringSet): queryParams[k] = pss.merged(v, pssParser: pssParser)
-			default:
-				if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
-					RESTUtilsConfig.oslog.flatMap{ os_log("TODO. Got some untreated edge case when merging two query params dictionary. Not merging value \"%@\" (original, will stay) and \"%@\" (new, will be dropped)", log: $0, type: .error, String(describing: queryParams[k]), String(describing: v)) }
-				}
+				case nil:                                      queryParams[k] = v
+				case .some(let pss as ParameterizedStringSet): queryParams[k] = pss.merged(v, pssParser: pssParser)
+				default:
+					if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+						RESTUtilsConfig.oslog.flatMap{ os_log("TODO. Got some untreated edge case when merging two query params dictionary. Not merging value \"%@\" (original, will stay) and \"%@\" (new, will be dropped)", log: $0, type: .error, String(describing: queryParams[k]), String(describing: v)) }
+					}
 			}
 		}
 	}
 	
 	private func merge(forcedFields: Any?, withLowerPriorityForcedFields lowerPriorityForcedFields: Any?, pssParser: ParameterizedStringSetParser) -> Any? {
 		switch (forcedFields, lowerPriorityForcedFields) {
-		case (nil, nil): return nil
-		case (.some(let v), nil): return v
-		case (nil, .some(let v)): return v
-		case (.some(let h), .some(let l)):
-			let hpss = ParameterizedStringSet.fromAny(h, withPSSParser: pssParser)
-			if
-				let hpss = hpss,
-				let lpss = ParameterizedStringSet.fromAny(l, withPSSParser: pssParser)
-			{
-				return lpss.merged(hpss)
-			} else {
-				if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
-					RESTUtilsConfig.oslog.flatMap{ os_log("Cannot merge \"%@\" and \"%@\" forced fields. Using first version.", log: $0, type: .info, String(describing: h), String(describing: l)) }
+			case (nil, nil): return nil
+			case (.some(let v), nil): return v
+			case (nil, .some(let v)): return v
+			case (.some(let h), .some(let l)):
+				let hpss = ParameterizedStringSet.fromAny(h, withPSSParser: pssParser)
+				if
+					let hpss = hpss,
+					let lpss = ParameterizedStringSet.fromAny(l, withPSSParser: pssParser)
+				{
+					return lpss.merged(hpss)
+				} else {
+					if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+						RESTUtilsConfig.oslog.flatMap{ os_log("Cannot merge \"%@\" and \"%@\" forced fields. Using first version.", log: $0, type: .info, String(describing: h), String(describing: l)) }
+					}
+					return hpss ?? h /* Client primes over paginator… */
 				}
-				return hpss ?? h /* Client primes over paginator... */
-			}
 		}
 	}
 	

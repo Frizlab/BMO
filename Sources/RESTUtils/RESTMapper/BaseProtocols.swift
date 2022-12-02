@@ -38,12 +38,13 @@ public protocol DbRESTPropertyDescription {
 	
 	var isOptional: Bool {get}
 	
-	/** Returns the type of the attribute for attribute properties, nil for
-	relationship properties (or for properties you don't want to type validate in
-	general). */
+	/**
+	 Returns the type of the attribute for attribute properties, nil for relationship properties
+	  (or for properties you don't want to type validate in general). */
 	var valueType: AnyClass? {get}
-	/** Returns the type of the destination entity for relationship properties.
-	For other types of properties, returns nil. */
+	/**
+	 Returns the type of the destination entity for relationship properties.
+	 For other types of properties, returns nil. */
 	var destinationEntity: EntityDescription? {get}
 	
 }

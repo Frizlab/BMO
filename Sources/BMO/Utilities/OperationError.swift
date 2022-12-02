@@ -19,8 +19,8 @@ import Foundation
 
 public enum OperationError : Swift.Error {
 	
-	/** BMO operations results are set to this error before being set to the
-	actual operation result (when the operation ends) */
+	/**
+	 BMO operations results are set to this error before being set to the actual operation result (when the operation ends). */
 	case notFinished
 	
 	case cancelled

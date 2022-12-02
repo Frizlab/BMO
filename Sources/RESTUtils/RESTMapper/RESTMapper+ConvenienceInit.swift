@@ -23,7 +23,7 @@ public enum _RESTConvenienceMappingForEntity {
 	case paginator(RESTPaginator)
 	case uniquingPropertyName(String?) /* If not given, entity does not have uniquing. If given property name is nil, entity is singleton. */
 	case entityPrefixedUniquingPropertyName(String?) /* For backward compatibility purpose: same as the one above, but uniquing value, if property is given, will be prefixed with the entity name. */
-
+	
 	case forcedParametersOnFetch([String: Any])
 	
 	case forcedValuesOnSave([String: Any])
@@ -88,117 +88,117 @@ public extension RESTMapper {
 			
 			for convenienceEntityMappingPart in convenienceEntityMapping {
 				switch convenienceEntityMappingPart {
-				case .restPath(let p):                           restPathStr = p
-				case .paginator(let p):                          paginator = p
-				case .uniquingPropertyName(let n):               uniquingProperty = .some(n.flatMap{ propertyGetter(entity, $0) }); uniquingPropertyIsPrefixed = false
-				case .entityPrefixedUniquingPropertyName(let n): uniquingProperty = .some(n.flatMap{ propertyGetter(entity, $0) }); uniquingPropertyIsPrefixed = true
-				case .forcedParametersOnFetch(let v):            forcedParametersOnFetch = v
-				case .forcedValuesOnSave(let v):                 forcedValuesOnSave = v
-				case .restEntityDescription(let d):              restEntityDescription = d
-					
-				case .propertiesMapping(let conveniencePropertiesMapping):
-					for (propertyName, conveniencePropertyMapping) in conveniencePropertiesMapping {
-						let property = propertyGetter(entity, propertyName)
+					case .restPath(let p):                           restPathStr = p
+					case .paginator(let p):                          paginator = p
+					case .uniquingPropertyName(let n):               uniquingProperty = .some(n.flatMap{ propertyGetter(entity, $0) }); uniquingPropertyIsPrefixed = false
+					case .entityPrefixedUniquingPropertyName(let n): uniquingProperty = .some(n.flatMap{ propertyGetter(entity, $0) }); uniquingPropertyIsPrefixed = true
+					case .forcedParametersOnFetch(let v):            forcedParametersOnFetch = v
+					case .forcedValuesOnSave(let v):                 forcedValuesOnSave = v
+					case .restEntityDescription(let d):              restEntityDescription = d
 						
-						var mandatory: Bool? = nil
-						
-						var relationshipPaginator: RESTPaginator? = nil
-						
-						var restPropertyPathInFields: [String]?? = nil
-						
-						var restPropertyPath: [String]? = nil
-						var rtlTransformer: ValueTransformer? = nil
-						var rtlTransformerReversed: Bool = false
-						var rtlTransformerNeedsUserInfo: Bool = false
-						var rtlTransformerTransformsNil: Bool = false
-						var rtlMapping: RESTToLocalPropertyMapping? = nil
-						
-						var restPropertyPathOnSave: [String]?? = nil
-						var ltrTransformer: ValueTransformer? = nil
-						var ltrTransformerReversed: Bool = false
-						var ltrTransformerNeedsUserInfo: Bool = false
-						var ltrTransformerTransformsNil: Bool = false
-						var useRTLTransformerForLTR: Bool = false
-						var ltrMapping: LocalToRESTPropertyMapping? = nil
-						
-						for conveniencePropertyMappingPart in conveniencePropertyMapping {
-							switch conveniencePropertyMappingPart {
-							case .isMandatory(let b): mandatory = b
-								
-							case .relationshipPaginator(let rp): relationshipPaginator = rp
-								
-							case .restNameInFields(let n): restPropertyPathInFields = .some(n?.components(separatedBy: "."))
-							case .restPathInFields(let p): restPropertyPathInFields = p; assert(p?.count ?? 1 > 0)
-								
-							case .restName(let n):                     restPropertyPath = n.components(separatedBy: ".")
-							case .restPath(let p):                     restPropertyPath = p; assert(p.count > 0)
-							case .restToLocalTransformer(let t):       rtlTransformer = t
-							case .restToLocalTransformerIsReversed:    rtlTransformerReversed = true
-							case .restToLocalTransformerNeedsUserInfo: rtlTransformerNeedsUserInfo = true
-							case .restToLocalTransformerTransformsNil: rtlTransformerTransformsNil = true
-							case .localConstant(let c):      rtlMapping = .constant(c)
-							case .restToLocalMapping(let m): rtlMapping = m
-								
-							case .restNameOnSave(let n):               restPropertyPathOnSave = .some(n?.components(separatedBy: "."))
-							case .restPathOnSave(let p):               restPropertyPathOnSave = p; assert(p?.count ?? 1 > 0)
-							case .localToRESTTransformer(let t):       ltrTransformer = t
-							case .localToRESTTransformerIsReversed:    ltrTransformerReversed = true
-							case .localToRESTTransformerNeedsUserInfo: ltrTransformerNeedsUserInfo = true
-							case .localToRESTTransformerTransformsNil: ltrTransformerTransformsNil = true
-							case .useRESTToLocalTransformerForLocalToRESTTransformation(reversed: let i): useRTLTransformerForLTR = true; ltrTransformerReversed = i
-							case .localToRESTMapping(let m): ltrMapping = m
+					case .propertiesMapping(let conveniencePropertiesMapping):
+						for (propertyName, conveniencePropertyMapping) in conveniencePropertiesMapping {
+							let property = propertyGetter(entity, propertyName)
+							
+							var mandatory: Bool? = nil
+							
+							var relationshipPaginator: RESTPaginator? = nil
+							
+							var restPropertyPathInFields: [String]?? = nil
+							
+							var restPropertyPath: [String]? = nil
+							var rtlTransformer: ValueTransformer? = nil
+							var rtlTransformerReversed: Bool = false
+							var rtlTransformerNeedsUserInfo: Bool = false
+							var rtlTransformerTransformsNil: Bool = false
+							var rtlMapping: RESTToLocalPropertyMapping? = nil
+							
+							var restPropertyPathOnSave: [String]?? = nil
+							var ltrTransformer: ValueTransformer? = nil
+							var ltrTransformerReversed: Bool = false
+							var ltrTransformerNeedsUserInfo: Bool = false
+							var ltrTransformerTransformsNil: Bool = false
+							var useRTLTransformerForLTR: Bool = false
+							var ltrMapping: LocalToRESTPropertyMapping? = nil
+							
+							for conveniencePropertyMappingPart in conveniencePropertyMapping {
+								switch conveniencePropertyMappingPart {
+									case .isMandatory(let b): mandatory = b
+										
+									case .relationshipPaginator(let rp): relationshipPaginator = rp
+										
+									case .restNameInFields(let n): restPropertyPathInFields = .some(n?.components(separatedBy: "."))
+									case .restPathInFields(let p): restPropertyPathInFields = p; assert(p?.count ?? 1 > 0)
+										
+									case .restName(let n):                     restPropertyPath = n.components(separatedBy: ".")
+									case .restPath(let p):                     restPropertyPath = p; assert(p.count > 0)
+									case .restToLocalTransformer(let t):       rtlTransformer = t
+									case .restToLocalTransformerIsReversed:    rtlTransformerReversed = true
+									case .restToLocalTransformerNeedsUserInfo: rtlTransformerNeedsUserInfo = true
+									case .restToLocalTransformerTransformsNil: rtlTransformerTransformsNil = true
+									case .localConstant(let c):      rtlMapping = .constant(c)
+									case .restToLocalMapping(let m): rtlMapping = m
+										
+									case .restNameOnSave(let n):               restPropertyPathOnSave = .some(n?.components(separatedBy: "."))
+									case .restPathOnSave(let p):               restPropertyPathOnSave = p; assert(p?.count ?? 1 > 0)
+									case .localToRESTTransformer(let t):       ltrTransformer = t
+									case .localToRESTTransformerIsReversed:    ltrTransformerReversed = true
+									case .localToRESTTransformerNeedsUserInfo: ltrTransformerNeedsUserInfo = true
+									case .localToRESTTransformerTransformsNil: ltrTransformerTransformsNil = true
+									case .useRESTToLocalTransformerForLocalToRESTTransformation(reversed: let i): useRTLTransformerForLTR = true; ltrTransformerReversed = i
+									case .localToRESTMapping(let m): ltrMapping = m
+								}
 							}
+							let rtlFinalMapping: RESTToLocalPropertyMapping
+							if let mapping = rtlMapping {rtlFinalMapping = mapping}
+							else {
+								let finalRTLTransformer = rtlTransformer.map{ (transformer: ValueTransformer) -> RESTMapperTransformer in
+									assert(!rtlTransformerReversed || type(of: transformer).allowsReverseTransformation(), "Invalid convenience mapping with an reversed RTL transformer with a transformer class that does not support reverse transformation.")
+									return RESTMapperTransformer(transformer: transformer, reversed: rtlTransformerReversed, transformNilProperties: rtlTransformerTransformsNil, transformerNeedsUserInfo: rtlTransformerNeedsUserInfo)
+								}
+								switch (restPropertyPath, finalRTLTransformer) {
+									case (.some(let restPropertyPath), .some(let rtlTransformer)):
+										rtlFinalMapping = .propertyTransformerMapping(sourcePropertyPath: restPropertyPath, transformer: rtlTransformer)
+										
+									case (.some(let restPropertyPath), nil):
+										rtlFinalMapping = .propertyMapping(sourcePropertyPath: restPropertyPath)
+										
+									case (nil, .some(let rtlTransformer)):
+										rtlFinalMapping = .objectTransformerMapping(transformer: rtlTransformer)
+										
+									case (nil, nil):
+										rtlFinalMapping = .skipped
+								}
+							}
+							let ltrFinalMapping: LocalToRESTPropertyMapping
+							if let mapping = ltrMapping {ltrFinalMapping = mapping}
+							else {
+								let finalLTRTransformer = (useRTLTransformerForLTR ? rtlTransformer : ltrTransformer).map{ (transformer: ValueTransformer) -> RESTMapperTransformer in
+									assert(!ltrTransformerReversed || type(of: transformer).allowsReverseTransformation(), "Invalid convenience mapping with an reversed LTR transformer with a transformer class that does not support reverse transformation.")
+									return RESTMapperTransformer(transformer: transformer, reversed: ltrTransformerReversed, transformNilProperties: ltrTransformerTransformsNil, transformerNeedsUserInfo: ltrTransformerNeedsUserInfo)
+								}
+								switch (restPropertyPathOnSave ?? restPropertyPath, finalLTRTransformer) {
+									case (.some(let restPropertyPath), .some(let ltrTransformer)):
+										ltrFinalMapping = .propertyTransformerMapping(destinationPropertyPath: restPropertyPath, transformer: ltrTransformer)
+										
+									case (.some(let restPropertyPath), nil):
+										ltrFinalMapping = .propertyMapping(destinationPropertyPath: restPropertyPath)
+										
+									case (nil, .some(let ltrTransformer)):
+										ltrFinalMapping = .objectTransformerMapping(transformer: ltrTransformer)
+										
+									case (nil, nil):
+										ltrFinalMapping = .skipped
+								}
+							}
+							if mandatory ?? !property.isOptional {forcedPropertiesOnFetch.insert(property)}
+							propertiesMapping[property] = RESTPropertyMapping(
+								restToLocalMapping: rtlFinalMapping,
+								localToRESTMapping: ltrFinalMapping,
+								restPropertyPathInFields: restPropertyPathInFields ?? restPropertyPath,
+								relationshipPaginator: relationshipPaginator
+							)
 						}
-						let rtlFinalMapping: RESTToLocalPropertyMapping
-						if let mapping = rtlMapping {rtlFinalMapping = mapping}
-						else {
-							let finalRTLTransformer = rtlTransformer.map{ (transformer: ValueTransformer) -> RESTMapperTransformer in
-								assert(!rtlTransformerReversed || type(of: transformer).allowsReverseTransformation(), "Invalid convenience mapping with an reversed RTL transformer with a transformer class that does not support reverse transformation.")
-								return RESTMapperTransformer(transformer: transformer, reversed: rtlTransformerReversed, transformNilProperties: rtlTransformerTransformsNil, transformerNeedsUserInfo: rtlTransformerNeedsUserInfo)
-							}
-							switch (restPropertyPath, finalRTLTransformer) {
-							case (.some(let restPropertyPath), .some(let rtlTransformer)):
-								rtlFinalMapping = .propertyTransformerMapping(sourcePropertyPath: restPropertyPath, transformer: rtlTransformer)
-								
-							case (.some(let restPropertyPath), nil):
-								rtlFinalMapping = .propertyMapping(sourcePropertyPath: restPropertyPath)
-								
-							case (nil, .some(let rtlTransformer)):
-								rtlFinalMapping = .objectTransformerMapping(transformer: rtlTransformer)
-								
-							case (nil, nil):
-								rtlFinalMapping = .skipped
-							}
-						}
-						let ltrFinalMapping: LocalToRESTPropertyMapping
-						if let mapping = ltrMapping {ltrFinalMapping = mapping}
-						else {
-							let finalLTRTransformer = (useRTLTransformerForLTR ? rtlTransformer : ltrTransformer).map{ (transformer: ValueTransformer) -> RESTMapperTransformer in
-								assert(!ltrTransformerReversed || type(of: transformer).allowsReverseTransformation(), "Invalid convenience mapping with an reversed LTR transformer with a transformer class that does not support reverse transformation.")
-								return RESTMapperTransformer(transformer: transformer, reversed: ltrTransformerReversed, transformNilProperties: ltrTransformerTransformsNil, transformerNeedsUserInfo: ltrTransformerNeedsUserInfo)
-							}
-							switch (restPropertyPathOnSave ?? restPropertyPath, finalLTRTransformer) {
-							case (.some(let restPropertyPath), .some(let ltrTransformer)):
-								ltrFinalMapping = .propertyTransformerMapping(destinationPropertyPath: restPropertyPath, transformer: ltrTransformer)
-								
-							case (.some(let restPropertyPath), nil):
-								ltrFinalMapping = .propertyMapping(destinationPropertyPath: restPropertyPath)
-								
-							case (nil, .some(let ltrTransformer)):
-								ltrFinalMapping = .objectTransformerMapping(transformer: ltrTransformer)
-								
-							case (nil, nil):
-								ltrFinalMapping = .skipped
-							}
-						}
-						if mandatory ?? !property.isOptional {forcedPropertiesOnFetch.insert(property)}
-						propertiesMapping[property] = RESTPropertyMapping(
-							restToLocalMapping: rtlFinalMapping,
-							localToRESTMapping: ltrFinalMapping,
-							restPropertyPathInFields: restPropertyPathInFields ?? restPropertyPath,
-							relationshipPaginator: relationshipPaginator
-						)
-					}
 				}
 			}
 			let restPath: RESTPath?

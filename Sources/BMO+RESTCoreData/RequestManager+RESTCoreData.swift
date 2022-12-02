@@ -28,25 +28,24 @@ import RESTUtils
 extension RequestManager {
 	
 	/* **********************
-	   MARK: - Fetch Requests
-	   ********************** */
+	   MARK: - Fetch Requests
+	   ********************** */
 	
 	/* **********************************************************
-	   MARK: → Retrieving objects before and after back operation
-	   ********************************************************** */
+	   MARK: → Retrieving objects before and after back operation
+	   ********************************************************** */
 	
-	/** Fetch **one** object of the given type. If ever there were more than one
-	object matching the given id, the first is returned and a warning is printed
-	in the logs. (If there are no remoteId given, there must be one object of the
-	given entity in the db.)
-	
-	Does **not** throw. If an error occurred fetching the object from Core Data,
-	the error will silently be ignored and the returned object will be `nil`.
-	
-	The handler (if any) is called **on the context**.
-	
-	The handler _might_ be called before the function returns (in case there is a
-	problem creating the back operations for instance). */
+	/**
+	 Fetches **one** object of the given type.
+	 If ever there were more than one object matching the given id, the first is returned and a warning is printed in the logs.
+	 (If there are no remoteId given, there must be one object of the given entity in the db.)
+	 
+	 Does **not** throw.
+	 If an error occurred fetching the object from Core Data, the error will silently be ignored and the returned object will be `nil`.
+	 
+	 The handler (if any) is called **on the context**.
+	 
+	 The handler _might_ be called before the function returns (in case there is a problem creating the back operations for instance). */
 	@available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
 	public func unsafeFetchObject<BridgeType, ObjectType: NSManagedObject>(
 		withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
@@ -66,20 +65,20 @@ extension RequestManager {
 		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: AsyncOperationResult<BridgeBackRequestResult<BridgeType>>) -> Void)? = nil
 	) -> (fetchedObject: ObjectType?, operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>)
 	{
-		/* Creating the fetch request */
+		/* Creating the fetch request. */
 		let fetchRequest = RequestManager.fetchRequestForFetchingObject(ofEntity: entity, withRemoteId: remoteId, remoteIdAttributeName: remoteIdAttributeName)
 		
-		/* Retrieving the object */
+		/* Retrieving the object. */
 		let object = (try? context.fetch(fetchRequest))?.first as! ObjectType?
-		#if DEBUG
-			if let c = try? context.count(for: fetchRequest), c > 1 {
-				if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
-					BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
-				}
+#if DEBUG
+		if let c = try? context.count(for: fetchRequest), c > 1 {
+			if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+				BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
 			}
-		#endif
+		}
+#endif
 		
-		/* Creating and running the operation */
+		/* Creating and running the operation. */
 		return (fetchedObject: object, operation: fetchObject(fromFetchRequest: fetchRequest, withFlatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler))
 	}
 	
@@ -90,29 +89,29 @@ extension RequestManager {
 		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: AsyncOperationResult<BridgeBackRequestResult<BridgeType>>) -> Void)? = nil
 	) -> (fetchedObject: ObjectType?, operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>)
 	{
-		/* Retrieving the object */
+		/* Retrieving the object. */
 		let object = (try? context.fetch(fetchRequest))?.first as! ObjectType?
-		#if DEBUG
-			if let c = try? context.count(for: fetchRequest), c > 1 {
-				if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
-					BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
-				}
+#if DEBUG
+		if let c = try? context.count(for: fetchRequest), c > 1 {
+			if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+				BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
 			}
-		#endif
+		}
+#endif
 		
-		/* Creating and running the operation */
+		/* Creating and running the operation. */
 		return (fetchedObject: object, operation: fetchObject(fromFetchRequest: fetchRequest, additionalRequestInfo: additionalRequestInfo, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler))
 	}
 	
-	/** Fetch objects fulfilling the given fetch request.
-	
-	Does **not** throw. If an error occurred fetching the objects from Core Data,
-	the error will silently be ignored and the returned objects will be `[]`.
-	
-	The handler (if any) is called **on the context**.
-	
-	The handler _might_ be called before the function returns (in case there is a
-	problem creating the back operations for instance). */
+	/**
+	 Fetches objects fulfilling the given fetch request.
+	 
+	 Does **not** throw.
+	 If an error occurred fetching the objects from Core Data, the error will silently be ignored and the returned objects will be `[]`.
+	 
+	 The handler (if any) is called **on the context**.
+	 
+	 The handler _might_ be called before the function returns (in case there is a problem creating the back operations for instance). */
 	public func unsafeFetchObjects<BridgeType, ObjectType: NSManagedObject>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, withFlatifiedFields flatifiedFields: String? = nil, paginatorInfo: Any? = nil,
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
@@ -125,8 +124,8 @@ extension RequestManager {
 	}
 	
 	/* ***********************************************
-	   MARK: → Retrieving objects after back operation
-	   *********************************************** */
+	   MARK: → Retrieving objects after back operation
+	   *********************************************** */
 	
 	@discardableResult
 	@available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
@@ -177,13 +176,13 @@ extension RequestManager {
 			return { (_ response: AsyncOperationResult<BackRequestResult<RESTCoreDataFetchRequest, BridgeType>>) -> Void in
 				context.perform {
 					let object = (try? context.fetch(fetchRequest))?.first as! ObjectType?
-					#if DEBUG
-						if let c = try? context.count(for: fetchRequest), c > 1 {
-							if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
-								BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
-							}
+#if DEBUG
+					if let c = try? context.count(for: fetchRequest), c > 1 {
+						if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+							BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
 						}
-					#endif
+					}
+#endif
 					
 					originalHandler(object, response.simpleBackRequestResult())
 				}
@@ -215,13 +214,13 @@ extension RequestManager {
 	}
 	
 	/* ******************************
-	   MARK: → Not retrieving objects
-	   ****************************** */
+	   MARK: → Not retrieving objects
+	   ****************************** */
 	
-	/** Creates and starts an operation for fetching and importing the object
-	with the given properties from the back.
-	
-	The handler (if any) **won't** be called on the context. */
+	/**
+	 Creates and starts an operation for fetching and importing the object with the given properties from the back.
+	 
+	 The handler (if any) **won't** be called on the context. */
 	@discardableResult
 	public func fetchObject<BridgeType>(
 		ofEntity entity: NSEntityDescription, withRemoteId remoteId: String, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
@@ -236,10 +235,10 @@ extension RequestManager {
 		return operationForFetchingObjects(fromFetchRequest: fetchRequest, additionalRequestInfo: AdditionalRESTRequestInfo(flatifiedFields: flatifiedFields, inEntity: entity, keyPathPaginatorInfo: keyPathPaginatorInfo), fetchType: fetchType, onContext: context, bridge: bridge, autoStart: true, handler: handler)
 	}
 	
-	/** Creates and starts an operation for fetching and importing the objects
-	with the given properties from the back.
-	
-	The handler (if any) **won't** be called on the context. */
+	/**
+	 Creates and starts an operation for fetching and importing the objects with the given properties from the back.
+	 
+	 The handler (if any) **won't** be called on the context. */
 	@discardableResult
 	public func fetchObjects<BridgeType>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, withFlatifiedFields flatifiedFields: String? = nil, paginatorInfo: Any? = nil,
@@ -252,10 +251,10 @@ extension RequestManager {
 		return fetchObjects(fromFetchRequest: fetchRequest, additionalRequestInfo: AdditionalRESTRequestInfo(flatifiedFields: flatifiedFields, inEntity: entity, paginatorInfo: paginatorInfo), fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
 	}
 	
-	/** Creates and starts an operation for fetching and importing the objects
-	with the given properties from the back.
-	
-	The handler (if any) **won't** be called on the context. */
+	/**
+	 Creates and starts an operation for fetching and importing the objects with the given properties from the back.
+	 
+	 The handler (if any) **won't** be called on the context. */
 	@discardableResult
 	public func fetchObjects<BridgeType>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?,
@@ -286,18 +285,17 @@ extension RequestManager {
 	}
 	
 	/* *********************
-	   MARK: - Save Requests
-	   ********************* */
+	   MARK: - Save Requests
+	   ********************* */
 	
-	/** Saves the given objects on the back and saves (or rollbacks) the local
-	context.
-	
-	All given objects **must** be on the given context.
-	
-	If `nil` is given for the objects to save on the remote, all the inserted,
-	modified or deleted objects will be saved.
-	
-	The handler is **NOT** called on the context. */
+	/**
+	 Saves the given objects on the back and saves (or rollbacks) the local context.
+	 
+	 All given objects **must** be on the given context.
+	 
+	 If `nil` is given for the objects to save on the remote, all the inserted, modified or deleted objects will be saved.
+	 
+	 The handler is **NOT** called on the context. */
 	@discardableResult
 	public func unsafeSave<BridgeType>(
 		context: NSManagedObjectContext, objectsToSaveOnRemote objects: [NSManagedObject]?, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>? = nil, rollbackInsteadOfSave: Bool = false,
@@ -308,21 +306,20 @@ extension RequestManager {
 		return unsafeOperationForSaving(context: context, objectsToSaveOnRemote: objects, additionalRequestInfo: additionalRequestInfo, saveWorkflow: rollbackInsteadOfSave ? .rollbackBeforeBackReturns : .saveBeforeBackReturns, bridge: bridge, autoStart: true, handler: handler)
 	}
 	
-	/** Saves the given objects on the back and saves the local
-	context after the back returns.
-	
-	All given objects **must** be on the given context.
-	
-	If `nil` is given for the objects to save on the remote, all the inserted,
-	modified or deleted objects will be saved.
-	
-	The handler is **NOT** called on the context. */
+	/**
+	 Saves the given objects on the back and saves the local context after the back returns.
+	 
+	 All given objects **must** be on the given context.
+	 
+	 If `nil` is given for the objects to save on the remote, all the inserted, modified or deleted objects will be saved.
+	 
+	 The handler is **NOT** called on the context. */
 	@discardableResult
 	public func unsafeSaveAfterBackReturns<BridgeType>(
 		context: NSManagedObjectContext, objectsToSaveOnRemote objects: [NSManagedObject]?, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>? = nil,
 		bridge: BridgeType? = nil,
 		handler: ((_ response: AsyncOperationResult<BackRequestResult<RESTCoreDataSaveRequest, BridgeType>>) -> Void)? = nil
-		) -> BackRequestOperation<RESTCoreDataSaveRequest, BridgeType>?
+	) -> BackRequestOperation<RESTCoreDataSaveRequest, BridgeType>?
 	{
 		return unsafeOperationForSaving(context: context, objectsToSaveOnRemote: objects, additionalRequestInfo: additionalRequestInfo, saveWorkflow: .saveAfterBackReturns, bridge: bridge, autoStart: true, handler: handler)
 	}
@@ -343,8 +340,8 @@ extension RequestManager {
 	}
 	
 	/* ***************
-	   MARK: - Private
-	   *************** */
+	   MARK: - Private
+	   *************** */
 	
 	private static func fetchRequestForFetchingObject(ofEntity entity: NSEntityDescription, withRemoteId remoteId: String?, remoteIdAttributeName: String = "remoteId") -> NSFetchRequest<NSFetchRequestResult> {
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(); fetchRequest.entity = entity; fetchRequest.fetchLimit = 1

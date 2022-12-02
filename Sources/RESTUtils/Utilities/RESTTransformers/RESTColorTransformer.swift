@@ -16,20 +16,18 @@ limitations under the License. */
 import Foundation
 
 #if os(OSX)
-	import AppKit
-	public typealias BMOColor = NSColor
+import AppKit
+public typealias BMOColor = NSColor
 #else
-	import UIKit
-	public typealias BMOColor = UIColor
+import UIKit
+public typealias BMOColor = UIColor
 #endif
 
 
 
-/* Note: This transformer is only available when `NSColor(named:)` (or `UIColor`
- * counterpart) are available.
- * In theory, only the `colorName` case of the `ColorType` enum should be marked
- * as unavailable when said inits are unavailable. However it is not possible to
- * have an enum case with associated values marked as potentially unavailable. */
+/* Note: This transformer is only available when `NSColor(named:)` (or `UIColor` counterpart) are available.
+ * In theory, only the `colorName` case of the `ColorType` enum should be marked as unavailable when said inits are unavailable.
+ * However it is not possible to have an enum case with associated values marked as potentially unavailable. */
 
 /** Reverse transformation is not supported. */
 @available(macOS 10.13, tvOS 11.0, iOS 11.0, watchOS 4.0, *)
@@ -45,9 +43,9 @@ public class RESTColorTransformer : ValueTransformer {
 			
 			func resolve(with vars: [String: Any]) -> ValueType? {
 				switch self {
-				case .constant(let v):                                return v
-				case .mandatoryToken(id: let id):                     return vars[id] as? ValueType
-				case .optionalToken(id: let id, defaultValue: let v): return vars[id] as? ValueType ?? v
+					case .constant(let v):                                return v
+					case .mandatoryToken(id: let id):                     return vars[id] as? ValueType
+					case .optionalToken(id: let id, defaultValue: let v): return vars[id] as? ValueType ?? v
 				}
 			}
 			
@@ -75,9 +73,9 @@ public class RESTColorTransformer : ValueTransformer {
 		
 		case subTokens([ColorFormatToken], optional: Bool)
 		
-		/* Returns true when parsing succeeds, false when it does not. startIndex
-		 * and vars may change even when parsing fails. Will return true even if
-		 * parsing ends but the end of the string was not reached. */
+		/* Returns true when parsing succeeds, false when it does not.
+		 * startIndex and vars may change even when parsing fails.
+		 * Will return true even if parsing ends but the end of the string was not reached. */
 		static func parse(tokens: [ColorFormatToken], in string: String, from startIndex: inout String.Index, vars: inout [String: Any]) -> Bool {
 			for token in tokens {
 				guard token.parse(string: string, from: &startIndex, vars: &vars) else {
@@ -91,92 +89,92 @@ public class RESTColorTransformer : ValueTransformer {
 			assert(startIndex <= string.endIndex)
 			
 			switch self {
-			case .constant(value: let constant, optional: let isOptional):
-				/* Let's parse the given constant using a Scanner */
-				return scan(in: string, at: &startIndex, with: { $0.scanString(constant, into: nil) }) || isOptional
-				
-			case .string(from: let characterSet, id: let id, optional: let isOptional):
-				/* Let's parse the given constant */
-				var res: NSString?
-				guard scan(in: string, at: &startIndex, with: { $0.scanCharacters(from: characterSet, into: &res) }) else {
-					return isOptional
-				}
-				
-				vars[id] = res! as String
-				return true
-				
-			case .hexInt(nChars: let nChars, transform: let transform, id: let id, optional: let isOptional):
-				var res: Int = 0
-				if let nChars = nChars {
-					guard let endSubStrIdx = string.index(startIndex, offsetBy: nChars, limitedBy: string.endIndex) else {return isOptional}
+				case .constant(value: let constant, optional: let isOptional):
+					/* Let's parse the given constant using a Scanner. */
+					return scan(in: string, at: &startIndex, with: { $0.scanString(constant, into: nil) }) || isOptional
 					
-					let subStr = String(string[startIndex..<endSubStrIdx])
-					var subStrStartIdx = subStr.startIndex
-					var uint64: UInt64 = 0
-					guard scan(in: subStr, at: &subStrStartIdx, with: { $0.scanHexInt64(&uint64) }), subStrStartIdx == subStr.endIndex, let i = Int(exactly: uint64) else {
+				case .string(from: let characterSet, id: let id, optional: let isOptional):
+					/* Let's parse the given constant. */
+					var res: NSString?
+					guard scan(in: string, at: &startIndex, with: { $0.scanCharacters(from: characterSet, into: &res) }) else {
 						return isOptional
 					}
-					startIndex = endSubStrIdx
-					res = i
-				} else {
-					var uint64: UInt64 = 0
-					guard scan(in: string, at: &startIndex, with: { $0.scanHexInt64(&uint64) }), let i = Int(exactly: uint64) else {
-						return isOptional
-					}
-					res = i
-				}
-				
-				vars[id] = transform(res)
-				return true
-				
-			case .decInt(nChars: let nChars, transform: let transform, id: let id, optional: let optional):
-				var res: Int = 0
-				if let nChars = nChars {
-					guard let endSubStrIdx = string.index(startIndex, offsetBy: nChars, limitedBy: string.endIndex) else {return optional}
 					
-					let subStr = String(string[startIndex..<endSubStrIdx])
-					var subStrStartIdx = subStr.startIndex
-					guard scan(in: subStr, at: &subStrStartIdx, with: { $0.scanInt(&res) }), subStrStartIdx == subStr.endIndex else {
+					vars[id] = res! as String
+					return true
+					
+				case .hexInt(nChars: let nChars, transform: let transform, id: let id, optional: let isOptional):
+					var res: Int = 0
+					if let nChars = nChars {
+						guard let endSubStrIdx = string.index(startIndex, offsetBy: nChars, limitedBy: string.endIndex) else {return isOptional}
+						
+						let subStr = String(string[startIndex..<endSubStrIdx])
+						var subStrStartIdx = subStr.startIndex
+						var uint64: UInt64 = 0
+						guard scan(in: subStr, at: &subStrStartIdx, with: { $0.scanHexInt64(&uint64) }), subStrStartIdx == subStr.endIndex, let i = Int(exactly: uint64) else {
+							return isOptional
+						}
+						startIndex = endSubStrIdx
+						res = i
+					} else {
+						var uint64: UInt64 = 0
+						guard scan(in: string, at: &startIndex, with: { $0.scanHexInt64(&uint64) }), let i = Int(exactly: uint64) else {
+							return isOptional
+						}
+						res = i
+					}
+					
+					vars[id] = transform(res)
+					return true
+					
+				case .decInt(nChars: let nChars, transform: let transform, id: let id, optional: let optional):
+					var res: Int = 0
+					if let nChars = nChars {
+						guard let endSubStrIdx = string.index(startIndex, offsetBy: nChars, limitedBy: string.endIndex) else {return optional}
+						
+						let subStr = String(string[startIndex..<endSubStrIdx])
+						var subStrStartIdx = subStr.startIndex
+						guard scan(in: subStr, at: &subStrStartIdx, with: { $0.scanInt(&res) }), subStrStartIdx == subStr.endIndex else {
+							return optional
+						}
+						startIndex = endSubStrIdx
+					} else {
+						guard scan(in: string, at: &startIndex, with: { $0.scanInt(&res) }) else {
+							return optional
+						}
+					}
+					
+					vars[id] = transform(res)
+					return true
+					
+				case .hexDouble(transform: let transform, id: let id, optional: let optional):
+					var res: Double = 0
+					guard scan(in: string, at: &startIndex, with: { $0.scanHexDouble(&res) }) else {
 						return optional
 					}
-					startIndex = endSubStrIdx
-				} else {
-					guard scan(in: string, at: &startIndex, with: { $0.scanInt(&res) }) else {
+					
+					vars[id] = transform(res)
+					return true
+					
+				case .decDouble(transform: let transform, id: let id, optional: let optional):
+					var res: Double = 0
+					guard scan(in: string, at: &startIndex, with: { $0.scanDouble(&res) }) else {
 						return optional
 					}
-				}
-				
-				vars[id] = transform(res)
-				return true
-				
-			case .hexDouble(transform: let transform, id: let id, optional: let optional):
-				var res: Double = 0
-				guard scan(in: string, at: &startIndex, with: { $0.scanHexDouble(&res) }) else {
-					return optional
-				}
-				
-				vars[id] = transform(res)
-				return true
-				
-			case .decDouble(transform: let transform, id: let id, optional: let optional):
-				var res: Double = 0
-				guard scan(in: string, at: &startIndex, with: { $0.scanDouble(&res) }) else {
-					return optional
-				}
-				
-				vars[id] = transform(res)
-				return true
-				
-			case .subTokens(let subtokens, optional: let optional):
-				var newVars = vars
-				var newStartIndex = startIndex
-				guard ColorFormatToken.parse(tokens: subtokens, in: string, from: &newStartIndex, vars: &newVars) else {
-					return optional
-				}
-				
-				startIndex = newStartIndex
-				vars = newVars
-				return true
+					
+					vars[id] = transform(res)
+					return true
+					
+				case .subTokens(let subtokens, optional: let optional):
+					var newVars = vars
+					var newStartIndex = startIndex
+					guard ColorFormatToken.parse(tokens: subtokens, in: string, from: &newStartIndex, vars: &newVars) else {
+						return optional
+					}
+					
+					startIndex = newStartIndex
+					vars = newVars
+					return true
 			}
 		}
 		
@@ -204,9 +202,8 @@ public class RESTColorTransformer : ValueTransformer {
 			return scanner
 		}
 		
-		/* The conversion should never fail as the scanner should never parse
-		 * half-emojis... but to be safe, let's treat the case it does happen!
-		 * (This is why we return a nullable String.Index) */
+		/* The conversion should never fail as the scanner should never parse half-emojis… but to be safe, let's treat the case it does happen!
+		  * (This is why we return a nullable String.Index) */
 		private func scannerLocationIndex(_ scanner: Scanner, in string: String) -> String.Index? {
 			guard scanner.scanLocation < (string as NSString).length else {return string.endIndex}
 			let rangeForIndexConversion = NSRange(location: scanner.scanLocation, length: 0)
@@ -228,12 +225,13 @@ public class RESTColorTransformer : ValueTransformer {
 		alphaInfo: .optionalToken(id: "a", defaultValue: 1)
 	)
 	
-	/** Try and convert the given object to a Color.
-	
-	Supported input object types:
-	- Color
-	
-	- String: The string will be parsed using the given color type and format. */
+	/**
+	 Try and convert the given object to a `Color`.
+	 
+	 Supported input object types:
+	 - `Color`
+	 
+	 - `String`: The string will be parsed using the given color type and format. */
 	public static func convertObjectToColor(_ obj: Any?, colorType: ColorType = RESTColorTransformer.defaultColorType, colorFormat: [ColorFormatToken] = RESTColorTransformer.defaultColorFormatTokens) -> BMOColor? {
 		if let c = obj as? BMOColor {return c}
 		
@@ -245,32 +243,32 @@ public class RESTColorTransformer : ValueTransformer {
 		guard parseIndex == str.endIndex else {return nil}
 		
 		switch colorType {
-		case .colorName(info: let info):
-			guard let colorName = info.resolve(with: vars) else {return nil}
-			#if os(OSX)
+			case .colorName(info: let info):
+				guard let colorName = info.resolve(with: vars) else {return nil}
+#if os(OSX)
 				return NSColor(named: NSColor.Name(rawValue: colorName))
-			#else
+#else
 				return UIColor(named: colorName)
-			#endif
-			
-		case .whiteAlpha(whiteInfo: let whiteInfo, alphaInfo: let alphaInfo):
-			guard let whiteValue = whiteInfo.resolve(with: vars) else {return nil}
-			guard let alphaValue = alphaInfo.resolve(with: vars) else {return nil}
-			return BMOColor(white: whiteValue, alpha: alphaValue)
-			
-		case .rgba(redInfo: let rInfo, greenInfo: let gInfo, blueInfo: let bInfo, alphaInfo: let aInfo):
-			guard let rValue = rInfo.resolve(with: vars) else {return nil}
-			guard let gValue = gInfo.resolve(with: vars) else {return nil}
-			guard let bValue = bInfo.resolve(with: vars) else {return nil}
-			guard let aValue = aInfo.resolve(with: vars) else {return nil}
-			return BMOColor(red: rValue, green: gValue, blue: bValue, alpha: aValue)
-			
-		case .hsba(hueInfo: let hInfo, saturationInfo: let sInfo, brightnessInfo: let bInfo, alphaInfo: let aInfo):
-			guard let hValue = hInfo.resolve(with: vars) else {return nil}
-			guard let sValue = sInfo.resolve(with: vars) else {return nil}
-			guard let bValue = bInfo.resolve(with: vars) else {return nil}
-			guard let aValue = aInfo.resolve(with: vars) else {return nil}
-			return BMOColor(hue: hValue, saturation: sValue, brightness: bValue, alpha: aValue)
+#endif
+				
+			case .whiteAlpha(whiteInfo: let whiteInfo, alphaInfo: let alphaInfo):
+				guard let whiteValue = whiteInfo.resolve(with: vars) else {return nil}
+				guard let alphaValue = alphaInfo.resolve(with: vars) else {return nil}
+				return BMOColor(white: whiteValue, alpha: alphaValue)
+				
+			case .rgba(redInfo: let rInfo, greenInfo: let gInfo, blueInfo: let bInfo, alphaInfo: let aInfo):
+				guard let rValue = rInfo.resolve(with: vars) else {return nil}
+				guard let gValue = gInfo.resolve(with: vars) else {return nil}
+				guard let bValue = bInfo.resolve(with: vars) else {return nil}
+				guard let aValue = aInfo.resolve(with: vars) else {return nil}
+				return BMOColor(red: rValue, green: gValue, blue: bValue, alpha: aValue)
+				
+			case .hsba(hueInfo: let hInfo, saturationInfo: let sInfo, brightnessInfo: let bInfo, alphaInfo: let aInfo):
+				guard let hValue = hInfo.resolve(with: vars) else {return nil}
+				guard let sValue = sInfo.resolve(with: vars) else {return nil}
+				guard let bValue = bInfo.resolve(with: vars) else {return nil}
+				guard let aValue = aInfo.resolve(with: vars) else {return nil}
+				return BMOColor(hue: hValue, saturation: sValue, brightness: bValue, alpha: aValue)
 		}
 	}
 	

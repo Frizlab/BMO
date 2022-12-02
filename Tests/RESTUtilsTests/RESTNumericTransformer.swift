@@ -23,8 +23,8 @@ import XCTest
 class RESTNumericTransformerTest : XCTestCase {
 	
 	func testWeirdFloatNumberToFloatConversion() {
-		/* n as? Float == nil because 15.7 cannot be represented *exactly* as a
-		 * Float: https://twitter.com/drewmccormack/status/1020319238291165185 */
+		/* n as? Float == nil because 15.7 cannot be represented *exactly* as a Float:
+		 *  https://twitter.com/drewmccormack/status/1020319238291165185 */
 		let n = NSNumber(value: 15.7)
 		XCTAssertEqual(RESTNumericTransformer.convertObjectToFloat(n), 15.7)
 	}

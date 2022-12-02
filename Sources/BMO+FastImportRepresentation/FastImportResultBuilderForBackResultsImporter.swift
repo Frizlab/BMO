@@ -20,28 +20,24 @@ import BMO
 
 
 
-/* So. This class takes a very specific case into account: Temporary Object IDs
- * in a Core Data Db.
- *
- * When an object is inserted in Core Data, it is assigned a temporary object ID
- * which is then converted to a permanent ID when the db is saved, or when the
- * obtainPermanentIDs method is called.
- *
- * To avoid calling the obtainPermanentIDs method each time an object is
- * inserted in the import, we simply call the method when all of the objects
- * have been inserted (in the FastImportRepresentationCoreDataImporter).
- * In the result builder (this class), when the import is over, if we’re a root
- * result builder, we’ll convert all objects whose objectID is temporary to a
- * permanent objectID.
- *
- * To avoid having temporary IDs in the bridge back request result, we do NOT
- * return the relationships. (Otherwise we’d have to iterate on all of the
- * relationships recursively to retrieve the permanent IDs for all the objects.)
- *
- * Note: We might be in a case of early optimization. Retrieving the permanent
- *       object ID after each insert might be an acceptable solution (and it
- *       would allow having the relationships in the bridge back result without
- *       having to iterate recursively over them). */
+/* So.
+ * This class takes a very specific case into account: Temporary Object IDs in a Core Data Db.
+ *
+ * When an object is inserted in Core Data,
+ *  it is assigned a temporary object ID
+ *  which is then converted to a permanent ID when the db is saved,
+ *  or when the obtainPermanentIDs method is called.
+ *
+ * To avoid calling the obtainPermanentIDs method each time an object is inserted in the import,
+ *  we simply call the method when all of the objects have been inserted (in the FastImportRepresentationCoreDataImporter).
+ * In the result builder (this class), when the import is over, if we’re a root result builder, we’ll convert all objects whose objectID is temporary to a permanent objectID.
+ *
+ * To avoid having temporary IDs in the bridge back request result, we do NOT return the relationships.
+ * (Otherwise we’d have to iterate on all of the relationships recursively to retrieve the permanent IDs for all the objects.)
+ *
+ * Note: We might be in a case of early optimization.
+ *       Retrieving the permanent object ID after each insert might be an acceptable solution
+ *       (and it would allow having the relationships in the bridge back result without having to iterate recursively over them). */
 public final class FastImportResultBuilderForBackResultsImporter<BridgeType : Bridge> : SingleThreadDbRepresentationImporterResultBuilder {
 	
 	public typealias DbType = BridgeType.DbType
@@ -98,18 +94,15 @@ public final class FastImportResultBuilderForBackResultsImporter<BridgeType : Br
 	}
 	
 	public func unsafeInserted(object: DbType.ObjectType, fromDb db: DbType) {
-		/* We won't report changes and async changes in the fast import results
-		 * and the bridge back request results, so we'll just nop here. */
+		/* We won't report changes and async changes in the fast import results and the bridge back request results, so we’ll just nop here. */
 	}
 	
 	public func unsafeUpdated(object: DbType.ObjectType, fromDb db: DbType) {
-		/* We won't report changes and async changes in the fast import results
-		 * and the bridge back request results, so we'll just nop here. */
+		/* We won't report changes and async changes in the fast import results and the bridge back request results, so we'll just nop here. */
 	}
 	
 	public func unsafeDeleted(object: DbType.ObjectType, fromDb db: DbType) {
-		/* We won't report changes and async changes in the fast import results
-		 * and the bridge back request results, so we'll just nop here. */
+		/* We won't report changes and async changes in the fast import results and the bridge back request results, so we'll just nop here. */
 	}
 	
 	public func unsafeFinishedImport(inDb db: DbType) throws {

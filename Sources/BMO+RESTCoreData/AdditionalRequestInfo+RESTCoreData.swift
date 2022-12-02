@@ -39,18 +39,18 @@ extension AdditionalRESTRequestInfo where DbPropertyDescription == NSPropertyDes
 		var subAdditionalInfoBuilding = [NSPropertyDescriptionHashableWrapper: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>]()
 		for (paramName, paramValue) in params {
 			switch paramName {
-			case "fields":
-				for (fieldName, v) in paramValue.valuesAndParams {
-					guard let property = entity?.propertiesByName[fieldName]?.hashableWrapper() else {fatalError("Invalid fields \"\(fieldName)\" for entity named \(entity?.name ?? "<Unknown>") (property not found in entity)")}
+				case "fields":
+					for (fieldName, v) in paramValue.valuesAndParams {
+						guard let property = entity?.propertiesByName[fieldName]?.hashableWrapper() else {fatalError("Invalid fields \"\(fieldName)\" for entity named \(entity?.name ?? "<Unknown>") (property not found in entity)")}
+						
+						fetchedPropertiesBuilding.insert(property)
+						let (subPaginatorInfo, subKeyPathPaginatorInfo) = AdditionalRESTRequestInfo.subKeyPathInfo(forField: fieldName, inKeyPathInfo: keyPathPaginatorInfo)
+						let (subForcedEntity, subKeyPathForcedFieldsEntity) = AdditionalRESTRequestInfo.subKeyPathInfo(forField: fieldName, inKeyPathInfo: keyPathForcedFieldsEntity)
+						if v.count > 0 {subAdditionalInfoBuilding[property] = AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>(parameters: v, inEntity: subForcedEntity ?? (property.wrappedProperty as? NSRelationshipDescription)?.destinationEntity, paginatorInfo: subPaginatorInfo, keyPathPaginatorInfo: subKeyPathPaginatorInfo, keyPathForcedFieldsEntity: subKeyPathForcedFieldsEntity)}
+					}
 					
-					fetchedPropertiesBuilding.insert(property)
-					let (subPaginatorInfo, subKeyPathPaginatorInfo) = AdditionalRESTRequestInfo.subKeyPathInfo(forField: fieldName, inKeyPathInfo: keyPathPaginatorInfo)
-					let (subForcedEntity, subKeyPathForcedFieldsEntity) = AdditionalRESTRequestInfo.subKeyPathInfo(forField: fieldName, inKeyPathInfo: keyPathForcedFieldsEntity)
-					if v.count > 0 {subAdditionalInfoBuilding[property] = AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>(parameters: v, inEntity: subForcedEntity ?? (property.wrappedProperty as? NSRelationshipDescription)?.destinationEntity, paginatorInfo: subPaginatorInfo, keyPathPaginatorInfo: subKeyPathPaginatorInfo, keyPathForcedFieldsEntity: subKeyPathForcedFieldsEntity)}
-				}
-				
-			default:
-				additionalRequestParametersBuilding[paramName] = StandardRESTParameterizedStringSetParser().flatify(param: paramValue)
+				default:
+					additionalRequestParametersBuilding[paramName] = StandardRESTParameterizedStringSetParser().flatify(param: paramValue)
 			}
 		}
 		

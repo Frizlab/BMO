@@ -17,12 +17,11 @@ import Foundation
 
 
 
-/** Wrap an optional value in this to get double (or more) optionality in a
-ValueTransformer, and stay type coherent.
-
-Class is prefixed with ObjC even though it is not @objc just to signify it
-exists solely for historical reasons, and should be dropped as soon as
-ValueTransformer is more Swifty and supports double-optionality natively. */
+/**
+ Wrap an optional value in this to get double (or more) optionality in a ValueTransformer, and stay type coherent.
+ 
+ Class is prefixed with ObjC even though it is not @objc just to signify it exists solely for historical reasons,
+  and should be dropped as soon as ValueTransformer is more Swifty and supports double-optionality natively. */
 public class ObjC_RESTMapperOptionalWrapper : NSObject {
 	
 	public let value: Any?
@@ -62,9 +61,8 @@ public struct RESTMapperTransformer {
 		
 		let transformedValue = (!reversed ? transformer.transformedValue(sourceValue) : transformer.reverseTransformedValue(sourceValue))
 		if let objcWrapped = transformedValue as? ObjC_RESTMapperOptionalWrapper {return .some(objcWrapped.value)}
-		/* Note for below, we do NOT return transformedValue directly... If we do,
-		 * if transformedValue == nil, we actually return .some(nil) for whatever
-		 * reason (Xcode 8.3.3 (8E3004b)). */
+		/* Note for below, we do NOT return transformedValue directly…
+		 * If we do, if transformedValue == nil, we actually return .some(nil) for whatever reason (Xcode 8.3.3 (8E3004b)). */
 		if let value = transformedValue {return value}
 		else                            {return nil}
 	}

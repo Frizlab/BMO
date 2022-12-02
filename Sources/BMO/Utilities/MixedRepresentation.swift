@@ -17,10 +17,11 @@ import Foundation
 
 
 
-/** This structure is called mixed representation because the attributes are in
-a local representation, but relationships are local for the key part, remote for
-the value part. The request operation is in charge of resolving the recursivity
-to create a DbRepresentation. */
+/**
+ This structure is called mixed representation because the attributes are in a local representation, but
+  relationships are local for the key part,
+  remote for the value part.
+ The request operation is in charge of resolving the recursivity to create a DbRepresentation. */
 public struct MixedRepresentation<DbEntityDescriptionType, RemoteRelationshipAndMetadataRepresentationType, BridgeUserInfoType> {
 	
 	public typealias RelationshipValue = (expectedEntity: DbEntityDescriptionType, value: RemoteRelationshipAndMetadataRepresentationType)?

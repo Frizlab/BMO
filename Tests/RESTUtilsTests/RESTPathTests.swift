@@ -70,8 +70,8 @@ class RESTPathTests: XCTestCase {
 			return
 		}
 		switch r {
-		case .constant(let str): XCTAssertEqual(str, "hello")
-		default:                 XCTFail("Unexpected component type for path")
+			case .constant(let str): XCTAssertEqual(str, "hello")
+			default:                 XCTFail("Unexpected component type for path")
 		}
 	}
 	
@@ -81,8 +81,8 @@ class RESTPathTests: XCTestCase {
 			return
 		}
 		switch r {
-		case .variable(let str): XCTAssertEqual(str, "hello")
-		default:                 XCTFail("Unexpected component type for path")
+			case .variable(let str): XCTAssertEqual(str, "hello")
+			default:                 XCTFail("Unexpected component type for path")
 		}
 	}
 	
@@ -92,8 +92,8 @@ class RESTPathTests: XCTestCase {
 			return
 		}
 		switch r {
-		case .components(let components, isRoot: let root): XCTAssertEqual(components.count, 0); XCTAssertFalse(root)
-		default:                                            XCTFail("Unexpected component type for path")
+			case .components(let components, isRoot: let root): XCTAssertEqual(components.count, 0); XCTAssertFalse(root)
+			default:                                            XCTFail("Unexpected component type for path")
 		}
 	}
 	
@@ -103,8 +103,8 @@ class RESTPathTests: XCTestCase {
 			return
 		}
 		switch r {
-		case .variable(let str): XCTAssertEqual(str, "")
-		default:                 XCTFail("Unexpected component type for path")
+			case .variable(let str): XCTAssertEqual(str, "")
+			default:                 XCTFail("Unexpected component type for path")
 		}
 	}
 	
@@ -114,8 +114,8 @@ class RESTPathTests: XCTestCase {
 			return
 		}
 		switch r {
-		case .variable(let str): XCTAssertEqual(str, "(")
-		default:                 XCTFail("Unexpected component type for path")
+			case .variable(let str): XCTAssertEqual(str, "(")
+			default:                 XCTFail("Unexpected component type for path")
 		}
 	}
 	
@@ -125,22 +125,22 @@ class RESTPathTests: XCTestCase {
 			return
 		}
 		switch r {
-		case .components(let components, isRoot: let root):
-			XCTAssertTrue(root)
-			XCTAssertEqual(components.count, 2)
-			let c0 = components[0]
-			let c1 = components[1]
-			switch c0 {
-			case .constant(let str): XCTAssertEqual(str, "hello/")
-			default:                 XCTFail("Unexpected component type for path")
-			}
-			switch c1 {
-			case .variable(let str): XCTAssertEqual(str, "world")
-			default:                 XCTFail("Unexpected component type for path")
-			}
-			
-		default:
-			XCTFail("Unexpected component type for path")
+			case .components(let components, isRoot: let root):
+				XCTAssertTrue(root)
+				XCTAssertEqual(components.count, 2)
+				let c0 = components[0]
+				let c1 = components[1]
+				switch c0 {
+					case .constant(let str): XCTAssertEqual(str, "hello/")
+					default:                 XCTFail("Unexpected component type for path")
+				}
+				switch c1 {
+					case .variable(let str): XCTAssertEqual(str, "world")
+					default:                 XCTFail("Unexpected component type for path")
+				}
+				
+			default:
+				XCTFail("Unexpected component type for path")
 		}
 	}
 	

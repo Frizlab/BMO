@@ -65,15 +65,13 @@ public struct CoreDataFetchRequest<AdditionalInfoType> : BackRequest {
 	}
 	
 	public func enterBridge() throws -> Bool {
-		/* Note: We might wanna avoid fetching the entity if it is already set,
-		 *       however, it is difficult checking whether the entity has been
-		 *       set. Indeed, if the property is accessed before being set, an
-		 *       execption is thrown... */
+		/* Note: We might wanna avoid fetching the entity if it is already set, however, it is difficult checking whether the entity has been set.
+		 *       Indeed, if the property is accessed before being set, an execption is thrown… */
 		fetchRequest.entity = db.persistentStoreCoordinator!.managedObjectModel.entitiesByName[fetchRequest.entityName!]
 		switch fetchType {
-		case .always:               return true
-		case .onlyIfNoLocalResults: return try db.count(for: fetchRequest) == 0
-		case .never:                return false
+			case .always:               return true
+			case .onlyIfNoLocalResults: return try db.count(for: fetchRequest) == 0
+			case .never:                return false
 		}
 	}
 	

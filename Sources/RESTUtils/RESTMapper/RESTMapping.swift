@@ -32,20 +32,21 @@ struct RESTMapping<DbEntityDescription : DbRESTEntityDescription & Hashable, DbP
 		return entityMapping(forEntity: superentity as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)
 	}
 	
-	/* We do not differentiate (mainly because we don't need it yet) between an
-	 * entity not found in the mapping, an entity who does not have a uniquing
-	 * type or an entity who have a `.none` uniquing type. */
+	/* We do not differentiate (mainly because we don't need it yet) between
+	 *  an entity not found in the mapping,
+	 *  an entity who does not have a uniquing type or
+	 *  an entity who have a `.none` uniquing type. */
 	func entityUniquingType(forEntity entity: DbEntityDescription) -> RESTEntityUniquingType<DbPropertyDescription> {
 		if let u = entitiesMapping[entity]?.uniquingType {return u}
 		guard let superentity = entity.superentity else {return .none}
 		return entityUniquingType(forEntity: superentity as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)
 	}
 	
-	/** Will try and find the property mapping for the given property, starting
-	from the given expected entity, then going up (superentities), then if still
-	not found, going down (sub-entities). Will never go to an unrelated entity.
-	
-	If the expected entity is not given, all entities will be tested. */
+	/**
+	 Will try and find the property mapping for the given property, starting from the given expected entity, then going up (superentities), then if still not found, going down (sub-entities).
+	 Will never go to an unrelated entity.
+	 
+	 If the expected entity is not given, all entities will be tested. */
 	func propertyMapping(forProperty property: DbPropertyDescription, expectedEntity entity: DbEntityDescription?) -> RESTPropertyMapping? {
 		guard let entity = entity else {return propertyMapping(forProperty: property)}
 		return _propertyMapping(forProperty: property, expectedEntity: entity, canGoUp: true, canGoDown: true)

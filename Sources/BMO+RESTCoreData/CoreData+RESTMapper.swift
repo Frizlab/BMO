@@ -43,45 +43,43 @@ extension NSPropertyDescriptionHashableWrapper : DbRESTPropertyDescription {
 	
 	public var valueType: AnyClass? {
 		switch wrappedProperty {
-		case let attributeDescription as NSAttributeDescription:
-			/* We force cast in String? because while it is valid for the user info
-			  * not to have a value for the forced class name key, if there is a value
-			  * it is invalid that it is not a string. */
-			if let forcedClassName = attributeDescription.userInfo?["BMO_ObjCAttributeValueClassName"] as! String? {
-				/* We assume if the user has set a forced class name, it has taken care
-				  * for the class to actually be available in the ObjC runtime. */
-				return NSClassFromString(forcedClassName)!
-			}
-			guard let className = attributeDescription.attributeValueClassName else {
-				if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
-					BMOConfig.oslog.flatMap{ os_log("Got an attribute description whose attributeValueClassName is nil; returning nil valueType. Wrapped attribute is %{public}@", log: $0, type: .info, self.wrappedProperty) }
+			case let attributeDescription as NSAttributeDescription:
+				/* We force cast in String? because while it is valid for the user info not to have a value for the forced class name key,
+				 *  if there is a value it is invalid that it is not a string. */
+				if let forcedClassName = attributeDescription.userInfo?["BMO_ObjCAttributeValueClassName"] as! String? {
+					/* We assume if the user has set a forced class name, it has taken care for the class to actually be available in the ObjC runtime. */
+					return NSClassFromString(forcedClassName)!
 				}
-				return nil
-			}
-			guard let objcClass = NSClassFromString(className) else {
-				if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
-					BMOConfig.oslog.flatMap{ os_log("Got an attribute value class name (%{public}@) which is unreachable in the ObjC runtime; returning nil valueType. Wrapped attribute is %{public}@", log: $0, type: .info, className, self.wrappedProperty) }
+				guard let className = attributeDescription.attributeValueClassName else {
+					if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+						BMOConfig.oslog.flatMap{ os_log("Got an attribute description whose attributeValueClassName is nil; returning nil valueType. Wrapped attribute is %{public}@", log: $0, type: .info, self.wrappedProperty) }
+					}
+					return nil
 				}
+				guard let objcClass = NSClassFromString(className) else {
+					if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+						BMOConfig.oslog.flatMap{ os_log("Got an attribute value class name (%{public}@) which is unreachable in the ObjC runtime; returning nil valueType. Wrapped attribute is %{public}@", log: $0, type: .info, className, self.wrappedProperty) }
+					}
+					return nil
+				}
+				return objcClass
+				
+			default:
 				return nil
-			}
-			return objcClass
-			
-		default:
-			return nil
 		}
 	}
 	
 	public var destinationEntity: NSEntityDescription? {
 		switch wrappedProperty {
-		case                           _ as NSAttributeDescription:       return nil
-		case                           _ as NSExpressionDescription:      return nil
-		case                           _ as NSFetchedPropertyDescription: return nil
-		case let relationshipDescription as NSRelationshipDescription:    return relationshipDescription.destinationEntity
-		default:
-			if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
-				BMOConfig.oslog.flatMap{ os_log("Got a property description whose type is unknown when computing the destination entity: %{public}@", log: $0, type: .info, self.wrappedProperty) }
-			}
-			return nil
+			case                           _ as NSAttributeDescription:       return nil
+			case                           _ as NSExpressionDescription:      return nil
+			case                           _ as NSFetchedPropertyDescription: return nil
+			case let relationshipDescription as NSRelationshipDescription:    return relationshipDescription.destinationEntity
+			default:
+				if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+					BMOConfig.oslog.flatMap{ os_log("Got a property description whose type is unknown when computing the destination entity: %{public}@", log: $0, type: .info, self.wrappedProperty) }
+				}
+				return nil
 		}
 	}
 	

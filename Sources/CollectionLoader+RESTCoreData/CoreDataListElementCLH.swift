@@ -27,7 +27,7 @@ import RESTUtils
 
 @available(OSX 10.12, *)
 public class CoreDataListElementCLH<FetchedObjectsType : NSManagedObject, BridgeType, PageInfoRetrieverType : PageInfoRetriever> : CoreDataCLH
-	where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestInfoType == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetrieverType.BridgeType == BridgeType
+where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestInfoType == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetrieverType.BridgeType == BridgeType
 {
 	
 	public let bridge: BridgeType
@@ -79,22 +79,16 @@ public class CoreDataListElementCLH<FetchedObjectsType : NSManagedObject, Bridge
 		fetchedResultsControllerFetchRequest.sortDescriptors = [NSSortDescriptor(key: aop.name, ascending: true)]
 		if let listObjectId = listObjectId {fetchedResultsControllerFetchRequest.predicate = NSPredicate(format: "%K == %@", lp.inverseRelationship!.name, listObjectId)}
 		else {
-			/* We want to retrieve the objects whose inverse relationship name of
-			 * the list property match the list element fetch request, but the list
-			 * element fetch request currently matches nothing. So we have to
-			 * create a predicate to match anyway.
-			 * Two case:
-			 *    - The list element fetch request has a predicate: it should be
-			 *      enough to add the inverse relationship name to the key paths
-			 *      of the predicate.
-			 *    - The list element fetch request does not have a predicate: we
-			 *      assume then any object of the type we want whose inverse
-			 *      relationship name value is not nil will match. Indeed, if it is
-			 *      set, the value must be to the list element we want as there
-			 *      should only be one in the db... */
+			/* We want to retrieve the objects whose inverse relationship name of the list property match the list element fetch request,
+			 *  but the list element fetch request currently matches nothing.
+			 * So we have to create a predicate to match anyway.
+			 * Two case:
+			 *   - The list element fetch request has a predicate: it should be enough to add the inverse relationship name to the key paths of the predicate.
+			 *   - The list element fetch request does not have a predicate: we assume then any object of the type we want whose inverse relationship name value is not nil will match.
+			 *     Indeed, if it is set, the value must be to the list element we want as there should only be one in the db… */
 			fetchedResultsControllerFetchRequest.predicate =
-				listElementFetchRequest.predicate?.predicateByAddingKeyPathPrefix(lp.inverseRelationship!.name) ??
-				NSPredicate(format: "%K != NULL", lp.inverseRelationship!.name)
+			listElementFetchRequest.predicate?.predicateByAddingKeyPathPrefix(lp.inverseRelationship!.name) ??
+			NSPredicate(format: "%K != NULL", lp.inverseRelationship!.name)
 		}
 		if let predicate = afrp, let fPredicate = fetchedResultsControllerFetchRequest.predicate {fetchedResultsControllerFetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fPredicate, predicate])}
 		else if let predicate = afrp                                                             {fetchedResultsControllerFetchRequest.predicate = predicate}
@@ -141,9 +135,7 @@ public class CoreDataListElementCLH<FetchedObjectsType : NSManagedObject, Bridge
 		return requestManager.operation(forBackRequest: request, autoStart: false, handler: nil)
 	}
 	
-	/* “Funny” note: If I set the type of the "operation" argument to
-	 * LoadingOperationType instead of its realization, the AnyCoreDataCLH
-	 * implementation compilation will crash... (Xcode 8E2002) */
+	/* “Funny” note: If I set the type of the "operation" argument to LoadingOperationType instead of its realization, the AnyCoreDataCLH implementation compilation will crash… (Xcode 8E2002) */
 	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>) -> AsyncOperationResult<BridgeBackRequestResult<BridgeType>> {
 		return operation.result.simpleBackRequestResult()
 	}
@@ -176,6 +168,6 @@ public class CoreDataListElementCLH<FetchedObjectsType : NSManagedObject, Bridge
 	private let listProperty: NSRelationshipDescription
 	
 	private let apiOrderProperty: NSAttributeDescription
-	private let apiOrderDelta: Int /* Must be > 0 */
+	private let apiOrderDelta: Int /* Must be > 0. */
 	
 }

@@ -20,7 +20,7 @@ import AsyncOperationResult
 
 
 public final class BackRequestOperation<RequestType : BackRequest, BridgeType : Bridge> : Operation
-	where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoType == RequestType.AdditionalRequestInfoType
+where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoType == RequestType.AdditionalRequestInfoType
 {
 	
 	public let bridge: BridgeType
@@ -54,15 +54,15 @@ public final class BackRequestOperation<RequestType : BackRequest, BridgeType : 
 		if let o = globalCancellationObserver {NotificationCenter.default.removeObserver(o)} /* Shouldn't really be needed... */
 	}
 	
-	/** If you're already in the request context, you can call this before
-	starting the request. It is actually the only way to retrieve the operations
-	for the request synchronously.
-	
-	This will avoid a context jump when actually starting the operation. (You can
-	start it right after calling this method if you want.) Also, sometimes it is
-	needed to have a known context state to compute the operations to execute for
-	the given request, which can only be achieved by calling the preparation
-	synchronously. */
+	/**
+	 If you’re already in the request context, you can call this before starting the request.
+	 It is actually the only way to retrieve the operations for the request synchronously.
+	 
+	 This will avoid a context jump when actually starting the operation.
+	 (You can start it right after calling this method if you want.)
+	 
+	 Also, sometimes it is needed to have a known context state to compute the operations to execute for the given request,
+	 which can only be achieved by calling the preparation synchronously. */
 	public func unsafePrepareStart() throws {
 		try unsafePrepareStart(withSafePartResults: nil)
 	}
@@ -106,8 +106,8 @@ public final class BackRequestOperation<RequestType : BackRequest, BridgeType : 
 	}
 	
 	/* ***************
-	   MARK: - Private
-	   *************** */
+	   MARK: - Private
+	   *************** */
 	
 	private var globalCancellationObserver: NSObjectProtocol? {
 		willSet {
@@ -132,8 +132,8 @@ public final class BackRequestOperation<RequestType : BackRequest, BridgeType : 
 			strongSelf.result = .success(BackRequestResult(results: strongSelf.resultsBuilding))
 			strongSelf.state = .finished
 		}
-		/* The completion operation will be called only when ALL dependencies are
-		 * finished. Even cancelled dependencies are waited. */
+		/* The completion operation will be called only when ALL dependencies are finished.
+		 * Even cancelled dependencies are waited. */
 		operations.forEach{ completionOperation.addDependency($0.resultsProcessingOperation) }
 		
 		backOperationQueue.addOperations(operations.map{ $0.backOperation }, waitUntilFinished: false)
@@ -185,10 +185,10 @@ public final class BackRequestOperation<RequestType : BackRequest, BridgeType : 
 		let backOperationO: BridgeType.BackOperationType?
 		let updatedObject: BridgeType.DbType.ObjectType?
 		switch part {
-		case .fetch(let fetchRequest, let additionalInfo): updatedObject = nil;    expectedEntityO = bridge.expectedResultEntity(forFetchRequest: fetchRequest, additionalInfo: additionalInfo); backOperationO = try bridge.backOperation(forFetchRequest: fetchRequest, additionalInfo: additionalInfo, userInfo: &userInfo)
-		case .insert(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forInsertedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
-		case .update(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forUpdatedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
-		case .delete(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forDeletedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .fetch(let fetchRequest, let additionalInfo): updatedObject = nil;    expectedEntityO = bridge.expectedResultEntity(forFetchRequest: fetchRequest, additionalInfo: additionalInfo); backOperationO = try bridge.backOperation(forFetchRequest: fetchRequest, additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .insert(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forInsertedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .update(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forUpdatedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .delete(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forDeletedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
 		}
 		
 		guard let expectedEntity = expectedEntityO, let backOperation = backOperationO else {
@@ -216,7 +216,7 @@ public final class BackRequestOperation<RequestType : BackRequest, BridgeType : 
 			resultsProcessingOperation = BlockOperation {
 				self.resultsBuilding[requestPartId] =
 					self.bridge.error(fromFinishedOperation: backOperation).map{ .error($0) } ??
-					.success(BridgeBackRequestResult(metadata: nil, returnedObjectIDsAndRelationships: [], asyncChanges: ChangesDescription()))
+						.success(BridgeBackRequestResult(metadata: nil, returnedObjectIDsAndRelationships: [], asyncChanges: ChangesDescription()))
 			}
 			resultsProcessingOperation.addDependency(backOperation)
 		}
