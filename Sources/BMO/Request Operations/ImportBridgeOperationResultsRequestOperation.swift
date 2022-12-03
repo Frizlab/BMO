@@ -15,8 +15,6 @@ limitations under the License. */
 
 import Foundation
 
-import AsyncOperationResult
-
 
 
 public final class ImportBridgeOperationResultsRequestOperation<BridgeType : Bridge> : Operation {
@@ -26,7 +24,7 @@ public final class ImportBridgeOperationResultsRequestOperation<BridgeType : Bri
 	public let request: ImportBridgeOperationResultsRequest<BridgeType>
 	public let importer: AnyBackResultsImporter<BridgeType>
 	
-	public private(set) var result: AsyncOperationResult<BridgeBackRequestResult<BridgeType>> = .error(OperationError.notFinished)
+	public private(set) var result: Result<BridgeBackRequestResult<BridgeType>, Error> = .failure(OperationError.notFinished)
 	
 	public init(request r: ImportBridgeOperationResultsRequest<BridgeType>, importer i: AnyBackResultsImporter<BridgeType>) {
 		request = r
@@ -65,7 +63,7 @@ public final class ImportBridgeOperationResultsRequestOperation<BridgeType : Bri
 				
 				do {
 					guard try self.request.importPreparationBlock?() ?? true else {
-						self.result = .error(OperationError.cancelled)
+						self.result = .failure(OperationError.cancelled)
 						return
 					}
 					
@@ -80,7 +78,7 @@ public final class ImportBridgeOperationResultsRequestOperation<BridgeType : Bri
 				}
 			}
 		} catch {
-			result = .error(error)
+			result = .failure(error)
 		}
 	}
 	

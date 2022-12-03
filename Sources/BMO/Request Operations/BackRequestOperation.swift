@@ -15,8 +15,6 @@ limitations under the License. */
 
 import Foundation
 
-import AsyncOperationResult
-
 
 
 public final class BackRequestOperation<RequestType : BackRequest, BridgeType : Bridge> : Operation
@@ -30,7 +28,7 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 	public let backOperationQueue: OperationQueue
 	public let parseOperationQueue: OperationQueue
 	
-	public private(set) var result: AsyncOperationResult<BackRequestResult<RequestType, BridgeType>> = .error(OperationError.notFinished)
+	public private(set) var result: Result<BackRequestResult<RequestType, BridgeType>, Error> = .failure(OperationError.notFinished)
 	
 	public init(request r: RequestType, bridge b: BridgeType, importer i: AnyBackResultsImporter<BridgeType>?, backOperationQueue bq: OperationQueue, parseOperationQueue pq: OperationQueue, requestManager: RequestManager?) {
 		bridge = b
@@ -69,7 +67,7 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 	
 	public override func start() {
 		assert(state == .inited)
-		guard !isCancelled else {result = .error(OperationError.cancelled); state = .finished; return}
+		guard !isCancelled else {result = .failure(OperationError.cancelled); state = .finished; return}
 		
 		state = .running
 		if let bridgeOperations = bridgeOperations {
@@ -87,12 +85,12 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 						guard !self.isCancelled else {throw OperationError.cancelled}
 						self.launchOperations(try self.unsafePrepareStart(withSafePartResults: safePrepareResults))
 					} catch {
-						self.result = .error(error)
+						self.result = .failure(error)
 						self.state = .finished
 					}
 				}
 			} catch {
-				self.result = .error(error)
+				self.result = .failure(error)
 				self.state = .finished
 			}
 		}
@@ -125,7 +123,7 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 	
 	private func launchOperations(_ operations: [BridgeOperation]) {
 		cancellationSemaphore.wait(); defer {cancellationSemaphore.signal()}
-		guard !isCancelled else {result = .error(OperationError.cancelled); state = .finished; return}
+		guard !isCancelled else {result = .failure(OperationError.cancelled); state = .finished; return}
 		
 		let completionOperation = BlockOperation { [weak self] in
 			guard let strongSelf = self else {return}
@@ -215,7 +213,7 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 			parseOperation = nil
 			resultsProcessingOperation = BlockOperation {
 				self.resultsBuilding[requestPartId] =
-					self.bridge.error(fromFinishedOperation: backOperation).map{ .error($0) } ??
+					self.bridge.error(fromFinishedOperation: backOperation).map{ .failure($0) } ??
 						.success(BridgeBackRequestResult(metadata: nil, returnedObjectIDsAndRelationships: [], asyncChanges: ChangesDescription()))
 			}
 			resultsProcessingOperation.addDependency(backOperation)
@@ -232,7 +230,7 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 	
 	private var bridgeOperations: [BridgeOperation]?
 	private let resultsProcessingQueue: OperationQueue /* A serial queue */
-	private var resultsBuilding = Dictionary<RequestType.RequestPartId, AsyncOperationResult<BridgeBackRequestResult<BridgeType>>>()
+	private var resultsBuilding = Dictionary<RequestType.RequestPartId, Result<BridgeBackRequestResult<BridgeType>, Error>>()
 	
 	private var state = RequestOperationState.inited {
 		willSet(newState) {

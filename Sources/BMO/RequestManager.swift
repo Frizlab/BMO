@@ -105,8 +105,6 @@
 
 import Foundation
 
-import AsyncOperationResult
-
 
 
 public final class RequestManager {
@@ -177,7 +175,7 @@ public final class RequestManager {
 	 If `nil`, the first bridge of the correct type in the bridges property will be used.
 	 - Parameter resultsImporterFactory: The results importer factory to use to create the results importer that’ll be used to import the results of the bridge operation to the database. */
 	@discardableResult
-	public func operation<RequestType, BridgeType>(forBackRequest request: RequestType, withBridge bridge: BridgeType? = nil, resultsImporterFactory: AnyBackResultsImporterFactory? = nil, autoStart: Bool, handler: ((_ response: AsyncOperationResult<BackRequestResult<RequestType, BridgeType>>) -> Void)? = nil) -> BackRequestOperation<RequestType, BridgeType> {
+	public func operation<RequestType, BridgeType>(forBackRequest request: RequestType, withBridge bridge: BridgeType? = nil, resultsImporterFactory: AnyBackResultsImporterFactory? = nil, autoStart: Bool, handler: ((_ response: Result<BackRequestResult<RequestType, BridgeType>, Error>) -> Void)? = nil) -> BackRequestOperation<RequestType, BridgeType> {
 		let bridge = getBridge(from: bridge)
 		let importerFactory = resultsImporterFactory ?? defaultResultsImporterFactory
 		let operation = BackRequestOperation(request: request, bridge: bridge, importer: importerFactory?.createResultsImporter(), backOperationQueue: backOperationQueue, parseOperationQueue: parseOperationQueue, requestManager: self)

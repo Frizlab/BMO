@@ -15,12 +15,10 @@ limitations under the License. */
 
 import Foundation
 
-import AsyncOperationResult
-
 
 
 public struct BackRequestResult<RequestType : BackRequest, BridgeType : Bridge> {
 	
-	public let results: [RequestType.RequestPartId: AsyncOperationResult<BridgeBackRequestResult<BridgeType>>]
+	public let results: [RequestType.RequestPartId: Result<BridgeBackRequestResult<BridgeType>, Error>]
 	
 }

@@ -15,24 +15,22 @@ limitations under the License. */
 
 import Foundation
 
-import AsyncOperationResult
-
 import BMO
 
 
 
-extension AsyncOperationResult {
+extension Result {
 	
-	public func simpleBackRequestResult<BridgeType>() -> AsyncOperationResult<BridgeBackRequestResult<BridgeType>> where T == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
+	public func simpleBackRequestResult<BridgeType>() -> Result<BridgeBackRequestResult<BridgeType>, Error> where Success == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
 		return simpleBackRequestResult(forRequestPartId: NSNull())
 	}
 	
-	public func simpleBackRequestSuccessValue<BridgeType>() -> BridgeBackRequestResult<BridgeType>? where T == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
+	public func simpleBackRequestSuccessValue<BridgeType>() -> BridgeBackRequestResult<BridgeType>? where Success == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
 		return simpleBackRequestResult().successValue
 	}
 	
-	public func simpleBackRequestError<BridgeType>() -> Swift.Error? where T == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
-		return simpleBackRequestResult().error
+	public func simpleBackRequestError<BridgeType>() -> Swift.Error? where Success == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
+		return simpleBackRequestResult().failure
 	}
 	
 }

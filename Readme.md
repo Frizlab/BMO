@@ -67,12 +67,10 @@ github "happn-app/URLRequestOperation" ~> 1.1.5
 ### Dependencies
 
 BMO has the following dependencies:
-- [AsyncOperationResult](https://github.com/happn-app/AsyncOperationResult): Basically the `Result` type of the standard Swift library. (BMO was created with Swift 4.2; this dependency will be dropped.)
 - [CollectionLoader](https://github.com/happn-app/CollectionLoader): A generic collection loader, supporting page-based fetching.
    - [KVObserver](https://github.com/happn-app/KVObserver): A clean wrapper around Objective-C’s KVO.
 
 URLRequestOperation has the following dependencies:
-- [AsyncOperationResult](https://github.com/happn-app/AsyncOperationResult): Basically the `Result` type of the standard Swift library. (URLRequestOperation was created with Swift 4.2; this dependency will be dropped.)
 - [RetryingOperation](https://github.com/happn-app/RetryingOperation): Implementation of an abstract `Operation` providing conveniences for easily running and retrying a base operation.
 - [SemiSingleton](https://github.com/happn-app/SemiSingleton): An implementation of the "singleton by id".
    - [RecursiveSyncDispatch](https://github.com/happn-app/RecursiveSyncDispatch): Recursively sync dispatch on private GCD queues.
@@ -263,7 +261,7 @@ private func refreshUser(username: String) {
    let context = AppDelegate.shared.context!
    _ = AppDelegate.shared.requestManager!.fetchObject(
       fromFetchRequest: fetchRequest as! NSFetchRequest<NSFetchRequestResult>,
-      fetchType: .always, onContext: context, handler: { (user: User?, fullResponse: AsyncOperationResult<BridgeBackRequestResult<YourBridge>>) -> Void in
+      fetchType: .always, onContext: context, handler: { (user: User?, fullResponse: Result<BridgeBackRequestResult<YourBridge>, Error>) -> Void in
          /* Use the fetched user here. */
       }
    )

@@ -17,7 +17,6 @@ import CoreData
 import Foundation
 import os.log
 
-import AsyncOperationResult
 import BMO
 import BMO_CoreData
 import BMO_RESTCoreData
@@ -112,7 +111,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		return requestManager.operation(forBackRequest: request, autoStart: false, handler: nil)
 	}
 	
-	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>) -> AsyncOperationResult<BridgeBackRequestResult<BridgeType>> {
+	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>) -> Result<BridgeBackRequestResult<BridgeType>, Error> {
 		return operation.result.simpleBackRequestResult()
 	}
 	

@@ -14,16 +14,15 @@ let package = Package(
 		)
 	],
 	dependencies: [
-		.package(url: "https://github.com/happn-app/AsyncOperationResult.git", from: "1.0.5"),
-		.package(url: "https://github.com/happn-app/CollectionLoader.git", from: "0.9.4")
+		.package(url: "https://github.com/happn-app/CollectionLoader.git", .branch("dev.tests"))
 	],
 	targets: [
-		.target(name: "BMO",                           dependencies: ["AsyncOperationResult"]),
+		.target(name: "BMO",                           dependencies: []),
 		.target(name: "RESTUtils",                     dependencies: []),
 		.target(name: "BMO+FastImportRepresentation",  dependencies: ["BMO"]),
-		.target(name: "BMO+CoreData",                  dependencies: ["AsyncOperationResult", "BMO", "BMO+FastImportRepresentation"]),
-		.target(name: "BMO+RESTCoreData",              dependencies: ["AsyncOperationResult", "BMO", "RESTUtils", "BMO+FastImportRepresentation", "BMO+CoreData"]),
-		.target(name: "CollectionLoader+RESTCoreData", dependencies: ["AsyncOperationResult", "CollectionLoader", "BMO", "RESTUtils", "BMO+FastImportRepresentation", "BMO+CoreData", "BMO+RESTCoreData"]),
+		.target(name: "BMO+CoreData",                  dependencies: ["BMO", "BMO+FastImportRepresentation"]),
+		.target(name: "BMO+RESTCoreData",              dependencies: ["BMO", "RESTUtils", "BMO+FastImportRepresentation", "BMO+CoreData"]),
+		.target(name: "CollectionLoader+RESTCoreData", dependencies: ["CollectionLoader", "BMO", "RESTUtils", "BMO+FastImportRepresentation", "BMO+CoreData", "BMO+RESTCoreData"]),
 		.testTarget(name: "BMOTests",                           dependencies: ["BMO"]),
 		.testTarget(name: "RESTUtilsTests",                     dependencies: ["RESTUtils"]),
 		.testTarget(name: "BMO-FastImportRepresentationTests",  dependencies: ["BMO+FastImportRepresentation"]),

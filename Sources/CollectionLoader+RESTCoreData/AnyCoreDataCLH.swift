@@ -16,7 +16,6 @@ limitations under the License. */
 import CoreData
 import Foundation
 
-import AsyncOperationResult
 import BMO
 import BMO_CoreData
 import BMO_RESTCoreData
@@ -53,7 +52,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		}
 	}
 	
-	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>) -> AsyncOperationResult<BridgeBackRequestResult<BridgeType>> {
+	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>) -> Result<BridgeBackRequestResult<BridgeType>, Error> {
 		switch self {
 			case .search(let helper):      return helper.results(fromFinishedLoadingOperation: operation)
 			case .listElement(let helper): return helper.results(fromFinishedLoadingOperation: operation)
