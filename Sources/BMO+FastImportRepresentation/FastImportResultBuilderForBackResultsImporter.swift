@@ -46,7 +46,7 @@ public final class FastImportResultBuilderForBackResultsImporter<BridgeType : Br
 	let metadata: BridgeType.MetadataType?
 	
 	var importResult: ImportResult<DbType> {
-		return ImportResult(rootObjectsAndRelationships: objectsAndRelationships, changes: nil, metadata: metadata)
+		return ImportResult(rootObjectsAndRelationships: objectsAndRelationships, changes: nil)
 	}
 	
 	var bridgeBackRequestResult: BridgeBackRequestResult<BridgeType> {

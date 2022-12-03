@@ -40,13 +40,9 @@ public struct ImportResult<DbType : Db> {
 	 Some importers might decide to drop this result for performance reasons, hence the optionality. */
 	public let changes: ChangesDescription<DbType.ObjectIDType>?
 	
-	@available(*, deprecated, message: "Temporary workaround for convenience. See comment note inside the struct definition for more information.")
-	public let metadata: Any?
-	
-	public init(rootObjectsAndRelationships r: [(object: DbType.ObjectType, relationships: [String: ImportResult<DbType>]?)], changes c: ChangesDescription<DbType.ObjectIDType>?, metadata m: Any?) {
+	public init(rootObjectsAndRelationships r: [(object: DbType.ObjectType, relationships: [String: ImportResult<DbType>]?)], changes c: ChangesDescription<DbType.ObjectIDType>?) {
 		rootObjectsAndRelationships = r
 		changes = c
-		metadata = m
 	}
 	
 }
