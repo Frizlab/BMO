@@ -19,14 +19,14 @@ import BMO
 
 
 
-public struct FastImportRepresentation<DbEntityDescriptionType, DbObjectType, RelationshipUserInfoType> {
+public struct FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo> {
 	
 	public typealias RelationshipValue = (
-		value: ([FastImportRepresentation<DbEntityDescriptionType, DbObjectType, RelationshipUserInfoType>], DbRepresentationRelationshipMergeType<DbEntityDescriptionType, DbObjectType>)?,
-		userInfo: RelationshipUserInfoType?
+		value: ([FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>], DbRepresentationRelationshipMergeType<DbEntityDescription, DbObject>)?,
+		userInfo: RelationshipUserInfo?
 	)
 	
-	public let entity: DbEntityDescriptionType
+	public let entity: DbEntityDescription
 	
 	public let uniquingId: AnyHashable?
 	public let attributes: [String: Any?]
@@ -40,10 +40,10 @@ public struct FastImportRepresentation<DbEntityDescriptionType, DbObjectType, Re
 	  the fast import representations returned will probably be incomplete and should be ignored.
 	 
 	 - Note: I’d like the `shouldContinueHandler` to be optional, but cannot be non-escaping if optional with current Swift status :( */
-	public static func fastImportRepresentations<BridgeType : Bridge>(fromRemoteRepresentations remoteRepresentations: [BridgeType.RemoteObjectRepresentationType], expectedEntity entity: BridgeType.DbType.EntityDescriptionType, userInfo: BridgeType.UserInfoType, bridge: BridgeType, shouldContinueHandler: () -> Bool = {true}) -> [FastImportRepresentation<DbEntityDescriptionType, DbObjectType, RelationshipUserInfoType>]
-	where DbEntityDescriptionType == BridgeType.DbType.EntityDescriptionType, DbObjectType == BridgeType.DbType.ObjectType, RelationshipUserInfoType == BridgeType.MetadataType
+	public static func fastImportRepresentations<Bridge : BridgeProtocol>(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool = {true}) -> [FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>]
+	where DbEntityDescription == Bridge.Db.EntityDescription, DbObject == Bridge.Db.Object, RelationshipUserInfo == Bridge.Metadata
 	{
-		var fastImportRepresentations = [FastImportRepresentation<DbEntityDescriptionType, DbObjectType, RelationshipUserInfoType>]()
+		var fastImportRepresentations = [FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>]()
 		for remoteRepresentation in remoteRepresentations {
 			guard shouldContinueHandler() else {break}
 			if let fastImportRepresentation = FastImportRepresentation(remoteRepresentation: remoteRepresentation, expectedEntity: entity, userInfo: userInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler) {
@@ -60,8 +60,8 @@ public struct FastImportRepresentation<DbEntityDescriptionType, DbObjectType, Re
 	 If the block returns `false` at any given time during the init process, `nil` will probably be returned.
 	 If the init succeeds however, the returned fast-import representation is guaranteed to be the complete translation of the remote representation.
 	 (The init will never return a half-completed translation.) */
-	init?<BridgeType : Bridge>(remoteRepresentation: BridgeType.RemoteObjectRepresentationType, expectedEntity: DbEntityDescriptionType, userInfo info: BridgeType.UserInfoType, bridge: BridgeType, shouldContinueHandler: () -> Bool = {true})
-	where DbEntityDescriptionType == BridgeType.DbType.EntityDescriptionType, DbObjectType == BridgeType.DbType.ObjectType, RelationshipUserInfoType == BridgeType.MetadataType
+	init?<Bridge : BridgeProtocol>(remoteRepresentation: Bridge.RemoteObjectRepresentation, expectedEntity: DbEntityDescription, userInfo info: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool = {true})
+	where DbEntityDescription == Bridge.Db.EntityDescription, DbObject == Bridge.Db.Object, RelationshipUserInfo == Bridge.Metadata
 	{
 		guard let mixedRepresentation = bridge.mixedRepresentation(fromRemoteObjectRepresentation: remoteRepresentation, expectedEntity: expectedEntity, userInfo: info) else {return nil}
 		
@@ -81,7 +81,7 @@ public struct FastImportRepresentation<DbEntityDescriptionType, DbObjectType, Re
 			
 			relationshipsBuilding[relationshipName] = (
 				value: (
-					FastImportRepresentation<DbEntityDescriptionType, DbObjectType, RelationshipUserInfoType>.fastImportRepresentations(fromRemoteRepresentations: relationshipRemoteRepresentations, expectedEntity: relationshipEntity, userInfo: subUserInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler),
+					FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>.fastImportRepresentations(fromRemoteRepresentations: relationshipRemoteRepresentations, expectedEntity: relationshipEntity, userInfo: subUserInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler),
 					bridge.relationshipMergeType(forRelationshipNamed: relationshipName, inEntity: mixedRepresentation.entity, currentMixedRepresentation: mixedRepresentation)
 				),
 				userInfo: metadata

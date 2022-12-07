@@ -17,8 +17,8 @@ import Foundation
 
 
 
-public struct BackRequestResult<RequestType : BackRequest, BridgeType : Bridge> {
+public struct BackRequestResult<Request : BackRequest, Bridge : BridgeProtocol> {
 	
-	public let results: [RequestType.RequestPartId: Result<BridgeBackRequestResult<BridgeType>, Error>]
+	public let results: [Request.RequestPartID: Result<BridgeBackRequestResult<Bridge>, Error>]
 	
 }

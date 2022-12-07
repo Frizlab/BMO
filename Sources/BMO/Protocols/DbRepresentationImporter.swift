@@ -20,13 +20,13 @@ import Foundation
 /* Note: This protocol is not used directly in BMO yet (but new requests type will be created that will need it). */
 public protocol DbRepresentationImporter {
 	
-	associatedtype DbType : Db
+	associatedtype Db : DbProtocol
 	associatedtype ResultType
 	
 	func prepareImport() throws
 	
 	/** Always called on the db context. */
-	func unsafeImport(in db: DbType, updatingObject updatedObject: DbType.ObjectType?) throws -> ResultType
+	func unsafeImport(in db: Db, updatingObject updatedObject: Db.Object?) throws -> ResultType
 	
 }
 
@@ -38,20 +38,20 @@ public protocol DbRepresentationImporter {
 /* RFC */
 public protocol SingleThreadDbRepresentationImporterResultBuilder {
 	
-	associatedtype DbType : Db
-	associatedtype DbRepresentationUserInfoType
+	associatedtype Db : DbProtocol
+	associatedtype DbRepresentationUserInfo
 	
 	associatedtype ResultType
 	
-	func unsafeStartedImporting(object: DbType.ObjectType, inDb db: DbType) throws
-	func unsafeStartImporting(relationshipName: String, userInfo: DbRepresentationUserInfoType?) throws -> Self
-	func unsafeFinishedImportingCurrentObject(inDb db: DbType) throws
+	func unsafeStartedImporting(object: Db.Object, inDb db: Db) throws
+	func unsafeStartImporting(relationshipName: String, userInfo: DbRepresentationUserInfo?) throws -> Self
+	func unsafeFinishedImportingCurrentObject(inDb db: Db) throws
 	
-	func unsafeInserted(object: DbType.ObjectType, fromDb db: DbType) throws
-	func unsafeUpdated(object: DbType.ObjectType, fromDb db: DbType) throws
-	func unsafeDeleted(object: DbType.ObjectType, fromDb db: DbType) throws
+	func unsafeInserted(object: Db.Object, fromDb db: Db) throws
+	func unsafeUpdated(object: Db.Object, fromDb db: Db) throws
+	func unsafeDeleted(object: Db.Object, fromDb db: Db) throws
 	
-	func unsafeFinishedImport(inDb db: DbType) throws
+	func unsafeFinishedImport(inDb db: Db) throws
 	
 	/* Shall not be accessed before unsafeFinishedImport is called. */
 	var result: ResultType {get}

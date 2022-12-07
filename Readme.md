@@ -100,7 +100,7 @@ Example of a simple model with the uniquing property name `bmoId`:
 ![CoreData Model](https://github.com/happn-app/BMO/blob/master/docs/images/CoreDataModelExample1.png)
 
 ### The BMO Bridge
-A bridge is an entity (class, struct, whatever) that implements the Bridge protocol.
+A bridge is an entity (class, struct, whatever) that implements the `BridgeProtocol` protocol.
 It is the interface between your local Core Data database and your API.
 This is the most important thing you have to provide to BMO.
 
@@ -169,13 +169,13 @@ Example of implementation:
 ```swift
 /* MyBridge.swift */
 
-func remoteObjectRepresentations(fromFinishedOperation operation: BackOperationType, userInfo: UserInfoType) throws -> [RemoteObjectRepresentationType]? {
+func remoteObjectRepresentations(fromFinishedOperation operation: BackOperation, userInfo: UserInfo) throws -> [RemoteObjectRepresentation]? {
    /* In our case, the operation has a results property containing either the
     * parsed JSON from the API or an error. */
    switch operation.results {
    /* We access the "items" elements because our API returns the objects in this key. 
     * The behaviour may be different with another API. */
-   case .success(let success): return success["items"] as? [MyBridge.RemoteObjectRepresentationType]
+   case .success(let success): return success["items"] as? [MyBridge.RemoteObjectRepresentation]
    case .error(let e):         throw Err.operationError(e)
    }
 }
@@ -196,7 +196,7 @@ Here is an example of an implementation of this part of the bridge:
 ```swift
 /* MyBridge.swift */
 
-func mixedRepresentation(fromRemoteObjectRepresentation remoteRepresentation: RemoteObjectRepresentationType, expectedEntity: DbType.EntityDescriptionType, userInfo: UserInfoType) -> MixedRepresentation<DbType.EntityDescriptionType, RemoteRelationshipAndMetadataRepresentationType, UserInfoType>? {
+func mixedRepresentation(fromRemoteObjectRepresentation remoteRepresentation: RemoteObjectRepresentation, expectedEntity: Db.EntityDescription, userInfo: UserInfo) -> MixedRepresentation<Db.EntityDescription, RemoteRelationshipAndMetadataRepresentation, UserInfo>? {
    /* First let’s get which entity the remote representation represents.
     * The REST mapper will do this job for us. */
    guard let entity = restMapper.actualLocalEntity(forRESTRepresentation: remoteRepresentation, expectedEntity: expectedEntity) else {return nil}
@@ -239,8 +239,8 @@ class AppDelegate : NSObject, UIApplicationDelegate {
     * to avoid the use of this one. */
    private struct BMOBackResultsImporterForCoreDataWithFastImportRepresentationFactory : AnyBackResultsImporterFactory {
 
-      func createResultsImporter<BridgeType : Bridge>() -> AnyBackResultsImporter<BridgeType>? {
-         return (AnyBackResultsImporter(importer: BackResultsImporterForCoreDataWithFastImportRepresentation<YourBridge>(uniquingPropertyName: "bmoId")) as! AnyBackResultsImporter<BridgeType>)
+      func createResultsImporter<Bridge : BridgeProtocol>() -> AnyBackResultsImporter<Bridge>? {
+         return (AnyBackResultsImporter(importer: BackResultsImporterForCoreDataWithFastImportRepresentation<YourBridge>(uniquingPropertyName: "bmoId")) as! AnyBackResultsImporter<Bridge>)
       }
 
    }

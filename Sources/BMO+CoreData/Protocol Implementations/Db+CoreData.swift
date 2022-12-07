@@ -19,14 +19,14 @@ import BMO
 
 
 
-extension NSManagedObjectContext : Db {
+extension NSManagedObjectContext : DbProtocol {
 	
-	public typealias ObjectType = NSManagedObject
-	public typealias ObjectIDType = NSManagedObjectID
-	public typealias FetchRequestType = NSFetchRequest<NSFetchRequestResult>
+	public typealias Object = NSManagedObject
+	public typealias ObjectID = NSManagedObjectID
+	public typealias FetchRequest = NSFetchRequest<NSFetchRequestResult>
 	
-	public typealias EntityDescriptionType = NSEntityDescription
-	public typealias PropertyDescriptionType = NSPropertyDescriptionHashableWrapper
+	public typealias EntityDescription = NSEntityDescription
+	public typealias PropertyDescription = NSPropertyDescriptionHashableWrapper
 	
 	public func performAndWait(_ block: () throws -> Void) rethrows {
 		try withoutActuallyEscaping(block) { escapableBlock in

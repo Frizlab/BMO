@@ -25,23 +25,23 @@ import RESTUtils
 
 
 @available(OSX 10.12, *)
-public class CoreDataListElementCLH<FetchedObjectsType : NSManagedObject, BridgeType, PageInfoRetrieverType : PageInfoRetriever> : CoreDataCLH
-where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestInfoType == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetrieverType.BridgeType == BridgeType
+public class CoreDataListElementCLH<FetchedObject : NSManagedObject, Bridge : BridgeProtocol, PageInfoRetriever : PageInfoRetrieverProtocol> : CoreDataCLH
+where Bridge.Db == NSManagedObjectContext, Bridge.AdditionalRequestInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetriever.Bridge == Bridge
 {
 	
-	public let bridge: BridgeType
-	public let pageInfoRetriever: PageInfoRetrieverType?
+	public let bridge: Bridge
+	public let pageInfoRetriever: PageInfoRetriever?
 	public let context: NSManagedObjectContext
 	public let requestManager: RequestManager
 	
-	public let resultsController: NSFetchedResultsController<FetchedObjectsType>
+	public let resultsController: NSFetchedResultsController<FetchedObject>
 	
 	public var listElementObjectId: NSManagedObjectID?
 	
 	public convenience init(
 		listElementEntity: NSEntityDescription, additionalElementFetchInfo aefi: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?, listProperty lp: NSRelationshipDescription,
 		apiOrderProperty aop: NSAttributeDescription, apiOrderDelta aod: Int = 1, additionalFetchRequestPredicate afrp: NSPredicate? = nil,
-		context c: NSManagedObjectContext, bridge b: BridgeType? = nil, pageInfoRetriever pir: PageInfoRetrieverType? = nil, requestManager rm: RequestManager
+		context c: NSManagedObjectContext, bridge b: Bridge? = nil, pageInfoRetriever pir: PageInfoRetriever? = nil, requestManager rm: RequestManager
 	) {
 		let fr = NSFetchRequest<NSManagedObject>()
 		fr.entity = listElementEntity
@@ -49,10 +49,10 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		self.init(listElementFetchRequest: fr, additionalElementFetchInfo: aefi, listProperty: lp, apiOrderProperty: aop, apiOrderDelta: aod, additionalFetchRequestPredicate: afrp, context: c, bridge: b, pageInfoRetriever: pir, requestManager: rm)
 	}
 	
-	public init<ListElementObjectType : NSManagedObject>(
-		listElementFetchRequest: NSFetchRequest<ListElementObjectType>, additionalElementFetchInfo aefi: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?, listProperty lp: NSRelationshipDescription,
+	public init<ListElementObject : NSManagedObject>(
+		listElementFetchRequest: NSFetchRequest<ListElementObject>, additionalElementFetchInfo aefi: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?, listProperty lp: NSRelationshipDescription,
 		apiOrderProperty aop: NSAttributeDescription, apiOrderDelta aod: Int = 1, additionalFetchRequestPredicate afrp: NSPredicate? = nil,
-		context c: NSManagedObjectContext, bridge b: BridgeType? = nil, pageInfoRetriever pir: PageInfoRetrieverType? = nil, requestManager rm: RequestManager
+		context c: NSManagedObjectContext, bridge b: Bridge? = nil, pageInfoRetriever pir: PageInfoRetriever? = nil, requestManager rm: RequestManager
 	) {
 		assert(lp.isOrdered)
 		
@@ -73,7 +73,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		c.performAndWait{ listObjectId = (try? c.fetch(listElementFetchRequest))?.first?.objectID }
 		listElementObjectId = listObjectId
 		
-		let fetchedResultsControllerFetchRequest = NSFetchRequest<FetchedObjectsType>()
+		let fetchedResultsControllerFetchRequest = NSFetchRequest<FetchedObject>()
 		fetchedResultsControllerFetchRequest.entity = listProperty.destinationEntity!
 		fetchedResultsControllerFetchRequest.sortDescriptors = [NSSortDescriptor(key: aop.name, ascending: true)]
 		if let listObjectId = listObjectId {fetchedResultsControllerFetchRequest.predicate = NSPredicate(format: "%K == %@", lp.inverseRelationship!.name, listObjectId)}
@@ -91,7 +91,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		}
 		if let predicate = afrp, let fPredicate = fetchedResultsControllerFetchRequest.predicate {fetchedResultsControllerFetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [fPredicate, predicate])}
 		else if let predicate = afrp                                                             {fetchedResultsControllerFetchRequest.predicate = predicate}
-		resultsController = NSFetchedResultsController<FetchedObjectsType>(fetchRequest: fetchedResultsControllerFetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+		resultsController = NSFetchedResultsController<FetchedObject>(fetchRequest: fetchedResultsControllerFetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
 		try! resultsController.performFetch()
 	}
 	
@@ -99,7 +99,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		return pageInfoRetriever?.pageInfoFor(startOffset: startOffset, endOffset: endOffset) ?? RESTOffsetLimitPaginatorInfo(startOffset: startOffset, endOffset: endOffset)
 	}
 	
-	public func operationForLoading(pageInfo: Any, preRun: (() -> Bool)?, preImport: (() -> Bool)?, preCompletion: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)?) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType> {
+	public func operationForLoading(pageInfo: Any, preRun: (() -> Bool)?, preImport: (() -> Bool)?, preCompletion: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)?) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge> {
 		let additionalListInfo = AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>(fromInfo: additionalElementFetchInfo?[listProperty.hashableWrapper()], paginatorInfo: pageInfo)
 		
 		var additionalFetchInfo = additionalElementFetchInfo ?? AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>()
@@ -135,7 +135,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 	}
 	
 	/* “Funny” note: If I set the type of the "operation" argument to LoadingOperationType instead of its realization, the AnyCoreDataCLH implementation compilation will crash… (Xcode 8E2002) */
-	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>) -> Result<BridgeBackRequestResult<BridgeType>, Error> {
+	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>) -> Result<BridgeBackRequestResult<Bridge>, Error> {
 		return operation.result.simpleBackRequestResult()
 	}
 	
@@ -151,12 +151,12 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		context.object(with: objectId).setValue(nil, forKey: listProperty.inverseRelationship!.name)
 	}
 	
-	public func nextPageInfo(for completionResults: BridgeBackRequestResult<BridgeType>, from pageInfo: Any, nElementsPerPage: Int) -> Any?? {
+	public func nextPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: Any, nElementsPerPage: Int) -> Any?? {
 		guard let pageInfoRetriever = pageInfoRetriever else {return nil}
 		return pageInfoRetriever.nextPageInfo(for: completionResults, from: pageInfo, nElementsPerPage: nElementsPerPage)
 	}
 	
-	public func previousPageInfo(for completionResults: BridgeBackRequestResult<BridgeType>, from pageInfo: Any, nElementsPerPage: Int) -> Any? {
+	public func previousPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: Any, nElementsPerPage: Int) -> Any? {
 		guard let pageInfoRetriever = pageInfoRetriever else {return nil}
 		return pageInfoRetriever.previousPageInfo(for: completionResults, from: pageInfo, nElementsPerPage: nElementsPerPage)
 	}

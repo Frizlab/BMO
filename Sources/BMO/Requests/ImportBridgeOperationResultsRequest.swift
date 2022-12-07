@@ -17,23 +17,23 @@ import Foundation
 
 
 
-public struct ImportBridgeOperationResultsRequest<BridgeType : Bridge> {
+public struct ImportBridgeOperationResultsRequest<Bridge : BridgeProtocol> {
 	
-	let db: BridgeType.DbType
+	let db: Bridge.Db
 	
-	let bridge: BridgeType
+	let bridge: Bridge
 	/**
 	 The operation from which the results will be extracted to be processed.
 	 The operation does not have to be finished when creating the request, only when processing it. */
-	let operation: BridgeType.BackOperationType
+	let operation: Bridge.BackOperation
 	
-	let expectedEntity: BridgeType.DbType.EntityDescriptionType
-	let updatedObjectId: BridgeType.DbType.ObjectIDType?
+	let expectedEntity: Bridge.Db.EntityDescription
+	let updatedObjectId: Bridge.Db.ObjectID?
 	
-	let userInfo: BridgeType.UserInfoType
+	let userInfo: Bridge.UserInfo
 	
 	let importPreparationBlock: (() throws -> Bool)?
-	let importSuccessBlock: ((_ importResults: ImportResult<BridgeType.DbType>) throws -> Void)?
+	let importSuccessBlock: ((_ importResults: ImportResult<Bridge.Db>) throws -> Void)?
 	/**
 	 Also called if `fastImportSuccessBlock` or `fastImportPreparationBlock` fail.
 	 __NOT__ called if `fastImportPreparationBlock` returns `false` though. */

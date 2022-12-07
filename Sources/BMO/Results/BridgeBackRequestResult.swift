@@ -17,20 +17,20 @@ import Foundation
 
 
 
-public struct BridgeBackRequestResult<BridgeType : Bridge> {
+public struct BridgeBackRequestResult<Bridge : BridgeProtocol> {
 	
 	/**
 	 The metadata for the imported root objects.
 	 
 	 These are relationship metadata, or if result is root, root metadata.
 	 There are no object or attribute metadata: if you need those, keep them in your model, potentially in transient properties. */
-	public let metadata: BridgeType.MetadataType?
+	public let metadata: Bridge.Metadata?
 	
 	/**
 	 The ids of the (root) objects that were retrieved from the async operation, in the order they were retrieved.
 	 
 	 Some importers might decide to drop the relationships part of the result for performance reasons (hence the optionality of the relationships part of the tuple). */
-	public let returnedObjectIDsAndRelationships: [(objectID: BridgeType.DbType.ObjectIDType, relationships: [String: BridgeBackRequestResult<BridgeType>]?)]
+	public let returnedObjectIDsAndRelationships: [(objectID: Bridge.Db.ObjectID, relationships: [String: BridgeBackRequestResult<Bridge>]?)]
 	
 	/**
 	 Contains the changes reported by the db fast import method.
@@ -38,9 +38,9 @@ public struct BridgeBackRequestResult<BridgeType : Bridge> {
 	  (eg. when a relationship value is replaced, all objects previously in the relationship are usually modified because the reverse relationship will be set to nil).
 	 
 	 Some importers might decide to drop this result for performance reasons, hence the optionality. */
-	public let asyncChanges: ChangesDescription<BridgeType.DbType.ObjectIDType>?
+	public let asyncChanges: ChangesDescription<Bridge.Db.ObjectID>?
 	
-	public init(metadata m: BridgeType.MetadataType?, returnedObjectIDsAndRelationships r: [(objectID: BridgeType.DbType.ObjectIDType, relationships: [String: BridgeBackRequestResult<BridgeType>]?)], asyncChanges c: ChangesDescription<BridgeType.DbType.ObjectIDType>?) {
+	public init(metadata m: Bridge.Metadata?, returnedObjectIDsAndRelationships r: [(objectID: Bridge.Db.ObjectID, relationships: [String: BridgeBackRequestResult<Bridge>]?)], asyncChanges c: ChangesDescription<Bridge.Db.ObjectID>?) {
 		metadata = m
 		returnedObjectIDsAndRelationships = r
 		asyncChanges = c

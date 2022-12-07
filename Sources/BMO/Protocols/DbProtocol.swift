@@ -17,15 +17,19 @@ import Foundation
 
 
 
-public protocol DbRepresentationExporter {
+public protocol DbProtocol {
 	
-	associatedtype Db : DbProtocol
-	associatedtype DbRepresentation
+	associatedtype Object
+	associatedtype ObjectID : Hashable
 	
-	init(unsafeObjects: [Db.Object])
+	associatedtype EntityDescription
+	associatedtype FetchRequest
 	
-	/* The number of returned objects might not be equal to the number of objects given in input
-	 *  (eg. the same object has been given twice in input, no need to put it twice in the results). */
-	func unsafeExport(from db: Db) throws -> [DbRepresentation]
+	/* Both these methods should be re-entrant. */
+	func perform(_ block: @escaping () -> Void)
+	func performAndWait(_ block: () throws -> Void) rethrows
+	
+	func unsafeObjectID(forObject: Object) -> ObjectID
+	func unsafeRetrieveExistingObject(fromObjectID: ObjectID) throws -> Object
 	
 }

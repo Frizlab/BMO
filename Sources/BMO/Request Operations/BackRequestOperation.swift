@@ -17,20 +17,20 @@ import Foundation
 
 
 
-public final class BackRequestOperation<RequestType : BackRequest, BridgeType : Bridge> : Operation
-where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoType == RequestType.AdditionalRequestInfoType
+public final class BackRequestOperation<Request : BackRequest, Bridge : BridgeProtocol> : Operation
+where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.AdditionalRequestInfo
 {
 	
-	public let bridge: BridgeType
-	public let request: RequestType
-	public let importer: AnyBackResultsImporter<BridgeType>?
+	public let bridge: Bridge
+	public let request: Request
+	public let importer: AnyBackResultsImporter<Bridge>?
 	
 	public let backOperationQueue: OperationQueue
 	public let parseOperationQueue: OperationQueue
 	
-	public private(set) var result: Result<BackRequestResult<RequestType, BridgeType>, Error> = .failure(OperationError.notFinished)
+	public private(set) var result: Result<BackRequestResult<Request, Bridge>, Error> = .failure(OperationError.notFinished)
 	
-	public init(request r: RequestType, bridge b: BridgeType, importer i: AnyBackResultsImporter<BridgeType>?, backOperationQueue bq: OperationQueue, parseOperationQueue pq: OperationQueue, requestManager: RequestManager?) {
+	public init(request r: Request, bridge b: Bridge, importer i: AnyBackResultsImporter<Bridge>?, backOperationQueue bq: OperationQueue, parseOperationQueue pq: OperationQueue, requestManager: RequestManager?) {
 		bridge = b
 		request = r
 		importer = i
@@ -175,13 +175,13 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 		}
 	}
 	
-	private func bridgeOperation(forDbRequestPart part: BackRequestPart<RequestType.DbType.ObjectType, RequestType.DbType.FetchRequestType, RequestType.AdditionalRequestInfoType>, withId requestPartId: RequestType.RequestPartId) throws -> BridgeOperation? {
+	private func bridgeOperation(forDbRequestPart part: BackRequestPart<Request.Db.Object, Request.Db.FetchRequest, Request.AdditionalRequestInfo>, withId requestPartId: Request.RequestPartID) throws -> BridgeOperation? {
 		var userInfo = bridge.createUserInfoObject()
 		
 		/* Retrieve the back operation part of the bridge operation. */
-		let expectedEntityO: BridgeType.DbType.EntityDescriptionType?
-		let backOperationO: BridgeType.BackOperationType?
-		let updatedObject: BridgeType.DbType.ObjectType?
+		let expectedEntityO: Bridge.Db.EntityDescription?
+		let backOperationO: Bridge.BackOperation?
+		let updatedObject: Bridge.Db.Object?
 		switch part {
 			case .fetch(let fetchRequest, let additionalInfo): updatedObject = nil;    expectedEntityO = bridge.expectedResultEntity(forFetchRequest: fetchRequest, additionalInfo: additionalInfo); backOperationO = try bridge.backOperation(forFetchRequest: fetchRequest, additionalInfo: additionalInfo, userInfo: &userInfo)
 			case .insert(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forInsertedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
@@ -222,7 +222,7 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 		return (backOperation: backOperation, parseOperation: parseOperation, resultsProcessingOperation: resultsProcessingOperation)
 	}
 	
-	private typealias SafePartStartPreparationResults = (enteredBridge: Bool, requestParts: [RequestType.RequestPartId: BackRequestPart<RequestType.DbType.ObjectType, RequestType.DbType.FetchRequestType, RequestType.AdditionalRequestInfoType>]?)
+	private typealias SafePartStartPreparationResults = (enteredBridge: Bool, requestParts: [Request.RequestPartID: BackRequestPart<Request.Db.Object, Request.Db.FetchRequest, Request.AdditionalRequestInfo>]?)
 	
 	private typealias BridgeOperation = (backOperation: Operation, parseOperation: Operation?, resultsProcessingOperation: Operation)
 	
@@ -230,7 +230,7 @@ where BridgeType.DbType == RequestType.DbType, BridgeType.AdditionalRequestInfoT
 	
 	private var bridgeOperations: [BridgeOperation]?
 	private let resultsProcessingQueue: OperationQueue /* A serial queue */
-	private var resultsBuilding = Dictionary<RequestType.RequestPartId, Result<BridgeBackRequestResult<BridgeType>, Error>>()
+	private var resultsBuilding = Dictionary<Request.RequestPartID, Result<BridgeBackRequestResult<Bridge>, Error>>()
 	
 	private var state = RequestOperationState.inited {
 		willSet(newState) {

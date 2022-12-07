@@ -24,10 +24,10 @@ import Foundation
  In this case, the object given in argument to this enum case will be deleted.
  
  - warning: Not corresponding operation implemented yet. */
-public struct UniquingRequest<DbType : Db> {
+public struct UniquingRequest<Db : DbProtocol> {
 	
-	let db: DbType
+	let db: Db
 	
-	let object: DbType.ObjectType
+	let object: Db.Object
 	
 }

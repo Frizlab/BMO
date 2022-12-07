@@ -175,7 +175,7 @@ public final class RequestManager {
 	 If `nil`, the first bridge of the correct type in the bridges property will be used.
 	 - Parameter resultsImporterFactory: The results importer factory to use to create the results importer that’ll be used to import the results of the bridge operation to the database. */
 	@discardableResult
-	public func operation<RequestType, BridgeType>(forBackRequest request: RequestType, withBridge bridge: BridgeType? = nil, resultsImporterFactory: AnyBackResultsImporterFactory? = nil, autoStart: Bool, handler: ((_ response: Result<BackRequestResult<RequestType, BridgeType>, Error>) -> Void)? = nil) -> BackRequestOperation<RequestType, BridgeType> {
+	public func operation<Request, Bridge>(forBackRequest request: Request, withBridge bridge: Bridge? = nil, resultsImporterFactory: AnyBackResultsImporterFactory? = nil, autoStart: Bool, handler: ((_ response: Result<BackRequestResult<Request, Bridge>, Error>) -> Void)? = nil) -> BackRequestOperation<Request, Bridge> {
 		let bridge = getBridge(from: bridge)
 		let importerFactory = resultsImporterFactory ?? defaultResultsImporterFactory
 		let operation = BackRequestOperation(request: request, bridge: bridge, importer: importerFactory?.createResultsImporter(), backOperationQueue: backOperationQueue, parseOperationQueue: parseOperationQueue, requestManager: self)
@@ -197,11 +197,11 @@ public final class RequestManager {
 	/**
 	 If source bridge is not nil, it is returned directly.
 	 Otherwise, the bridges in the request manager are enumerated; the first of the expected type is returned. */
-	public func getBridge<BridgeType: Bridge>(from bridge: BridgeType?) -> BridgeType {
+	public func getBridge<Bridge: BridgeProtocol>(from bridge: Bridge?) -> Bridge {
 		if let bridge = bridge {return bridge}
 		
 		for bridge in bridges! {
-			if let bridge = bridge as? BridgeType {
+			if let bridge = bridge as? Bridge {
 				return bridge
 			}
 		}

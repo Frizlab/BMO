@@ -19,8 +19,8 @@ import Foundation
 
 /* What I'd have liked below, but not possible with current Swift (or ever?).
  * Instead we have generic functions in the extension.
-extension Result<BridgeType : Bridge, Error> where T == BackRequestResult<CoreDataFetchRequest, BridgeType> {
-	var simpleBackRequestResult: Result<BridgeBackRequestResult<BridgeType>, Error> {...}
+extension Result<Bridge : BridgeProtocol, Error> where T == BackRequestResult<CoreDataFetchRequest, Bridge> {
+	var simpleBackRequestResult: Result<BridgeBackRequestResult<Bridge>, Error> {...}
 	var simpleBackRequestSuccessValue: BridgeBackRequestResult<HappnBridge>? {...}
 	var simpleBackRequestError: Swift.Error? {...}
 }*/
@@ -41,27 +41,27 @@ extension Result {
 		}
 	}
 	
-	public func simpleBackRequestResult<RequestType, BridgeType>(forRequestPartId requestPartId: RequestType.RequestPartId) -> Result<BridgeBackRequestResult<BridgeType>, Error> where Success == BackRequestResult<RequestType, BridgeType> {
+	public func simpleBackRequestResult<Request, Bridge>(forRequestPartID requestPartID: Request.RequestPartID) -> Result<BridgeBackRequestResult<Bridge>, Error> where Success == BackRequestResult<Request, Bridge> {
 		switch self {
 			case .success(let value):
 				/* If there are no results for the given request part id, that means the request has been denied going to a back request and was to succeed directly
 				 *  (eg. for a fetch request, when fetch type is only if no local results and there are local results). */
-				return value.results[requestPartId] ?? .success(BridgeBackRequestResult(metadata: nil, returnedObjectIDsAndRelationships: [], asyncChanges: ChangesDescription()))
+				return value.results[requestPartID] ?? .success(BridgeBackRequestResult(metadata: nil, returnedObjectIDsAndRelationships: [], asyncChanges: ChangesDescription()))
 				
 			case .failure(let e):
 				return .failure(e)
 		}
 	}
 	
-	public func simpleBackRequestSuccessValue<RequestType, BridgeType>(forRequestPartId requestPartId: RequestType.RequestPartId) -> BridgeBackRequestResult<BridgeType>? where Success == BackRequestResult<RequestType, BridgeType> {
-		return simpleBackRequestResult(forRequestPartId: requestPartId).successValue
+	public func simpleBackRequestSuccessValue<Request, Bridge>(forRequestPartId requestPartID: Request.RequestPartID) -> BridgeBackRequestResult<Bridge>? where Success == BackRequestResult<Request, Bridge> {
+		return simpleBackRequestResult(forRequestPartID: requestPartID).successValue
 	}
 	
-	public func simpleBackRequestError<RequestType, BridgeType>(forRequestPartId requestPartId: RequestType.RequestPartId) -> Swift.Error? where Success == BackRequestResult<RequestType, BridgeType> {
-		return simpleBackRequestResult(forRequestPartId: requestPartId).failure
+	public func simpleBackRequestError<Request, Bridge>(forRequestPartId requestPartID: Request.RequestPartID) -> Swift.Error? where Success == BackRequestResult<Request, Bridge> {
+		return simpleBackRequestResult(forRequestPartID: requestPartID).failure
 	}
 	
-	public func backRequestResultHasErrors<RequestType, BridgeType>() -> Bool where Success == BackRequestResult<RequestType, BridgeType> {
+	public func backRequestResultHasErrors<Request, Bridge>() -> Bool where Success == BackRequestResult<Request, Bridge> {
 		switch self {
 			case .failure: return true
 			case .success(let value):
@@ -75,7 +75,7 @@ extension Result {
 		}
 	}
 	
-	public func backRequestResultErrors<RequestType, BridgeType>() -> [Swift.Error] where Success == BackRequestResult<RequestType, BridgeType> {
+	public func backRequestResultErrors<Request, Bridge>() -> [Swift.Error] where Success == BackRequestResult<Request, Bridge> {
 		switch self {
 			case .failure(let e): return [e]
 			case .success(let value):

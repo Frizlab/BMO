@@ -38,46 +38,46 @@ import BMO
  * Note: We might be in a case of early optimization.
  *       Retrieving the permanent object ID after each insert might be an acceptable solution
  *       (and it would allow having the relationships in the bridge back result without having to iterate recursively over them). */
-public final class FastImportResultBuilderForBackResultsImporter<BridgeType : Bridge> : SingleThreadDbRepresentationImporterResultBuilder {
+public final class FastImportResultBuilderForBackResultsImporter<Bridge : BridgeProtocol> : SingleThreadDbRepresentationImporterResultBuilder {
 	
-	public typealias DbType = BridgeType.DbType
-	public typealias DbRepresentationUserInfoType = BridgeType.MetadataType
+	public typealias Db = Bridge.Db
+	public typealias DbRepresentationUserInfo = Bridge.Metadata
 	
-	let metadata: BridgeType.MetadataType?
+	let metadata: Bridge.Metadata?
 	
-	var importResult: ImportResult<DbType> {
+	var importResult: ImportResult<Db> {
 		return ImportResult(rootObjectsAndRelationships: objectsAndRelationships, changes: nil)
 	}
 	
-	var bridgeBackRequestResult: BridgeBackRequestResult<BridgeType> {
+	var bridgeBackRequestResult: BridgeBackRequestResult<Bridge> {
 		return BridgeBackRequestResult(metadata: metadata, returnedObjectIDsAndRelationships: objectIDs.map{ (objectID: $0, relationships: nil) }, asyncChanges: nil)
 	}
 	
-	public var result: ImportBridgeOperationResultsRequestOperation<BridgeType>.DbRepresentationImporterResultType {
+	public var result: ImportBridgeOperationResultsRequestOperation<Bridge>.DbRepresentationImporterResult {
 		return (importResult: importResult, bridgeBackRequestResult: bridgeBackRequestResult)
 	}
 	
-	public init(metadata m: BridgeType.MetadataType?, parent p: FastImportResultBuilderForBackResultsImporter? = nil) {
+	public init(metadata m: Bridge.Metadata?, parent p: FastImportResultBuilderForBackResultsImporter? = nil) {
 		metadata = m
 		parent = p
 	}
 	
-	public func unsafeStartedImporting(object: DbType.ObjectType, inDb db: DbType) {
+	public func unsafeStartedImporting(object: Db.Object, inDb db: Db) {
 		assert(currentlyBuiltObject == nil)
 		assert(currentlyBuiltObjectRelationships.count == 0)
 		
 		currentlyBuiltObject = object
 	}
 	
-	public func unsafeStartImporting(relationshipName: String, userInfo: BridgeType.MetadataType?) -> FastImportResultBuilderForBackResultsImporter {
+	public func unsafeStartImporting(relationshipName: String, userInfo: Bridge.Metadata?) -> FastImportResultBuilderForBackResultsImporter {
 		let res = FastImportResultBuilderForBackResultsImporter(metadata: userInfo, parent: self)
 		currentlyBuiltObjectRelationships[relationshipName] = res
 		return res
 	}
 	
-	public func unsafeFinishedImportingCurrentObject(inDb db: DbType) {
-		var fastImportRelationships = [String: ImportResult<DbType>]()
-		var bridgeBackRelationships = [String: BridgeBackRequestResult<BridgeType>]()
+	public func unsafeFinishedImportingCurrentObject(inDb db: Db) {
+		var fastImportRelationships = [String: ImportResult<Db>]()
+		var bridgeBackRelationships = [String: BridgeBackRequestResult<Bridge>]()
 		currentlyBuiltObjectRelationships.forEach {
 			fastImportRelationships[$0.key] = $0.value.importResult
 			bridgeBackRelationships[$0.key] = $0.value.bridgeBackRequestResult
@@ -93,19 +93,19 @@ public final class FastImportResultBuilderForBackResultsImporter<BridgeType : Br
 		currentlyBuiltObject = nil
 	}
 	
-	public func unsafeInserted(object: DbType.ObjectType, fromDb db: DbType) {
+	public func unsafeInserted(object: Db.Object, fromDb db: Db) {
 		/* We won't report changes and async changes in the fast import results and the bridge back request results, so we’ll just nop here. */
 	}
 	
-	public func unsafeUpdated(object: DbType.ObjectType, fromDb db: DbType) {
+	public func unsafeUpdated(object: Db.Object, fromDb db: Db) {
 		/* We won't report changes and async changes in the fast import results and the bridge back request results, so we'll just nop here. */
 	}
 	
-	public func unsafeDeleted(object: DbType.ObjectType, fromDb db: DbType) {
+	public func unsafeDeleted(object: Db.Object, fromDb db: Db) {
 		/* We won't report changes and async changes in the fast import results and the bridge back request results, so we'll just nop here. */
 	}
 	
-	public func unsafeFinishedImport(inDb db: DbType) throws {
+	public func unsafeFinishedImport(inDb db: Db) throws {
 		if parent == nil, hasTemporaryIDs {
 			let originalObjectIDs = objectIDs
 			objectIDs.removeAll()
@@ -118,7 +118,7 @@ public final class FastImportResultBuilderForBackResultsImporter<BridgeType : Br
 				let newObjectID = (objectsAndRelationships[idx].object as! NSManagedObject).objectID
 				assert(!newObjectID.isTemporaryID)
 				
-				objectIDs.append(newObjectID as! BridgeType.DbType.ObjectIDType)
+				objectIDs.append(newObjectID as! Bridge.Db.ObjectID)
 			}
 		}
 	}
@@ -127,10 +127,10 @@ public final class FastImportResultBuilderForBackResultsImporter<BridgeType : Br
 	
 	private var hasTemporaryIDs = false
 	
-	private var objectsAndRelationships = Array<(object: DbType.ObjectType, relationships: [String: ImportResult<DbType>]?)>()
-	private var objectIDs = Array<DbType.ObjectIDType>()
+	private var objectsAndRelationships = Array<(object: Db.Object, relationships: [String: ImportResult<Db>]?)>()
+	private var objectIDs = Array<Db.ObjectID>()
 	
-	private var currentlyBuiltObject: DbType.ObjectType?
+	private var currentlyBuiltObject: Db.Object?
 	private var currentlyBuiltObjectRelationships = [String: FastImportResultBuilderForBackResultsImporter]()
 	
 }

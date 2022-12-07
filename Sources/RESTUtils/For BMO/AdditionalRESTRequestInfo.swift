@@ -35,7 +35,7 @@ public struct AdditionalRESTRequestInfo<DbPropertyDescription : Hashable> {
 	/**
 	 Access and modify the subAdditionalInfo.
 	 Strictly equivalent to accessing the subAdditionalInfo dictionary directly,
-	  but kept for retro-compatibility w/ previous version where the CoreData Db conformance was made with the NSPropertyDescription type directly,
+	  but kept for retro-compatibility w/ previous version where the CoreData DbProtocol conformance was made with the NSPropertyDescription type directly,
 	  which caused problems because of a CoreData bug. */
 	public subscript(property: DbPropertyDescription) -> AdditionalRESTRequestInfo<DbPropertyDescription>? {
 		get {subAdditionalInfo[property]}

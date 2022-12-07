@@ -20,11 +20,12 @@ import Foundation
 public protocol DbRESTEntityDescription {
 	
 	/* Cannot constraint to DbRESTEntityDescription :( */
-	associatedtype SubSuperEntityType
+#warning("TODO: Check if comment is true")
+	associatedtype SubSuperEntity
 	
 	/* SubSuperEntityType instead of Self because NSEntityDescription is not a final class :( */
-	var superentity: SubSuperEntityType? {get}
-	var subentities: [SubSuperEntityType] {get}
+	var superentity: SubSuperEntity? {get}
+	var subentities: [SubSuperEntity] {get}
 	
 }
 

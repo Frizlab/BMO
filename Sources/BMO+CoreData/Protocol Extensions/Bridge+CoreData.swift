@@ -23,13 +23,13 @@ import BMO
 /* Swift Note:
  * We can either tag the whole extension as public, in which case there is no need to tag its functions public for them to be seen by clients,
  *  or let the extension as internal and tag all the functions as public. */
-public extension Bridge where DbType.FetchRequestType == NSFetchRequest<NSFetchRequestResult>, DbType.ObjectType == NSManagedObject, DbType.EntityDescriptionType == NSEntityDescription {
+public extension BridgeProtocol where Db.FetchRequest == NSFetchRequest<NSFetchRequestResult>, Db.Object == NSManagedObject, Db.EntityDescription == NSEntityDescription {
 	
-	func expectedResultEntity(forFetchRequest fetchRequest: DbType.FetchRequestType, additionalInfo: AdditionalRequestInfoType?) -> DbType.EntityDescriptionType? {
+	func expectedResultEntity(forFetchRequest fetchRequest: Db.FetchRequest, additionalInfo: AdditionalRequestInfo?) -> Db.EntityDescription? {
 		return fetchRequest.entity
 	}
 	
-	func expectedResultEntity(forObject object: DbType.ObjectType) -> DbType.EntityDescriptionType? {
+	func expectedResultEntity(forObject object: Db.Object) -> Db.EntityDescription? {
 		return object.entity
 	}
 	

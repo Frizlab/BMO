@@ -23,7 +23,7 @@ import RESTUtils
 
 public typealias RESTCoreDataFetchRequest = CoreDataFetchRequest<AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>>
 
-extension CoreDataFetchRequest where AdditionalInfoType == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper> {
+extension CoreDataFetchRequest where AdditionalInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper> {
 	
 	public init(context: NSManagedObjectContext, entity: NSEntityDescription, resultType: NSFetchRequestResultType = .managedObjectResultType, remoteId: String, remoteIdPropertyName: String = "remoteId", flatifiedFields: String?, alwaysFetchProperties: Bool, leaveBridgeHandler lb: (() -> Bool)? = nil, preImportHandler pi: (() -> Bool)? = nil, preCompletionHandler pc: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)? = nil) {
 		let fRequest = NSFetchRequest<NSFetchRequestResult>()

@@ -24,14 +24,14 @@ import RESTUtils
 
 
 @available(OSX 10.12, *)
-public enum AnyCoreDataCLH<FetchedObjectsType : NSManagedObject, BridgeType, PageInfoRetrieverType : PageInfoRetriever> : CoreDataCLH
-where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestInfoType == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetrieverType.BridgeType == BridgeType
+public enum AnyCoreDataCLH<FetchedObject : NSManagedObject, Bridge, PageInfoRetriever : PageInfoRetrieverProtocol> : CoreDataCLH
+where Bridge.Db == NSManagedObjectContext, Bridge.AdditionalRequestInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetriever.Bridge == Bridge
 {
 	
-	case search(CoreDataSearchCLH<FetchedObjectsType, BridgeType, PageInfoRetrieverType>)
-	case listElement(CoreDataListElementCLH<FetchedObjectsType, BridgeType, PageInfoRetrieverType>)
+	case search(CoreDataSearchCLH<FetchedObject, Bridge, PageInfoRetriever>)
+	case listElement(CoreDataListElementCLH<FetchedObject, Bridge, PageInfoRetriever>)
 	
-	public var resultsController: NSFetchedResultsController<FetchedObjectsType> {
+	public var resultsController: NSFetchedResultsController<FetchedObject> {
 		switch self {
 			case .search(let helper):      return helper.resultsController
 			case .listElement(let helper): return helper.resultsController
@@ -45,14 +45,14 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		}
 	}
 	
-	public func operationForLoading(pageInfo: Any, preRun: (() -> Bool)?, preImport: (() -> Bool)?, preCompletion: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)?) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType> {
+	public func operationForLoading(pageInfo: Any, preRun: (() -> Bool)?, preImport: (() -> Bool)?, preCompletion: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)?) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge> {
 		switch self {
-			case .search(let helper):      return helper.operationForLoading(pageInfo: pageInfo as! CoreDataSearchCLH<FetchedObjectsType, BridgeType, PageInfoRetrieverType>.PageInfo, preRun: preRun, preImport: preImport, preCompletion: preCompletion)
-			case .listElement(let helper): return helper.operationForLoading(pageInfo: pageInfo,                                                                                       preRun: preRun, preImport: preImport, preCompletion: preCompletion)
+			case .search(let helper):      return helper.operationForLoading(pageInfo: pageInfo as! CoreDataSearchCLH<FetchedObject, Bridge, PageInfoRetriever>.PageInfo, preRun: preRun, preImport: preImport, preCompletion: preCompletion)
+			case .listElement(let helper): return helper.operationForLoading(pageInfo: pageInfo,                                                                          preRun: preRun, preImport: preImport, preCompletion: preCompletion)
 		}
 	}
 	
-	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>) -> Result<BridgeBackRequestResult<BridgeType>, Error> {
+	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>) -> Result<BridgeBackRequestResult<Bridge>, Error> {
 		switch self {
 			case .search(let helper):      return helper.results(fromFinishedLoadingOperation: operation)
 			case .listElement(let helper): return helper.results(fromFinishedLoadingOperation: operation)
@@ -94,16 +94,16 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		}
 	}
 	
-	public func nextPageInfo(for completionResults: BridgeBackRequestResult<BridgeType>, from pageInfo: Any, nElementsPerPage: Int) -> Any?? {
+	public func nextPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: Any, nElementsPerPage: Int) -> Any?? {
 		switch self {
-			case .search(let helper):      return helper.nextPageInfo(for: completionResults, from: pageInfo as! CoreDataSearchCLH<FetchedObjectsType, BridgeType, PageInfoRetrieverType>.PageInfo, nElementsPerPage: nElementsPerPage)
+			case .search(let helper):      return helper.nextPageInfo(for: completionResults, from: pageInfo as! CoreDataSearchCLH<FetchedObject, Bridge, PageInfoRetriever>.PageInfo, nElementsPerPage: nElementsPerPage)
 			case .listElement(let helper): return helper.nextPageInfo(for: completionResults, from: pageInfo,                                                                                       nElementsPerPage: nElementsPerPage)
 		}
 	}
 	
-	public func previousPageInfo(for completionResults: BridgeBackRequestResult<BridgeType>, from pageInfo: Any, nElementsPerPage: Int) -> Any? {
+	public func previousPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: Any, nElementsPerPage: Int) -> Any? {
 		switch self {
-			case .search(let helper):      return helper.previousPageInfo(for: completionResults, from: pageInfo as! CoreDataSearchCLH<FetchedObjectsType, BridgeType, PageInfoRetrieverType>.PageInfo, nElementsPerPage: nElementsPerPage)
+			case .search(let helper):      return helper.previousPageInfo(for: completionResults, from: pageInfo as! CoreDataSearchCLH<FetchedObject, Bridge, PageInfoRetriever>.PageInfo, nElementsPerPage: nElementsPerPage)
 			case .listElement(let helper): return helper.previousPageInfo(for: completionResults, from: pageInfo,                                                                                       nElementsPerPage: nElementsPerPage)
 		}
 	}

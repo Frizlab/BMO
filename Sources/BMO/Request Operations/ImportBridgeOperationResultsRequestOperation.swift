@@ -17,16 +17,16 @@ import Foundation
 
 
 
-public final class ImportBridgeOperationResultsRequestOperation<BridgeType : Bridge> : Operation {
+public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeProtocol> : Operation {
 	
-	public typealias DbRepresentationImporterResultType = (importResult: ImportResult<BridgeType.DbType>, bridgeBackRequestResult: BridgeBackRequestResult<BridgeType>)
+	public typealias DbRepresentationImporterResult = (importResult: ImportResult<Bridge.Db>, bridgeBackRequestResult: BridgeBackRequestResult<Bridge>)
 	
-	public let request: ImportBridgeOperationResultsRequest<BridgeType>
-	public let importer: AnyBackResultsImporter<BridgeType>
+	public let request: ImportBridgeOperationResultsRequest<Bridge>
+	public let importer: AnyBackResultsImporter<Bridge>
 	
-	public private(set) var result: Result<BridgeBackRequestResult<BridgeType>, Error> = .failure(OperationError.notFinished)
+	public private(set) var result: Result<BridgeBackRequestResult<Bridge>, Error> = .failure(OperationError.notFinished)
 	
-	public init(request r: ImportBridgeOperationResultsRequest<BridgeType>, importer i: AnyBackResultsImporter<BridgeType>) {
+	public init(request r: ImportBridgeOperationResultsRequest<Bridge>, importer i: AnyBackResultsImporter<Bridge>) {
 		request = r
 		importer = i
 	}

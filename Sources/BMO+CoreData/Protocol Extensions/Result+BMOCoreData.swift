@@ -21,15 +21,15 @@ import BMO
 
 extension Result {
 	
-	public func simpleBackRequestResult<BridgeType>() -> Result<BridgeBackRequestResult<BridgeType>, Error> where Success == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
-		return simpleBackRequestResult(forRequestPartId: NSNull())
+	public func simpleBackRequestResult<Bridge>() -> Result<BridgeBackRequestResult<Bridge>, Error> where Success == BackRequestResult<CoreDataFetchRequest<Bridge.AdditionalRequestInfo>, Bridge> {
+		return simpleBackRequestResult(forRequestPartID: NSNull())
 	}
 	
-	public func simpleBackRequestSuccessValue<BridgeType>() -> BridgeBackRequestResult<BridgeType>? where Success == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
+	public func simpleBackRequestSuccessValue<Bridge>() -> BridgeBackRequestResult<Bridge>? where Success == BackRequestResult<CoreDataFetchRequest<Bridge.AdditionalRequestInfo>, Bridge> {
 		return simpleBackRequestResult().successValue
 	}
 	
-	public func simpleBackRequestError<BridgeType>() -> Swift.Error? where Success == BackRequestResult<CoreDataFetchRequest<BridgeType.AdditionalRequestInfoType>, BridgeType> {
+	public func simpleBackRequestError<Bridge>() -> Swift.Error? where Success == BackRequestResult<CoreDataFetchRequest<Bridge.AdditionalRequestInfo>, Bridge> {
 		return simpleBackRequestResult().failure
 	}
 	

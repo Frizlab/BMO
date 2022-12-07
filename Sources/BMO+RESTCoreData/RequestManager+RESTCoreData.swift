@@ -45,29 +45,29 @@ extension RequestManager {
 	 
 	 The handler _might_ be called before the function returns (in case there is a problem creating the back operations for instance). */
 	@available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
-	public func unsafeFetchObject<BridgeType, ObjectType: NSManagedObject>(
+	public func unsafeFetchObject<Bridge, Object : NSManagedObject>(
 		withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> (fetchedObject: ObjectType?, operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>)
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> (fetchedObject: Object?, operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>)
 	{
-		return unsafeFetchObject(ofEntity: ObjectType.entity(), withRemoteId: remoteId, flatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, remoteIdAttributeName: remoteIdAttributeName, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
+		return unsafeFetchObject(ofEntity: Object.entity(), withRemoteId: remoteId, flatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, remoteIdAttributeName: remoteIdAttributeName, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
 	}
 	
 	/* iOS 8 & 9 version of the method above. */
-	public func unsafeFetchObject<BridgeType, ObjectType: NSManagedObject>(
+	public func unsafeFetchObject<Bridge, Object: NSManagedObject>(
 		ofEntity entity: NSEntityDescription, withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> (fetchedObject: ObjectType?, operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>)
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> (fetchedObject: Object?, operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>)
 	{
 		/* Creating the fetch request. */
 		let fetchRequest = RequestManager.fetchRequestForFetchingObject(ofEntity: entity, withRemoteId: remoteId, remoteIdAttributeName: remoteIdAttributeName)
 		
 		/* Retrieving the object. */
-		let object = (try? context.fetch(fetchRequest))?.first as! ObjectType?
+		let object = (try? context.fetch(fetchRequest))?.first as! Object?
 #if DEBUG
 		if let c = try? context.count(for: fetchRequest), c > 1 {
 			if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
@@ -80,15 +80,15 @@ extension RequestManager {
 		return (fetchedObject: object, operation: fetchObject(fromFetchRequest: fetchRequest, withFlatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler))
 	}
 	
-	public func unsafeFetchObject<BridgeType, ObjectType: NSManagedObject>(
+	public func unsafeFetchObject<Bridge, Object : NSManagedObject>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?,
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> (fetchedObject: ObjectType?, operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>)
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> (fetchedObject: Object?, operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>)
 	{
 		/* Retrieving the object. */
-		let object = (try? context.fetch(fetchRequest))?.first as! ObjectType?
+		let object = (try? context.fetch(fetchRequest))?.first as! Object?
 #if DEBUG
 		if let c = try? context.count(for: fetchRequest), c > 1 {
 			if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
@@ -110,14 +110,14 @@ extension RequestManager {
 	 The handler (if any) is called **on the context**.
 	 
 	 The handler _might_ be called before the function returns (in case there is a problem creating the back operations for instance). */
-	public func unsafeFetchObjects<BridgeType, ObjectType: NSManagedObject>(
+	public func unsafeFetchObjects<Bridge, Object : NSManagedObject>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, withFlatifiedFields flatifiedFields: String? = nil, paginatorInfo: Any? = nil,
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObjects: [ObjectType], _ response: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> (fetchedObjects: [ObjectType], operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>)
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObjects: [Object], _ response: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> (fetchedObjects: [Object], operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>)
 	{
-		let objects = (try? context.fetch(fetchRequest)) as! [ObjectType]? ?? []
+		let objects = (try? context.fetch(fetchRequest)) as! [Object]? ?? []
 		return (fetchedObjects: objects, operation: fetchObjects(fromFetchRequest: fetchRequest, withFlatifiedFields: flatifiedFields, paginatorInfo: paginatorInfo, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler))
 	}
 	
@@ -127,53 +127,53 @@ extension RequestManager {
 	
 	@discardableResult
 	@available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
-	public func fetchObject<BridgeType, ObjectType: NSManagedObject>(
+	public func fetchObject<Bridge, Object : NSManagedObject>(
 		withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
-		return fetchObject(ofEntity: ObjectType.entity(), withRemoteId: remoteId, flatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, remoteIdAttributeName: remoteIdAttributeName, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
+		return fetchObject(ofEntity: Object.entity(), withRemoteId: remoteId, flatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, remoteIdAttributeName: remoteIdAttributeName, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
 	}
 	
 	@discardableResult
-	public func fetchObject<BridgeType, ObjectType: NSManagedObject>(
+	public func fetchObject<Bridge, Object : NSManagedObject>(
 		ofEntity entity: NSEntityDescription, withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
 		let fetchRequest = RequestManager.fetchRequestForFetchingObject(ofEntity: entity, withRemoteId: remoteId, remoteIdAttributeName: remoteIdAttributeName)
 		return fetchObject(fromFetchRequest: fetchRequest, withFlatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
 	}
 	
 	@discardableResult
-	public func fetchObject<BridgeType, ObjectType: NSManagedObject>(
+	public func fetchObject<Bridge, Object : NSManagedObject>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, withFlatifiedFields flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil,
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
 		let entity = (context.persistentStoreCoordinator?.managedObjectModel.entitiesByName[fetchRequest.entityName!])!
 		return fetchObject(fromFetchRequest: fetchRequest, additionalRequestInfo: AdditionalRESTRequestInfo(flatifiedFields: flatifiedFields, inEntity: entity, keyPathPaginatorInfo: keyPathPaginatorInfo), fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
 	}
 	
 	@discardableResult
-	public func fetchObject<BridgeType, ObjectType: NSManagedObject>(
+	public func fetchObject<Bridge, Object : NSManagedObject>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?,
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObject: ObjectType?, _ fullResponse: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
 		let bmoRequest = RESTCoreDataFetchRequest(context: context, fetchRequest: fetchRequest, fetchType: fetchType, additionalInfo: additionalRequestInfo)
 		let handler = handler.flatMap{ originalHandler in
-			return { (_ response: Result<BackRequestResult<RESTCoreDataFetchRequest, BridgeType>, Error>) -> Void in
+			return { (_ response: Result<BackRequestResult<RESTCoreDataFetchRequest, Bridge>, Error>) -> Void in
 				context.perform {
-					let object = (try? context.fetch(fetchRequest))?.first as! ObjectType?
+					let object = (try? context.fetch(fetchRequest))?.first as! Object?
 #if DEBUG
 					if let c = try? context.count(for: fetchRequest), c > 1 {
 						if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
@@ -190,19 +190,19 @@ extension RequestManager {
 	}
 	
 	@discardableResult
-	public func fetchObjects<BridgeType, ObjectType: NSManagedObject>(
+	public func fetchObjects<Bridge, Object : NSManagedObject>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, withFlatifiedFields flatifiedFields: String? = nil, paginatorInfo: Any? = nil,
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ fetchedObjects: [ObjectType], _ response: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ fetchedObjects: [Object], _ response: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
 		let entity = (context.persistentStoreCoordinator?.managedObjectModel.entitiesByName[fetchRequest.entityName!])!
 		let bmoRequest = RESTCoreDataFetchRequest(context: context, fetchRequest: fetchRequest, fetchType: fetchType, additionalInfo: AdditionalRESTRequestInfo(flatifiedFields: flatifiedFields, inEntity: entity, paginatorInfo: paginatorInfo))
 		let handler = handler.flatMap{ originalHandler in
-			return { (_ response: Result<BackRequestResult<RESTCoreDataFetchRequest, BridgeType>, Error>) -> Void in
+			return { (_ response: Result<BackRequestResult<RESTCoreDataFetchRequest, Bridge>, Error>) -> Void in
 				context.perform {
-					let objects = (try? context.fetch(fetchRequest)) as! [ObjectType]? ?? []
+					let objects = (try? context.fetch(fetchRequest)) as! [Object]? ?? []
 					
 					originalHandler(objects, response.simpleBackRequestResult())
 				}
@@ -220,12 +220,12 @@ extension RequestManager {
 	 
 	 The handler (if any) **won't** be called on the context. */
 	@discardableResult
-	public func fetchObject<BridgeType>(
+	public func fetchObject<Bridge>(
 		ofEntity entity: NSEntityDescription, withRemoteId remoteId: String, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ response: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ response: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>()
 		fetchRequest.entity = entity
@@ -238,12 +238,12 @@ extension RequestManager {
 	 
 	 The handler (if any) **won't** be called on the context. */
 	@discardableResult
-	public func fetchObjects<BridgeType>(
+	public func fetchObjects<Bridge>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, withFlatifiedFields flatifiedFields: String? = nil, paginatorInfo: Any? = nil,
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
-		handler: ((_ response: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
+		handler: ((_ response: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
 		let entity = (context.persistentStoreCoordinator?.managedObjectModel.entitiesByName[fetchRequest.entityName!])!
 		return fetchObjects(fromFetchRequest: fetchRequest, additionalRequestInfo: AdditionalRESTRequestInfo(flatifiedFields: flatifiedFields, inEntity: entity, paginatorInfo: paginatorInfo), fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
@@ -254,28 +254,28 @@ extension RequestManager {
 	 
 	 The handler (if any) **won't** be called on the context. */
 	@discardableResult
-	public func fetchObjects<BridgeType>(
+	public func fetchObjects<Bridge>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?,
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil,
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
 		preCompletionHandler: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)? = nil,
-		handler: ((_ response: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		handler: ((_ response: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
 		return operationForFetchingObjects(fromFetchRequest: fetchRequest, additionalRequestInfo: additionalRequestInfo, fetchType: fetchType, onContext: context, bridge: bridge, autoStart: true, preCompletionHandler: preCompletionHandler, handler: handler)
 	}
 	
-	public func operationForFetchingObjects<BridgeType>(
+	public func operationForFetchingObjects<Bridge>(
 		fromFetchRequest fetchRequest: NSFetchRequest<NSFetchRequestResult>, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?,
 		fetchType: RESTCoreDataFetchRequest.FetchType,
-		onContext context: NSManagedObjectContext, bridge: BridgeType? = nil, autoStart: Bool,
+		onContext context: NSManagedObjectContext, bridge: Bridge? = nil, autoStart: Bool,
 		preCompletionHandler: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)? = nil,
-		handler: ((_ response: Result<BridgeBackRequestResult<BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>
+		handler: ((_ response: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
 		let bmoRequest = RESTCoreDataFetchRequest(context: context, fetchRequest: fetchRequest, fetchType: fetchType, additionalInfo: additionalRequestInfo, leaveBridgeHandler: nil, preImportHandler: nil, preCompletionHandler: preCompletionHandler)
 		let handler = handler.flatMap{ originalHandler in
-			return { (_ response: Result<BackRequestResult<RESTCoreDataFetchRequest, BridgeType>, Error>) -> Void in
+			return { (_ response: Result<BackRequestResult<RESTCoreDataFetchRequest, Bridge>, Error>) -> Void in
 				originalHandler(response.simpleBackRequestResult())
 			}
 		}
@@ -295,11 +295,11 @@ extension RequestManager {
 	 
 	 The handler is **NOT** called on the context. */
 	@discardableResult
-	public func unsafeSave<BridgeType>(
+	public func unsafeSave<Bridge>(
 		context: NSManagedObjectContext, objectsToSaveOnRemote objects: [NSManagedObject]?, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>? = nil, rollbackInsteadOfSave: Bool = false,
-		bridge: BridgeType? = nil,
-		handler: ((_ response: Result<BackRequestResult<RESTCoreDataSaveRequest, BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataSaveRequest, BridgeType>?
+		bridge: Bridge? = nil,
+		handler: ((_ response: Result<BackRequestResult<RESTCoreDataSaveRequest, Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataSaveRequest, Bridge>?
 	{
 		return unsafeOperationForSaving(context: context, objectsToSaveOnRemote: objects, additionalRequestInfo: additionalRequestInfo, saveWorkflow: rollbackInsteadOfSave ? .rollbackBeforeBackReturns : .saveBeforeBackReturns, bridge: bridge, autoStart: true, handler: handler)
 	}
@@ -313,20 +313,20 @@ extension RequestManager {
 	 
 	 The handler is **NOT** called on the context. */
 	@discardableResult
-	public func unsafeSaveAfterBackReturns<BridgeType>(
+	public func unsafeSaveAfterBackReturns<Bridge>(
 		context: NSManagedObjectContext, objectsToSaveOnRemote objects: [NSManagedObject]?, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>? = nil,
-		bridge: BridgeType? = nil,
-		handler: ((_ response: Result<BackRequestResult<RESTCoreDataSaveRequest, BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataSaveRequest, BridgeType>?
+		bridge: Bridge? = nil,
+		handler: ((_ response: Result<BackRequestResult<RESTCoreDataSaveRequest, Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataSaveRequest, Bridge>?
 	{
 		return unsafeOperationForSaving(context: context, objectsToSaveOnRemote: objects, additionalRequestInfo: additionalRequestInfo, saveWorkflow: .saveAfterBackReturns, bridge: bridge, autoStart: true, handler: handler)
 	}
 	
-	public func unsafeOperationForSaving<BridgeType>(
+	public func unsafeOperationForSaving<Bridge>(
 		context: NSManagedObjectContext, objectsToSaveOnRemote objects: [NSManagedObject]?, additionalRequestInfo: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>? = nil, saveWorkflow: RESTCoreDataSaveRequest.SaveWorkflow = .saveBeforeBackReturns,
-		bridge: BridgeType? = nil,
-		autoStart: Bool, handler: ((_ response: Result<BackRequestResult<RESTCoreDataSaveRequest, BridgeType>, Error>) -> Void)? = nil
-	) -> BackRequestOperation<RESTCoreDataSaveRequest, BridgeType>?
+		bridge: Bridge? = nil,
+		autoStart: Bool, handler: ((_ response: Result<BackRequestResult<RESTCoreDataSaveRequest, Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<RESTCoreDataSaveRequest, Bridge>?
 	{
 		let op = operation(forBackRequest: RESTCoreDataSaveRequest(db: context, additionalInfo: additionalRequestInfo, objectsToSave: objects, saveWorkflow: saveWorkflow), withBridge: bridge, autoStart: false, handler: handler)
 		if autoStart {

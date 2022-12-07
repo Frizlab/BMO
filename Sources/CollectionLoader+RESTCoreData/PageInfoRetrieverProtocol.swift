@@ -20,13 +20,13 @@ import RESTUtils
 
 
 
-public protocol PageInfoRetriever {
+public protocol PageInfoRetrieverProtocol {
 	
-	associatedtype BridgeType : Bridge
+	associatedtype Bridge : BridgeProtocol
 	
 	func pageInfoFor(startOffset: Int, endOffset: Int) -> Any
 	
-	func nextPageInfo(for completionResults: BridgeBackRequestResult<BridgeType>, from pageInfo: Any, nElementsPerPage: Int) -> Any??
-	func previousPageInfo(for completionResults: BridgeBackRequestResult<BridgeType>, from pageInfo: Any, nElementsPerPage: Int) -> Any?
+	func nextPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: Any, nElementsPerPage: Int) -> Any??
+	func previousPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: Any, nElementsPerPage: Int) -> Any?
 	
 }

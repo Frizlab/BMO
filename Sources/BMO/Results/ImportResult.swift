@@ -17,7 +17,7 @@ import Foundation
 
 
 
-public struct ImportResult<DbType : Db> {
+public struct ImportResult<Db : DbProtocol> {
 	
 	/* Note: We deliberately chose not to put the relationship metadata info from the bridge in this struct.
 	 * We could have, but it would have made many other objects required to be generic and in overall complexified the code.
@@ -30,7 +30,7 @@ public struct ImportResult<DbType : Db> {
 	 The imported objects directly corresponding to the given db representations in the request.
 	 
 	 Some importers might decide to drop the relationships part of the result for performance reasons (hence the optionality of the relationships part of the tuple). */
-	public let rootObjectsAndRelationships: [(object: DbType.ObjectType, relationships: [String: ImportResult<DbType>]?)]
+	public let rootObjectsAndRelationships: [(object: Db.Object, relationships: [String: ImportResult<Db>]?)]
 	
 	/**
 	 Contains the changes reported by the db import method.
@@ -38,9 +38,9 @@ public struct ImportResult<DbType : Db> {
 	  (eg. when a relationship value is replaced, all objects previously in the relationship are usually modified because the reverse relationship will be set to nil).
 	 
 	 Some importers might decide to drop this result for performance reasons, hence the optionality. */
-	public let changes: ChangesDescription<DbType.ObjectIDType>?
+	public let changes: ChangesDescription<Db.ObjectID>?
 	
-	public init(rootObjectsAndRelationships r: [(object: DbType.ObjectType, relationships: [String: ImportResult<DbType>]?)], changes c: ChangesDescription<DbType.ObjectIDType>?) {
+	public init(rootObjectsAndRelationships r: [(object: Db.Object, relationships: [String: ImportResult<Db>]?)], changes c: ChangesDescription<Db.ObjectID>?) {
 		rootObjectsAndRelationships = r
 		changes = c
 	}

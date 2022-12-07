@@ -20,11 +20,11 @@ import BMO
 
 
 
-extension MixedRepresentation where DbEntityDescriptionType == NSEntityDescription {
+extension MixedRepresentation where DbEntityDescription == NSEntityDescription {
 	
-	public init(entity e: DbEntityDescriptionType, uniquingId uid: AnyHashable?, mixedRepresentationDictionary: [String: Any?], userInfo info: BridgeUserInfoType, relationshipAndMetadataValuePreprocessor handler: (_ relationship: NSRelationshipDescription, _ value: Any??) -> RemoteRelationshipAndMetadataRepresentationType?? = {
+	public init(entity e: DbEntityDescription, uniquingId uid: AnyHashable?, mixedRepresentationDictionary: [String: Any?], userInfo info: BridgeUserInfo, relationshipAndMetadataValuePreprocessor handler: (_ relationship: NSRelationshipDescription, _ value: Any??) -> RemoteRelationshipAndMetadataRepresentation?? = {
 		guard let relationshipValue = $1 else {return nil}
-		return relationshipValue as? RemoteRelationshipAndMetadataRepresentationType?
+		return relationshipValue as? RemoteRelationshipAndMetadataRepresentation?
 	}) {
 		self.init(entity: e, uniquingId: uid, mixedRepresentationDictionary: mixedRepresentationDictionary, userInfo: info, relationshipAndMetadataValuePreprocessorNoDefault: handler)
 	}
@@ -34,7 +34,7 @@ extension MixedRepresentation where DbEntityDescriptionType == NSEntityDescripti
 	 *  being a static var of a separate generic class with an extension when generic is a specific type,
 	 *  but neither worked.
 	 * Also tried a solution where the default handler is a generic private function, with a specific implementation for a given type. */
-	fileprivate init(entity e: DbEntityDescriptionType, uniquingId uid: AnyHashable?, mixedRepresentationDictionary: [String: Any?], userInfo info: BridgeUserInfoType, relationshipAndMetadataValuePreprocessorNoDefault handler: (_ relationship: NSRelationshipDescription, _ value: Any??) -> RemoteRelationshipAndMetadataRepresentationType??) {
+	fileprivate init(entity e: DbEntityDescription, uniquingId uid: AnyHashable?, mixedRepresentationDictionary: [String: Any?], userInfo info: BridgeUserInfo, relationshipAndMetadataValuePreprocessorNoDefault handler: (_ relationship: NSRelationshipDescription, _ value: Any??) -> RemoteRelationshipAndMetadataRepresentation??) {
 		var attrs = [String: Any?]()
 		for attributeName in e.attributesByName.keys /* Includes superentities attributes */ {
 			guard let v = mixedRepresentationDictionary[attributeName] else {continue}
@@ -53,9 +53,9 @@ extension MixedRepresentation where DbEntityDescriptionType == NSEntityDescripti
 }
 
 
-extension MixedRepresentation where DbEntityDescriptionType == NSEntityDescription, RemoteRelationshipAndMetadataRepresentationType == [[String: Any?]] {
+extension MixedRepresentation where DbEntityDescription == NSEntityDescription, RemoteRelationshipAndMetadataRepresentation == [[String: Any?]] {
 	
-	public init(entity e: DbEntityDescriptionType, uniquingId uid: AnyHashable?, mixedRepresentationDictionary: [String: Any?], userInfo info: BridgeUserInfoType, relationshipAndMetadataValuePreprocessor handler: (_ relationship: NSRelationshipDescription, _ value: Any??) -> RemoteRelationshipAndMetadataRepresentationType?? = {
+	public init(entity e: DbEntityDescription, uniquingId uid: AnyHashable?, mixedRepresentationDictionary: [String: Any?], userInfo info: BridgeUserInfo, relationshipAndMetadataValuePreprocessor handler: (_ relationship: NSRelationshipDescription, _ value: Any??) -> RemoteRelationshipAndMetadataRepresentation?? = {
 		/* In this usual case where the remote relationship representation is an array of dictionary, we handle the case where the relationship value is a simple dictionary and wraps it in an array. */
 		guard let relationshipValue = $1 else {return nil}
 		switch relationshipValue {

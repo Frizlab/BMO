@@ -22,19 +22,19 @@ import Foundation
   relationships are local for the key part,
   remote for the value part.
  The request operation is in charge of resolving the recursivity to create a DbRepresentation. */
-public struct MixedRepresentation<DbEntityDescriptionType, RemoteRelationshipAndMetadataRepresentationType, BridgeUserInfoType> {
+public struct MixedRepresentation<DbEntityDescription, RemoteRelationshipAndMetadataRepresentation, BridgeUserInfo> {
 	
-	public typealias RelationshipValue = (expectedEntity: DbEntityDescriptionType, value: RemoteRelationshipAndMetadataRepresentationType)?
+	public typealias RelationshipValue = (expectedEntity: DbEntityDescription, value: RemoteRelationshipAndMetadataRepresentation)?
 	
-	public let entity: DbEntityDescriptionType
+	public let entity: DbEntityDescription
 	
 	public let uniquingId: AnyHashable?
 	public let attributes: [String: Any?]
 	public let relationships: [String: RelationshipValue]
 	
-	public let userInfo: BridgeUserInfoType
+	public let userInfo: BridgeUserInfo
 	
-	public init(entity e: DbEntityDescriptionType, uniquingId uid: AnyHashable?, attributes attrs: [String: Any?], relationships rels: [String: RelationshipValue], userInfo ui: BridgeUserInfoType) {
+	public init(entity e: DbEntityDescription, uniquingId uid: AnyHashable?, attributes attrs: [String: Any?], relationships rels: [String: RelationshipValue], userInfo ui: BridgeUserInfo) {
 		entity = e
 		uniquingId = uid
 		attributes = attrs

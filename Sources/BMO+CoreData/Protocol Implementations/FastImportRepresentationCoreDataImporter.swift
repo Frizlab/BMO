@@ -22,14 +22,14 @@ import BMO_FastImportRepresentation
 
 
 
-final class FastImportRepresentationCoreDataImporter<ResultBuilderType : SingleThreadDbRepresentationImporterResultBuilder> : DbRepresentationImporter
-where ResultBuilderType.DbType == NSManagedObjectContext
+final class FastImportRepresentationCoreDataImporter<ResultBuilder : SingleThreadDbRepresentationImporterResultBuilder> : DbRepresentationImporter
+where ResultBuilder.Db == NSManagedObjectContext
 {
 	
-	typealias DbType = NSManagedObjectContext
-	typealias DbRepresentationType = FastImportRepresentation<NSEntityDescription, NSManagedObject, ResultBuilderType.DbRepresentationUserInfoType>
+	typealias Db = NSManagedObjectContext
+	typealias DbRepresentation = FastImportRepresentation<NSEntityDescription, NSManagedObject, ResultBuilder.DbRepresentationUserInfo>
 	
-	init(uniquingPropertyName p: String, representations r: [DbRepresentationType], resultBuilder rb: ResultBuilderType) {
+	init(uniquingPropertyName p: String, representations r: [DbRepresentation], resultBuilder rb: ResultBuilder) {
 		uniquingPropertyName = p
 		resultBuilder = rb
 		representations = r
@@ -39,7 +39,7 @@ where ResultBuilderType.DbType == NSManagedObjectContext
 		extractUniquingIds(representations: representations)
 	}
 	
-	func unsafeImport(in db: NSManagedObjectContext, updatingObject updatedObject: DbType.ObjectType?) throws -> ResultBuilderType.ResultType {
+	func unsafeImport(in db: NSManagedObjectContext, updatingObject updatedObject: Db.Object?) throws -> ResultBuilder.ResultType {
 		var objectsByEntityAndUniquingIds = [NSEntityDescription: [AnyHashable: NSManagedObject]]()
 		for (entity, uniquingIds) in uniquingIdsByEntity {
 			let request = NSFetchRequest<NSManagedObject>()
@@ -60,7 +60,7 @@ where ResultBuilderType.DbType == NSManagedObjectContext
 		return resultBuilder.result
 	}
 	
-	private func extractUniquingIds(representations: [DbRepresentationType]) {
+	private func extractUniquingIds(representations: [DbRepresentation]) {
 		for representation in representations {
 			assert(!representation.relationships.keys.contains(uniquingPropertyName))
 			assert( representation.entity.attributesByName.keys.contains(uniquingPropertyName)) /* attributesByName includes superentities attributes */
@@ -76,7 +76,7 @@ where ResultBuilderType.DbType == NSManagedObjectContext
 		}
 	}
 	
-	private func unsafeImport(representations: [DbRepresentationType], in db: NSManagedObjectContext, updatingObject updatedObject: DbType.ObjectType?, isRootImport: Bool, resultBuilder: ResultBuilderType, prefetchedObjectsByEntityAndUniquingIds uniqIdAndEntityToObject: inout [NSEntityDescription: [AnyHashable: NSManagedObject]], insertedObjects: inout [NSManagedObject]) throws -> [DbType.ObjectType] {
+	private func unsafeImport(representations: [DbRepresentation], in db: NSManagedObjectContext, updatingObject updatedObject: Db.Object?, isRootImport: Bool, resultBuilder: ResultBuilder, prefetchedObjectsByEntityAndUniquingIds uniqIdAndEntityToObject: inout [NSEntityDescription: [AnyHashable: NSManagedObject]], insertedObjects: inout [NSManagedObject]) throws -> [Db.Object] {
 		if let updatedObject = updatedObject, updatedObject.isUsable {
 			guard representations.count <= 1 else {
 				throw ImportError.tooManyRepresentationsToUpdateObject
@@ -205,8 +205,8 @@ where ResultBuilderType.DbType == NSManagedObjectContext
 	
 	private let uniquingPropertyName: String
 	
-	private let representations: [DbRepresentationType]
-	private let resultBuilder: ResultBuilderType
+	private let representations: [DbRepresentation]
+	private let resultBuilder: ResultBuilder
 	
 	private var uniquingIdsByEntity = [NSEntityDescription: Set<AnyHashable>]()
 	

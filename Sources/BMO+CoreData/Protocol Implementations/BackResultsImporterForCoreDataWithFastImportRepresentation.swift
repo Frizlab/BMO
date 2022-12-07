@@ -21,7 +21,7 @@ import BMO_FastImportRepresentation
 
 
 
-public class BackResultsImporterForCoreDataWithFastImportRepresentation<BridgeType : Bridge> : BackResultsImporter where BridgeType.DbType == NSManagedObjectContext {
+public class BackResultsImporterForCoreDataWithFastImportRepresentation<Bridge : BridgeProtocol> : BackResultsImporter where Bridge.Db == NSManagedObjectContext {
 	
 	/**
 	 The property the importer will use to do the uniquing.
@@ -67,18 +67,18 @@ public class BackResultsImporterForCoreDataWithFastImportRepresentation<BridgeTy
 		uniquingPropertyName = p
 	}
 	
-	public func retrieveDbRepresentations(fromRemoteRepresentations remoteRepresentations: [BridgeType.RemoteObjectRepresentationType], expectedEntity entity: BridgeType.DbType.EntityDescriptionType, userInfo: BridgeType.UserInfoType, bridge: BridgeType, shouldContinueHandler: () -> Bool) -> Int {
+	public func retrieveDbRepresentations(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool) -> Int {
 		dbRepresentations = FastImportRepresentation.fastImportRepresentations(fromRemoteRepresentations: remoteRepresentations, expectedEntity: entity, userInfo: userInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler)
 		return dbRepresentations.count
 	}
 	
-	public func createAndPrepareDbImporter(rootMetadata: BridgeType.MetadataType?) throws {
-		let resultBuilder = ResultBuilderType(metadata: rootMetadata)
-		importer = FastImportRepresentationCoreDataImporter<ResultBuilderType>(uniquingPropertyName: uniquingPropertyName, representations: dbRepresentations, resultBuilder: resultBuilder)
+	public func createAndPrepareDbImporter(rootMetadata: Bridge.Metadata?) throws {
+		let resultBuilder = ResultBuilder(metadata: rootMetadata)
+		importer = FastImportRepresentationCoreDataImporter<ResultBuilder>(uniquingPropertyName: uniquingPropertyName, representations: dbRepresentations, resultBuilder: resultBuilder)
 		try importer.prepareImport()
 	}
 	
-	public func unsafeImport(in db: BridgeType.DbType, updatingObject updatedObject: BridgeType.DbType.ObjectType?) throws -> (importResult: ImportResult<BridgeType.DbType>, bridgeBackRequestResult: BridgeBackRequestResult<BridgeType>) {
+	public func unsafeImport(in db: Bridge.Db, updatingObject updatedObject: Bridge.Db.Object?) throws -> (importResult: ImportResult<Bridge.Db>, bridgeBackRequestResult: BridgeBackRequestResult<Bridge>) {
 		return try importer.unsafeImport(in: db, updatingObject: updatedObject)
 	}
 	
@@ -86,10 +86,10 @@ public class BackResultsImporterForCoreDataWithFastImportRepresentation<BridgeTy
 	   MARK: - Private
 	   *************** */
 	
-	private typealias ResultBuilderType = FastImportResultBuilderForBackResultsImporter<BridgeType>
-	private typealias ResultType = ImportBridgeOperationResultsRequestOperation<BridgeType>.DbRepresentationImporterResultType
+	private typealias ResultBuilder = FastImportResultBuilderForBackResultsImporter<Bridge>
+	private typealias ResultType = ImportBridgeOperationResultsRequestOperation<Bridge>.DbRepresentationImporterResult
 	
-	private var importer: FastImportRepresentationCoreDataImporter<ResultBuilderType>!
-	private var dbRepresentations: [FastImportRepresentation<BridgeType.DbType.EntityDescriptionType, BridgeType.DbType.ObjectType, BridgeType.MetadataType>]!
+	private var importer: FastImportRepresentationCoreDataImporter<ResultBuilder>!
+	private var dbRepresentations: [FastImportRepresentation<Bridge.Db.EntityDescription, Bridge.Db.Object, Bridge.Metadata>]!
 	
 }

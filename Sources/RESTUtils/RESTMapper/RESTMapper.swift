@@ -234,7 +234,7 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 			/* The rest representation did not match the description. */
 			visitedEntities.insert(expectedEntity)
 			for subentity in expectedEntity.subentities {
-				let subentity = subentity as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */
+				let subentity = subentity as! DbEntityDescription /* See comment about SubSuperEntity in DbRESTEntityDescription for explanation of the "as!" */
 				if let r = actualLocalEntity(forRESTRepresentation: restRepresentation, expectedEntity: subentity, canUseSuperentities: canUseSuperentities, visitedEntities: &visitedEntities) {
 					return r
 				}
@@ -246,13 +246,13 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 	
 	private func _paginator(forEntity entity: DbEntityDescription) -> RESTPaginator? {
 		if let p = restMapping.entitiesMapping[entity]?.paginator {return p}
-		if let s = entity.superentity {return _paginator(forEntity: s as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)}
+		if let s = entity.superentity {return _paginator(forEntity: s as! DbEntityDescription /* See comment about SubSuperEntity in DbRESTEntityDescription for explanation of the "as!" */)}
 		return nil
 	}
 	
 	private func _restPath(forEntity entity: DbEntityDescription) -> RESTPath? {
 		if let r = restMapping.entitiesMapping[entity]?.restPath {return r}
-		if let s = entity.superentity {return _restPath(forEntity: s as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)}
+		if let s = entity.superentity {return _restPath(forEntity: s as! DbEntityDescription /* See comment about SubSuperEntity in DbRESTEntityDescription for explanation of the "as!" */)}
 		return nil
 	}
 	
@@ -292,12 +292,12 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 				var curEntityO = entity
 				while let curEntity = curEntityO {
 					if let fp = restMapping.entitiesMapping[curEntity]?.forcedPropertiesOnFetch {properties.formUnion(fp)}
-					curEntityO = curEntity.superentity as? DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as" */
+					curEntityO = curEntity.superentity as? DbEntityDescription /* See comment about SubSuperEntity in DbRESTEntityDescription for explanation of the "as" */
 				}
 				for property in properties {
 					let subinfo = additionalRESTInfo?[property]
 					let propertyMapping = restMapping.propertyMapping(forProperty: property, expectedEntity: entity)
-					let destinationEntity = property.destinationEntity.flatMap{ ($0 as! DbEntityDescription) /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */ }
+					let destinationEntity = property.destinationEntity.flatMap{ ($0 as! DbEntityDescription) /* See comment about SubSuperEntity in DbRESTEntityDescription for explanation of the "as!" */ }
 					
 					guard let propertyPathInFields = propertyMapping?.restPropertyPathInFields else {
 						/* We do not have a path for the fields.

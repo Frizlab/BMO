@@ -36,22 +36,22 @@ import RESTUtils
  * One solution would be to filter the pre-results to only contain elements kind of the expected entity. */
 
 @available(OSX 10.12, *)
-public class CoreDataSearchCLH<FetchedObjectsType : NSManagedObject, BridgeType, PageInfoRetrieverType : PageInfoRetriever> : CoreDataCLH
-where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestInfoType == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetrieverType.BridgeType == BridgeType
+public class CoreDataSearchCLH<FetchedObject : NSManagedObject, Bridge : BridgeProtocol, PageInfoRetriever : PageInfoRetrieverProtocol> : CoreDataCLH
+where Bridge.Db == NSManagedObjectContext, Bridge.AdditionalRequestInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetriever.Bridge == Bridge
 {
 	
-	public let bridge: BridgeType
-	public let pageInfoRetriever: PageInfoRetrieverType?
+	public let bridge: Bridge
+	public let pageInfoRetriever: PageInfoRetriever?
 	public let context: NSManagedObjectContext
 	public let requestManager: RequestManager
 	
-	public let resultsController: NSFetchedResultsController<FetchedObjectsType>
+	public let resultsController: NSFetchedResultsController<FetchedObject>
 	
 	public init(
-		fetchRequest fr: NSFetchRequest<FetchedObjectsType>, additionalFetchInfo afi: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?,
+		fetchRequest fr: NSFetchRequest<FetchedObject>, additionalFetchInfo afi: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?,
 		apiOrderProperty aop: NSAttributeDescription? = nil, apiOrderDelta aod: Int = 1,
 		deletionDateProperty ddp: NSAttributeDescription? = nil,
-		context c: NSManagedObjectContext, bridge b: BridgeType? = nil, pageInfoRetriever pir: PageInfoRetrieverType? = nil, requestManager rm: RequestManager
+		context c: NSManagedObjectContext, bridge b: Bridge? = nil, pageInfoRetriever pir: PageInfoRetriever? = nil, requestManager rm: RequestManager
 	) {
 		assert(aod > 0)
 		assert(ddp?.attributeValueClassName == nil || ddp?.attributeValueClassName == "NSDate" || ddp?.attributeValueClassName == "Date")
@@ -68,7 +68,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		apiOrderDelta = aod
 		deletionDateProperty = ddp
 		
-		let controllerFetchRequest = fr.copy() as! NSFetchRequest<FetchedObjectsType> /* Must still copy because of ObjC legacy… */
+		let controllerFetchRequest = fr.copy() as! NSFetchRequest<FetchedObject> /* Must still copy because of ObjC legacy… */
 		if let apiOrderProperty = aop {
 			var sd = controllerFetchRequest.sortDescriptors ?? []
 			sd.insert(NSSortDescriptor(key: apiOrderProperty.name, ascending: true), at: 0)
@@ -79,7 +79,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 			if let currentPredicate = controllerFetchRequest.predicate {controllerFetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [currentPredicate, deletionPredicate])}
 			else                                                       {controllerFetchRequest.predicate = deletionPredicate}
 		}
-		resultsController = NSFetchedResultsController<FetchedObjectsType>(fetchRequest: controllerFetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+		resultsController = NSFetchedResultsController<FetchedObject>(fetchRequest: controllerFetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
 		try! resultsController.performFetch()
 	}
 	
@@ -87,7 +87,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		return PageInfo(offset: startOffset, paginatorInfo: pageInfoRetriever?.pageInfoFor(startOffset: startOffset, endOffset: endOffset) ?? RESTOffsetLimitPaginatorInfo(startOffset: startOffset, endOffset: endOffset))
 	}
 	
-	public func operationForLoading(pageInfo: PageInfo, preRun: (() -> Bool)?, preImport: (() -> Bool)?, preCompletion: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)?) -> BackRequestOperation<RESTCoreDataFetchRequest, BridgeType> {
+	public func operationForLoading(pageInfo: PageInfo, preRun: (() -> Bool)?, preImport: (() -> Bool)?, preCompletion: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)?) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge> {
 		let fullPreCompletionHandler: ((ImportResult<NSManagedObjectContext>) throws -> Void)?
 		
 		if let apiOrderProperty = apiOrderProperty, let startIndex = pageInfo.offset {
@@ -111,7 +111,7 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		return requestManager.operation(forBackRequest: request, autoStart: false, handler: nil)
 	}
 	
-	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, BridgeType>) -> Result<BridgeBackRequestResult<BridgeType>, Error> {
+	public func results(fromFinishedLoadingOperation operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>) -> Result<BridgeBackRequestResult<Bridge>, Error> {
 		return operation.result.simpleBackRequestResult()
 	}
 	
@@ -128,13 +128,13 @@ where BridgeType.DbType == NSManagedObjectContext, BridgeType.AdditionalRequestI
 		else                                                            {context.delete(context.object(with: objectId))}
 	}
 	
-	public func nextPageInfo(for completionResults: BridgeBackRequestResult<BridgeType>, from pageInfo: PageInfo, nElementsPerPage: Int) -> PageInfo?? {
+	public func nextPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: PageInfo, nElementsPerPage: Int) -> PageInfo?? {
 		guard let pageInfoRetriever = pageInfoRetriever else {return nil}
 		guard let i = pageInfoRetriever.nextPageInfo(for: completionResults, from: pageInfo.paginatorInfo, nElementsPerPage: nElementsPerPage) else {return nil}
 		return .some(i.flatMap{ PageInfo(offset: pageInfo.offset.flatMap{ $0 + nElementsPerPage }, paginatorInfo: $0) })
 	}
 	
-	public func previousPageInfo(for completionResults: BridgeBackRequestResult<BridgeType>, from pageInfo: PageInfo, nElementsPerPage: Int) -> PageInfo? {
+	public func previousPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: PageInfo, nElementsPerPage: Int) -> PageInfo? {
 		guard let pageInfoRetriever = pageInfoRetriever else {return nil}
 		let i = pageInfoRetriever.previousPageInfo(for: completionResults, from: pageInfo.paginatorInfo, nElementsPerPage: nElementsPerPage)
 		return i.flatMap{ PageInfo(offset: pageInfo.offset.flatMap{ $0 - nElementsPerPage }, paginatorInfo: $0) }

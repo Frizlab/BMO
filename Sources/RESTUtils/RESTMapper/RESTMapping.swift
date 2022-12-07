@@ -29,7 +29,7 @@ struct RESTMapping<DbEntityDescription : DbRESTEntityDescription & Hashable, DbP
 	func entityMapping(forEntity entity: DbEntityDescription) -> RESTEntityMapping<DbPropertyDescription>? {
 		if let m = entitiesMapping[entity] {return m}
 		guard let superentity = entity.superentity else {return nil}
-		return entityMapping(forEntity: superentity as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)
+		return entityMapping(forEntity: superentity as! DbEntityDescription /* See comment about SubSuperEntity in DbRESTEntityDescription for explanation of the "as!" */)
 	}
 	
 	/* We do not differentiate (mainly because we don't need it yet) between
@@ -39,7 +39,7 @@ struct RESTMapping<DbEntityDescription : DbRESTEntityDescription & Hashable, DbP
 	func entityUniquingType(forEntity entity: DbEntityDescription) -> RESTEntityUniquingType<DbPropertyDescription> {
 		if let u = entitiesMapping[entity]?.uniquingType {return u}
 		guard let superentity = entity.superentity else {return .none}
-		return entityUniquingType(forEntity: superentity as! DbEntityDescription /* See comment about SubSuperEntityType in DbRESTEntityDescription for explanation of the "as!" */)
+		return entityUniquingType(forEntity: superentity as! DbEntityDescription /* See comment about SubSuperEntity in DbRESTEntityDescription for explanation of the "as!" */)
 	}
 	
 	/**
