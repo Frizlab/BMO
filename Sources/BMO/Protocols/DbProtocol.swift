@@ -19,10 +19,11 @@ import Foundation
 
 public protocol DbProtocol {
 	
+	associatedtype EntityDescription
+	
 	associatedtype Object
 	associatedtype ObjectID : Hashable
 	
-	associatedtype EntityDescription
 	associatedtype FetchRequest
 	
 	/* Both these methods should be re-entrant. */
