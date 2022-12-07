@@ -21,11 +21,11 @@ import CollectionLoader
 
 
 @available(OSX 10.12, *)
-public protocol CoreDataCLH : CollectionLoaderHelper where FetchedObjectsIDType == NSManagedObjectID {
+public protocol CoreDataCLH : CollectionLoaderHelperProtocol where FetchedObjectID == NSManagedObjectID {
 	
-	associatedtype FetchedObjectsType : NSManagedObject
+	associatedtype FetchedObject : NSManagedObject
 	
-	var resultsController: NSFetchedResultsController<FetchedObjectsType> {get}
+	var resultsController: NSFetchedResultsController<FetchedObject> {get}
 	
 }
 
@@ -37,7 +37,7 @@ public extension CoreDataCLH {
 		return resultsController.fetchedObjects?.count ?? 0
 	}
 	
-	func unsafeCachedObjectId(at index: Int) -> FetchedObjectsIDType {
+	func unsafeCachedObjectId(at index: Int) -> FetchedObjectID {
 		return resultsController.fetchedObjects![index].objectID
 	}
 	
