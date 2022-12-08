@@ -179,17 +179,17 @@ where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.Additiona
 		var userInfo = bridge.createUserInfoObject()
 		
 		/* Retrieve the back operation part of the bridge operation. */
-		let expectedEntityO: Bridge.Db.EntityDescription?
+		let expectedEntity: Bridge.Db.EntityDescription
 		let backOperationO: Bridge.BackOperation?
 		let updatedObject: Bridge.Db.Object?
 		switch part {
-			case .fetch(let fetchRequest, let additionalInfo): updatedObject = nil;    expectedEntityO = bridge.expectedResultEntity(for: fetchRequest, additionalInfo: additionalInfo); backOperationO = try bridge.backOperation(forFetch:    fetchRequest, additionalInfo: additionalInfo, userInfo: &userInfo)
-			case .insert(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forInserted: object,       additionalInfo: additionalInfo, userInfo: &userInfo)
-			case .update(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forUpdated:  object,       additionalInfo: additionalInfo, userInfo: &userInfo)
-			case .delete(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forDeleted:  object,       additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .fetch(let fetchRequest, let additionalInfo): updatedObject = nil;    expectedEntity = bridge.expectedResultEntity(for: fetchRequest, additionalInfo: additionalInfo); backOperationO = try bridge.backOperation(forFetch:    fetchRequest, additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .insert(let object, let additionalInfo):      updatedObject = object; expectedEntity = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forInserted: object,       additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .update(let object, let additionalInfo):      updatedObject = object; expectedEntity = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forUpdated:  object,       additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .delete(let object, let additionalInfo):      updatedObject = object; expectedEntity = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forDeleted:  object,       additionalInfo: additionalInfo, userInfo: &userInfo)
 		}
 		
-		guard let expectedEntity = expectedEntityO, let backOperation = backOperationO else {
+		guard let backOperation = backOperationO else {
 			return nil
 		}
 		

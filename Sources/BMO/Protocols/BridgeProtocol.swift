@@ -54,8 +54,8 @@ public protocol BridgeProtocol {
 	   MARK: → Local to Remote
 	   *********************** */
 	
-	func expectedResultEntity(for fetchRequest: Db.FetchRequest, additionalInfo: AdditionalRequestInfo?) -> Db.EntityDescription?
-	func expectedResultEntity(for object: Db.Object) -> Db.EntityDescription?
+	func expectedResultEntity(for fetchRequest: Db.FetchRequest, additionalInfo: AdditionalRequestInfo?) -> Db.EntityDescription
+	func expectedResultEntity(for object: Db.Object) -> Db.EntityDescription
 	
 	func backOperation(forFetch fetchRequest: Db.FetchRequest, additionalInfo: AdditionalRequestInfo?, userInfo: inout UserInfo) throws -> BackOperation?
 	
