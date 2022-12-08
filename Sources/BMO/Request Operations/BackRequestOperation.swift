@@ -23,14 +23,14 @@ where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.Additiona
 	
 	public let bridge: Bridge
 	public let request: Request
-	public let importer: AnyBackResultsImporter<Bridge>?
+	public let importer: (any BackResultsImporter<Bridge>)?
 	
 	public let backOperationQueue: OperationQueue
 	public let parseOperationQueue: OperationQueue
 	
 	public private(set) var result: Result<BackRequestResult<Request, Bridge>, Error> = .failure(OperationError.notFinished)
 	
-	public init(request r: Request, bridge b: Bridge, importer i: AnyBackResultsImporter<Bridge>?, backOperationQueue bq: OperationQueue, parseOperationQueue pq: OperationQueue, requestManager: RequestManager?) {
+	public init(request r: Request, bridge b: Bridge, importer i: (any BackResultsImporter<Bridge>)?, backOperationQueue bq: OperationQueue, parseOperationQueue pq: OperationQueue, requestManager: RequestManager?) {
 		bridge = b
 		request = r
 		importer = i
@@ -204,7 +204,10 @@ where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.Additiona
 				importSuccessBlock: { try self.request.endResultsImport(ofRequestPart: part, withId: requestPartId, inDb: db, importResults: $0) },
 				importErrorBlock: { self.request.processResultsImportError(ofRequestPart: part, withId: requestPartId, inDb: db, error: $0) }
 			)
-			let importOperation = ImportBridgeOperationResultsRequestOperation(request: resultsImportRequest, importer: importer!) /* Maybe think about it a little more, but it seems normal that if there is no importer, we should crash. Another solution would be to gracefully simply not import the results... (check if importer is nil in if above) */
+			/* Maybe think about it a little more, but it seems normal that if there is no importer, we should crash.
+			 * Another solution would be to gracefully simply not import the results…
+			 * (Check if importer is nil in if above.) */
+			let importOperation = ImportBridgeOperationResultsRequestOperation(request: resultsImportRequest, importer: importer!)
 			importOperation.addDependency(backOperation)
 			parseOperation = importOperation
 			resultsProcessingOperation = BlockOperation{ self.resultsBuilding[requestPartId] = importOperation.result }

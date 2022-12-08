@@ -67,7 +67,7 @@ public class BackResultsImporterForCoreDataWithFastImportRepresentation<Bridge :
 		uniquingPropertyName = p
 	}
 	
-	public func retrieveDbRepresentations(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool) throws -> Int {
+	public func retrieveDbRepresentations(from remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool) throws -> Int {
 		dbRepresentations = try FastImportRepresentation.fastImportRepresentations(fromRemoteRepresentations: remoteRepresentations, expectedEntity: entity, userInfo: userInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler)
 		return dbRepresentations.count
 	}

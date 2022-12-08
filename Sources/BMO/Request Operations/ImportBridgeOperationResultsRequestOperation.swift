@@ -22,11 +22,11 @@ public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeP
 	public typealias DbRepresentationImporterResult = (importResult: ImportResult<Bridge.Db>, bridgeBackRequestResult: BridgeBackRequestResult<Bridge>)
 	
 	public let request: ImportBridgeOperationResultsRequest<Bridge>
-	public let importer: AnyBackResultsImporter<Bridge>
+	public let importer: any BackResultsImporter<Bridge>
 	
 	public private(set) var result: Result<BridgeBackRequestResult<Bridge>, Error> = .failure(OperationError.notFinished)
 	
-	public init(request r: ImportBridgeOperationResultsRequest<Bridge>, importer i: AnyBackResultsImporter<Bridge>) {
+	public init(request r: ImportBridgeOperationResultsRequest<Bridge>, importer i: any BackResultsImporter<Bridge>) {
 		request = r
 		importer = i
 	}
@@ -42,7 +42,7 @@ public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeP
 			
 			let remoteRepresentations = try request.bridge.remoteObjectRepresentations(from: request.operation, userInfo: requestParsingUserInfo)
 			try throwIfCancelled()
-			let dbRepresentationCount = try importer.retrieveDbRepresentations(fromRemoteRepresentations: remoteRepresentations, expectedEntity: request.expectedEntity, userInfo: requestParsingUserInfo, bridge: request.bridge, shouldContinueHandler: { !self.isCancelled })
+			let dbRepresentationCount = try retrieveDbRepresentations(importer: importer, from: remoteRepresentations, expectedEntity: request.expectedEntity, userInfo: requestParsingUserInfo, bridge: request.bridge, shouldContinueHandler: { !self.isCancelled })
 			try throwIfCancelled()
 			
 			guard dbRepresentationCount > 0 || request.importPreparationBlock != nil || request.importSuccessBlock != nil else {
@@ -50,7 +50,7 @@ public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeP
 				return
 			}
 			
-			try importer.createAndPrepareDbImporter(rootMetadata: metadata)
+			try createAndPrepare(importer: importer, rootMetadata: metadata)
 			
 			/* I don't think NOT waiting is justified here.
 			 * - We do not care about hogging the queue we're on because while the stuff we have to do in the context is not done,
@@ -68,7 +68,7 @@ public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeP
 					}
 					
 					/* Once the import has started, it cannot be cancelled anymore. */
-					let result = try importer.unsafeImport(in: self.request.db, updatingObject: self.request.updatedObjectId.flatMap{ try? self.request.db.unsafeRetrieveExistingObject(fromObjectID: $0) })
+					let result = try unsafeImport(using: importer, in: self.request.db, updatingObject: self.request.updatedObjectId.flatMap{ try? self.request.db.unsafeRetrieveExistingObject(fromObjectID: $0) })
 					try self.request.importSuccessBlock?(result.importResult)
 					
 					self.result = .success(result.bridgeBackRequestResult)
@@ -88,6 +88,23 @@ public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeP
 	
 	private func throwIfCancelled() throws {
 		guard !isCancelled else {throw OperationError.cancelled}
+	}
+	
+	/* *********************
+	   MARK: - Erasure Usage
+	   *********************
+	   This exists to workaround some Swift limitations when using any.*/
+	
+	private func retrieveDbRepresentations<Importer : BackResultsImporter>(importer: Importer, from remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool) throws -> Int where Importer.Bridge == Bridge {
+		return try importer.retrieveDbRepresentations(from: remoteRepresentations, expectedEntity: entity, userInfo: userInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler)
+	}
+	
+	private func createAndPrepare<Importer : BackResultsImporter>(importer: Importer, rootMetadata: Bridge.Metadata?) throws where Importer.Bridge == Bridge {
+		return try importer.createAndPrepareDbImporter(rootMetadata: rootMetadata)
+	}
+	
+	private func unsafeImport<Importer : BackResultsImporter>(using importer: Importer, in db: Bridge.Db, updatingObject updatedObject: Bridge.Db.Object?) throws -> ImportBridgeOperationResultsRequestOperation<Bridge>.DbRepresentationImporterResult where Importer.Bridge == Bridge {
+		return try importer.unsafeImport(in: db, updatingObject: updatedObject)
 	}
 	
 }
