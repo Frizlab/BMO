@@ -165,7 +165,7 @@ class RESTPathTests: XCTestCase {
 			XCTFail("Cannot parse REST path")
 			return
 		}
-		XCTAssertEqual(r.resolvedPath(source: ["key1.key2": "val1", "key1": ["key2": "val2"]]), "val1")
+		XCTAssertEqual(r.resolvedPath(source: ["key1.key2": "val1", "key1": ["key2": "val2"]] as [String : Any]), "val1")
 	}
 	
 	func testSimpleAbsentVariableReplacement() {

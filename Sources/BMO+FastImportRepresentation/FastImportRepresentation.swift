@@ -22,7 +22,7 @@ import BMO
 public struct FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo> {
 	
 	public typealias RelationshipValue = (
-		value: ([FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>], DbRepresentationRelationshipMergeType<DbEntityDescription, DbObject>)?,
+		value: ([FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>], DbRepresentationRelationshipMergeType<DbObject>)?,
 		userInfo: RelationshipUserInfo?
 	)
 	
@@ -40,13 +40,13 @@ public struct FastImportRepresentation<DbEntityDescription, DbObject, Relationsh
 	  the fast import representations returned will probably be incomplete and should be ignored.
 	 
 	 - Note: I’d like the `shouldContinueHandler` to be optional, but cannot be non-escaping if optional with current Swift status :( */
-	public static func fastImportRepresentations<Bridge : BridgeProtocol>(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool = {true}) -> [FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>]
+	public static func fastImportRepresentations<Bridge : BridgeProtocol>(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool = {true}) throws -> [FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>]
 	where DbEntityDescription == Bridge.Db.EntityDescription, DbObject == Bridge.Db.Object, RelationshipUserInfo == Bridge.Metadata
 	{
 		var fastImportRepresentations = [FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>]()
 		for remoteRepresentation in remoteRepresentations {
 			guard shouldContinueHandler() else {break}
-			if let fastImportRepresentation = FastImportRepresentation(remoteRepresentation: remoteRepresentation, expectedEntity: entity, userInfo: userInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler) {
+			if let fastImportRepresentation = try FastImportRepresentation(remoteRepresentation: remoteRepresentation, expectedEntity: entity, userInfo: userInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler) {
 				fastImportRepresentations.append(fastImportRepresentation)
 			}
 		}
@@ -61,28 +61,34 @@ public struct FastImportRepresentation<DbEntityDescription, DbObject, Relationsh
 	 If the init succeeds however, the returned fast-import representation is guaranteed to be the complete translation of the remote representation.
 	 (The init will never return a half-completed translation.) */
 	init?<Bridge : BridgeProtocol>(remoteRepresentation: Bridge.RemoteObjectRepresentation, expectedEntity: DbEntityDescription, userInfo info: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool = {true})
+	throws
 	where DbEntityDescription == Bridge.Db.EntityDescription, DbObject == Bridge.Db.Object, RelationshipUserInfo == Bridge.Metadata
 	{
-		guard let mixedRepresentation = bridge.mixedRepresentation(fromRemoteObjectRepresentation: remoteRepresentation, expectedEntity: expectedEntity, userInfo: info) else {return nil}
+		guard let mixedRepresentation = try bridge.mixedRepresentation(from: remoteRepresentation, expectedEntity: expectedEntity, userInfo: info) else {
+			return nil
+		}
 		
 		var relationshipsBuilding = [String: RelationshipValue]()
 		for (relationshipName, relationshipValue) in mixedRepresentation.relationships {
 			guard shouldContinueHandler() else {return nil}
-			guard let relationshipValue = relationshipValue else {relationshipsBuilding[relationshipName] = (value: nil, userInfo: nil); continue}
+			guard let relationshipValue = relationshipValue else {
+				relationshipsBuilding[relationshipName] = (value: nil, userInfo: nil)
+				continue
+			}
 			
-			let (relationshipEntity, relationshipAndMetadataRemoteRepresentations) = relationshipValue
-			let subUserInfo = bridge.subUserInfo(forRelationshipNamed: relationshipName, inEntity: mixedRepresentation.entity, currentMixedRepresentation: mixedRepresentation)
-			let metadata = bridge.metadata(fromRemoteRelationshipAndMetadataRepresentation: relationshipAndMetadataRemoteRepresentations, userInfo: subUserInfo)
+			let (relationshipEntity, relationshipRemoteRepresentations) = relationshipValue
+			let subUserInfo = bridge.subUserInfo(from: relationshipRemoteRepresentations, relationshipName: relationshipName, parentMixedRepresentation: mixedRepresentation)
+			let metadata = try bridge.metadata(from: relationshipRemoteRepresentations, userInfo: subUserInfo)
 			
-			guard let relationshipRemoteRepresentations = bridge.remoteObjectRepresentations(fromRemoteRelationshipAndMetadataRepresentation: relationshipAndMetadataRemoteRepresentations, userInfo: subUserInfo) else {
+			guard let relationshipRemoteRepresentations = try bridge.remoteObjectRepresentations(from: relationshipRemoteRepresentations, userInfo: subUserInfo) else {
 				relationshipsBuilding[relationshipName] = (value: nil, userInfo: metadata)
 				continue
 			}
 			
 			relationshipsBuilding[relationshipName] = (
 				value: (
-					FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>.fastImportRepresentations(fromRemoteRepresentations: relationshipRemoteRepresentations, expectedEntity: relationshipEntity, userInfo: subUserInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler),
-					bridge.relationshipMergeType(forRelationshipNamed: relationshipName, inEntity: mixedRepresentation.entity, currentMixedRepresentation: mixedRepresentation)
+					try FastImportRepresentation<DbEntityDescription, DbObject, RelationshipUserInfo>.fastImportRepresentations(fromRemoteRepresentations: relationshipRemoteRepresentations, expectedEntity: relationshipEntity, userInfo: subUserInfo, bridge: bridge, shouldContinueHandler: shouldContinueHandler),
+					bridge.relationshipMergeType(for: relationshipName, in: mixedRepresentation)
 				),
 				userInfo: metadata
 			)

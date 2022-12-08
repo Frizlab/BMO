@@ -21,7 +21,7 @@ public protocol BackResultsImporter {
 	
 	associatedtype Bridge : BridgeProtocol
 	
-	func retrieveDbRepresentations(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool) -> Int
+	func retrieveDbRepresentations(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool) throws -> Int
 	func createAndPrepareDbImporter(rootMetadata: Bridge.Metadata?) throws
 	func unsafeImport(in db: Bridge.Db, updatingObject updatedObject: Bridge.Db.Object?) throws -> ImportBridgeOperationResultsRequestOperation<Bridge>.DbRepresentationImporterResult
 	
@@ -30,7 +30,7 @@ public protocol BackResultsImporter {
 
 public struct AnyBackResultsImporter<Bridge : BridgeProtocol> : BackResultsImporter {
 	
-	let retrieveDbRepresentationsHandler: (_ remoteRepresentations: [Bridge.RemoteObjectRepresentation], _ expectedEntity: Bridge.Db.EntityDescription, _ userInfo: Bridge.UserInfo, _ bridge: Bridge, _ shouldContinueHandler: () -> Bool) -> Int
+	let retrieveDbRepresentationsHandler: (_ remoteRepresentations: [Bridge.RemoteObjectRepresentation], _ expectedEntity: Bridge.Db.EntityDescription, _ userInfo: Bridge.UserInfo, _ bridge: Bridge, _ shouldContinueHandler: () -> Bool) throws -> Int
 	let createAndPrepareDbImporterHandler: (_ rootMetadata: Bridge.Metadata?) throws -> Void
 	let unsafeImportHandler: (_ db: Bridge.Db, _ updatedObject: Bridge.Db.Object?) throws -> ImportBridgeOperationResultsRequestOperation<Bridge>.DbRepresentationImporterResult
 	
@@ -40,8 +40,8 @@ public struct AnyBackResultsImporter<Bridge : BridgeProtocol> : BackResultsImpor
 		unsafeImportHandler = importer.unsafeImport
 	}
 	
-	public func retrieveDbRepresentations(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool) -> Int {
-		return retrieveDbRepresentationsHandler(remoteRepresentations, entity, userInfo, bridge, shouldContinueHandler)
+	public func retrieveDbRepresentations(fromRemoteRepresentations remoteRepresentations: [Bridge.RemoteObjectRepresentation], expectedEntity entity: Bridge.Db.EntityDescription, userInfo: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool) throws -> Int {
+		return try retrieveDbRepresentationsHandler(remoteRepresentations, entity, userInfo, bridge, shouldContinueHandler)
 	}
 	
 	public func createAndPrepareDbImporter(rootMetadata: Bridge.Metadata?) throws {

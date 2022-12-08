@@ -34,15 +34,15 @@ public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeP
 	public override func main() {
 		assert(request.operation.isFinished)
 		do {
-			let requestParsingUserInfo = request.bridge.userInfo(fromFinishedOperation: request.operation, currentUserInfo: request.userInfo)
+			let requestParsingUserInfo = request.bridge.userInfo(from: request.operation, currentUserInfo: request.userInfo)
 			try throwIfCancelled()
 			
-			let metadata = request.bridge.bridgeMetadata(fromFinishedOperation: request.operation, userInfo: requestParsingUserInfo)
+			let metadata = try request.bridge.bridgeMetadata(from: request.operation, userInfo: requestParsingUserInfo)
 			try throwIfCancelled()
 			
-			let remoteRepresentations = try request.bridge.remoteObjectRepresentations(fromFinishedOperation: request.operation, userInfo: requestParsingUserInfo) ?? []
+			let remoteRepresentations = try request.bridge.remoteObjectRepresentations(from: request.operation, userInfo: requestParsingUserInfo)
 			try throwIfCancelled()
-			let dbRepresentationCount = importer.retrieveDbRepresentations(fromRemoteRepresentations: remoteRepresentations, expectedEntity: request.expectedEntity, userInfo: requestParsingUserInfo, bridge: request.bridge, shouldContinueHandler: { !self.isCancelled })
+			let dbRepresentationCount = try importer.retrieveDbRepresentations(fromRemoteRepresentations: remoteRepresentations, expectedEntity: request.expectedEntity, userInfo: requestParsingUserInfo, bridge: request.bridge, shouldContinueHandler: { !self.isCancelled })
 			try throwIfCancelled()
 			
 			guard dbRepresentationCount > 0 || request.importPreparationBlock != nil || request.importSuccessBlock != nil else {

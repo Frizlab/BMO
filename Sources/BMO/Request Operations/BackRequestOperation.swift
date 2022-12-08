@@ -60,7 +60,7 @@ where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.Additiona
 	 (You can start it right after calling this method if you want.)
 	 
 	 Also, sometimes it is needed to have a known context state to compute the operations to execute for the given request,
-	 which can only be achieved by calling the preparation synchronously. */
+	  which can only be achieved by calling the preparation synchronously. */
 	public func unsafePrepareStart() throws {
 		try unsafePrepareStart(withSafePartResults: nil)
 	}
@@ -125,13 +125,13 @@ where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.Additiona
 		cancellationSemaphore.wait(); defer {cancellationSemaphore.signal()}
 		guard !isCancelled else {result = .failure(OperationError.cancelled); state = .finished; return}
 		
-		let completionOperation = BlockOperation { [weak self] in
+		let completionOperation = BlockOperation{ [weak self] in
 			guard let strongSelf = self else {return}
 			strongSelf.result = .success(BackRequestResult(results: strongSelf.resultsBuilding))
 			strongSelf.state = .finished
 		}
 		/* The completion operation will be called only when ALL dependencies are finished.
-		 * Even cancelled dependencies are waited. */
+		 * Even cancelled dependencies are waited on. */
 		operations.forEach{ completionOperation.addDependency($0.resultsProcessingOperation) }
 		
 		backOperationQueue.addOperations(operations.map{ $0.backOperation }, waitUntilFinished: false)
@@ -183,10 +183,10 @@ where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.Additiona
 		let backOperationO: Bridge.BackOperation?
 		let updatedObject: Bridge.Db.Object?
 		switch part {
-			case .fetch(let fetchRequest, let additionalInfo): updatedObject = nil;    expectedEntityO = bridge.expectedResultEntity(forFetchRequest: fetchRequest, additionalInfo: additionalInfo); backOperationO = try bridge.backOperation(forFetchRequest: fetchRequest, additionalInfo: additionalInfo, userInfo: &userInfo)
-			case .insert(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forInsertedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
-			case .update(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forUpdatedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
-			case .delete(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(forObject: object);                                             backOperationO = try bridge.backOperation(forDeletedObject: object, additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .fetch(let fetchRequest, let additionalInfo): updatedObject = nil;    expectedEntityO = bridge.expectedResultEntity(for: fetchRequest, additionalInfo: additionalInfo); backOperationO = try bridge.backOperation(forFetch:    fetchRequest, additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .insert(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forInserted: object,       additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .update(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forUpdated:  object,       additionalInfo: additionalInfo, userInfo: &userInfo)
+			case .delete(let object, let additionalInfo):      updatedObject = object; expectedEntityO = bridge.expectedResultEntity(for: object);                                       backOperationO = try bridge.backOperation(forDeleted:  object,       additionalInfo: additionalInfo, userInfo: &userInfo)
 		}
 		
 		guard let expectedEntity = expectedEntityO, let backOperation = backOperationO else {
@@ -211,9 +211,9 @@ where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.Additiona
 			resultsProcessingOperation.addDependency(importOperation)
 		} else {
 			parseOperation = nil
-			resultsProcessingOperation = BlockOperation {
+			resultsProcessingOperation = BlockOperation{
 				self.resultsBuilding[requestPartId] =
-					self.bridge.error(fromFinishedOperation: backOperation).map{ .failure($0) } ??
+					self.bridge.error(from: backOperation).map{ .failure($0) } ??
 						.success(BridgeBackRequestResult(metadata: nil, returnedObjectIDsAndRelationships: [], asyncChanges: ChangesDescription()))
 			}
 			resultsProcessingOperation.addDependency(backOperation)
