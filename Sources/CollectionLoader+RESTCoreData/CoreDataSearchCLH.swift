@@ -35,7 +35,7 @@ import RESTUtils
  *
  * One solution would be to filter the pre-results to only contain elements kind of the expected entity. */
 
-@available(OSX 10.12, *)
+@available(macOS 10.12, *)
 public class CoreDataSearchCLH<FetchedObject : NSManagedObject, Bridge : BridgeProtocol, PageInfoRetriever : PageInfoRetrieverProtocol> : CoreDataCLH
 	where Bridge.Db == NSManagedObjectContext, Bridge.AdditionalRequestInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetriever.Bridge == Bridge
 {

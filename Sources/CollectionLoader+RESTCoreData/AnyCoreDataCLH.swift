@@ -23,7 +23,7 @@ import RESTUtils
 
 
 
-@available(OSX 10.12, *)
+@available(macOS 10.12, *)
 public enum AnyCoreDataCLH<FetchedObject : NSManagedObject, Bridge, PageInfoRetriever : PageInfoRetrieverProtocol> : CoreDataCLH
 	where Bridge.Db == NSManagedObjectContext, Bridge.AdditionalRequestInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetriever.Bridge == Bridge
 {

@@ -44,7 +44,7 @@ extension RequestManager {
 	 The handler (if any) is called **on the context**.
 	 
 	 The handler _might_ be called before the function returns (in case there is a problem creating the back operations for instance). */
-	@available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
+	@available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
 	public func unsafeFetchObject<Bridge, Object : NSManagedObject>(
 		withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
@@ -70,7 +70,7 @@ extension RequestManager {
 		let object = (try? context.fetch(fetchRequest))?.first as! Object?
 #if DEBUG
 		if let c = try? context.count(for: fetchRequest), c > 1 {
-			if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+			if #available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 				BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
 			}
 		}
@@ -91,7 +91,7 @@ extension RequestManager {
 		let object = (try? context.fetch(fetchRequest))?.first as! Object?
 #if DEBUG
 		if let c = try? context.count(for: fetchRequest), c > 1 {
-			if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+			if #available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 				BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
 			}
 		}
@@ -126,7 +126,7 @@ extension RequestManager {
 	   *********************************************** */
 	
 	@discardableResult
-	@available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
+	@available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
 	public func fetchObject<Bridge, Object : NSManagedObject>(
 		withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
@@ -176,7 +176,7 @@ extension RequestManager {
 					let object = (try? context.fetch(fetchRequest))?.first as! Object?
 #if DEBUG
 					if let c = try? context.count(for: fetchRequest), c > 1 {
-						if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+						if #available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 							BMOConfig.oslog.flatMap{ os_log("Got %d results where at most 1 was expected.", log: $0, type: .info, c) }
 						}
 					}

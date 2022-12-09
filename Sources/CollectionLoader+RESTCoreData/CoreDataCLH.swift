@@ -20,7 +20,7 @@ import CollectionLoader
 
 
 
-@available(OSX 10.12, *)
+@available(macOS 10.12, *)
 public protocol CoreDataCLH : CollectionLoaderHelperProtocol where FetchedObjectID == NSManagedObjectID {
 	
 	associatedtype FetchedObject : NSManagedObject
@@ -30,7 +30,7 @@ public protocol CoreDataCLH : CollectionLoaderHelperProtocol where FetchedObject
 }
 
 
-@available(OSX 10.12, *)
+@available(macOS 10.12, *)
 public extension CoreDataCLH {
 	
 	var numberOfCachedObjects: Int {

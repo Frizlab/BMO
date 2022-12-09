@@ -25,7 +25,7 @@ import Foundation
  Transforms an object to a Date and vice-versa with a set of options to customize how the conversion is attempted.
  
  For the reverse transformation, depending on the options, the reversed value can either be a `String` or an `NSNumber`. */
-@available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
+@available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
 public final class RESTDateAndTimeTransformer : ValueTransformer {
 	
 	public enum DateConversionFormat {
@@ -52,7 +52,7 @@ public final class RESTDateAndTimeTransformer : ValueTransformer {
 		/**
 		 If you target a platform where the system `ISO8601DateFormatter` is not available, use this format.
 		 Under the hood, uses a DateFormatter with format “`yyyy-MM-dd'T'HH:mm:ssZZZZZ`” (with `en_US_POSIX` locale). */
-		@available(OSX, obsoleted: 10.12, message: "Use iso8601 to get a real ISO8601 date formatter.")
+		@available(macOS, obsoleted: 10.12, message: "Use iso8601 to get a real ISO8601 date formatter.")
 		@available(tvOS, obsoleted: 10.0, message: "Use iso8601 to get a real ISO8601 date formatter.")
 		@available(iOS, obsoleted: 10.0, message: "Use iso8601 to get a real ISO8601 date formatter.")
 		@available(watchOS, obsoleted: 3.0, message: "Use iso8601 to get a real ISO8601 date formatter.")
@@ -91,7 +91,7 @@ public final class RESTDateAndTimeTransformer : ValueTransformer {
 					if let date = dateFormatter.date(from: strObj) {return date}
 					
 				case .iso8601(options: let options, timezone: let timeZone):
-//					guard #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) else {continue}
+//					guard #available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) else {continue}
 					guard let strObj = strObj else {continue}
 					let isoDateFormatter = ISO8601DateFormatter()
 					isoDateFormatter.formatOptions = options

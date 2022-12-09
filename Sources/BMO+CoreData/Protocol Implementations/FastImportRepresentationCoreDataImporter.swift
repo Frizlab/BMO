@@ -99,7 +99,7 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilder : SingleThrea
 							if updatedObjectUID != nil {
 								/* Object we’re asked to update does not have the same UID as the one we're given in the representation.
 								 * We’ll update the UID of the object but print a message in the logs first! */
-								if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+								if #available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 									BMOConfig.oslog.flatMap{ os_log("Asked to update object %@ but representation has UID %@. Updating UID (property “%{public}@”) of updated object (experimental; might lead to unexpected results).", log: $0, type: .info, updatedObject, String(describing: uid), uniquingPropertyName) }
 								}
 							}
@@ -156,12 +156,12 @@ final class FastImportRepresentationCoreDataImporter<ResultBuilder : SingleThrea
 				if !relationship.isToMany {
 					/* To-one relationship. */
 					if !mergeType.isReplace {
-						if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+						if #available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 							BMOConfig.oslog.flatMap{ os_log("Got merge type %{public}@ for a to-one relationship (%{public}@). Ignoring, using replace.", log: $0, type: .info, String(describing: mergeType), relationshipName) }
 						}
 					}
 					if importedRelationshipValue.count > 1 {
-						if #available(OSX 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
+						if #available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 							BMOConfig.oslog.flatMap{ os_log("Got %d values for a to-one relationship (%{public}@). Taking first value.", log: $0, type: .info, importedRelationshipValue.count, relationshipName) }
 						}
 					}

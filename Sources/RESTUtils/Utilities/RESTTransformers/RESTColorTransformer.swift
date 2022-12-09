@@ -13,9 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. */
 
+#if canImport(AppKit) || canImport(UIKit)
+
 import Foundation
 
-#if os(OSX)
+#if os(macOS)
 import AppKit
 public typealias BMOColor = NSColor
 #else
@@ -245,7 +247,7 @@ public class RESTColorTransformer : ValueTransformer {
 		switch colorType {
 			case .colorName(info: let info):
 				guard let colorName = info.resolve(with: vars) else {return nil}
-#if os(OSX)
+#if os(macOS)
 				return NSColor(named: NSColor.Name(rawValue: colorName))
 #else
 				return UIColor(named: colorName)
@@ -306,3 +308,5 @@ private extension String {
 	}
 	
 }
+
+#endif
