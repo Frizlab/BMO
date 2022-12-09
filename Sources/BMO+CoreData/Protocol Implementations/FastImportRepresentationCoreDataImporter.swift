@@ -23,7 +23,7 @@ import BMO_FastImportRepresentation
 
 
 final class FastImportRepresentationCoreDataImporter<ResultBuilder : SingleThreadDbRepresentationImporterResultBuilder> : DbRepresentationImporter
-where ResultBuilder.Db == NSManagedObjectContext
+	where ResultBuilder.Db == NSManagedObjectContext
 {
 	
 	typealias Db = NSManagedObjectContext

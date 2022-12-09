@@ -26,7 +26,7 @@ import RESTUtils
 
 @available(OSX 10.12, *)
 public class CoreDataListElementCLH<FetchedObject : NSManagedObject, Bridge : BridgeProtocol, PageInfoRetriever : PageInfoRetrieverProtocol> : CoreDataCLH
-where Bridge.Db == NSManagedObjectContext, Bridge.AdditionalRequestInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetriever.Bridge == Bridge
+	where Bridge.Db == NSManagedObjectContext, Bridge.AdditionalRequestInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>, PageInfoRetriever.Bridge == Bridge
 {
 	
 	public let bridge: Bridge

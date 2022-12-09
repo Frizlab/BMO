@@ -18,7 +18,7 @@ import Foundation
 
 
 public final class BackRequestOperation<Request : BackRequest, Bridge : BridgeProtocol> : Operation
-where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.AdditionalRequestInfo
+	where Bridge.Db == Request.Db, Bridge.AdditionalRequestInfo == Request.AdditionalRequestInfo
 {
 	
 	public let bridge: Bridge
