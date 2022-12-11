@@ -35,29 +35,29 @@ public class BackResultsImporterForCoreDataWithFastImportRepresentation<Bridge :
 	 
 	 Examples:
 	 
-	     - uniquingPropertyName = "remoteId"
-	     - fastImportRepresentation.uniquingId = "42"
-	     - fastImportRepresentation.attributes = ["remoteId": "42", "name": "toto"]
+	     - uniquingPropertyName = "remoteID"
+	     - fastImportRepresentation.uniquingID = "42"
+	     - fastImportRepresentation.attributes = ["remoteID": "42", "name": "toto"]
 	        -> OK
 	 
-	     - uniquingPropertyName = "remoteId"
-	     - fastImportRepresentation.uniquingId = "User/42"
-	     - fastImportRepresentation.attributes = ["remoteId": "42", "name": "toto"]
+	     - uniquingPropertyName = "remoteID"
+	     - fastImportRepresentation.uniquingID = "User/42"
+	     - fastImportRepresentation.attributes = ["remoteID": "42", "name": "toto"]
 	        -> "User/42" != "42": NOT OK (assertion failure at runtime in debug mode)
 	 
-	     - uniquingPropertyName = "remoteId"
-	     - fastImportRepresentation.uniquingId = 42
-	     - fastImportRepresentation.attributes = ["remoteId": "42", "name": "toto"]
+	     - uniquingPropertyName = "remoteID"
+	     - fastImportRepresentation.uniquingID = 42
+	     - fastImportRepresentation.attributes = ["remoteID": "42", "name": "toto"]
 	        -> "42" != 42 (type mismatch): NOT OK (assertion failure at runtime in debug mode)
 	 
 	     - uniquingPropertyName = "zzBID" /* BID for BMO ID, of course! */
-	     - fastImportRepresentation.uniquingId = "User/42"
-	     - fastImportRepresentation.attributes = ["remoteId": "42", "name": "toto"]
+	     - fastImportRepresentation.uniquingID = "User/42"
+	     - fastImportRepresentation.attributes = ["remoteID": "42", "name": "toto"]
 	        -> "zzBID" is not in the keys of the attributes: OK
 	 
 	     - uniquingPropertyName = "zzBID"
-	     - fastImportRepresentation.uniquingId = "User/42"
-	     - fastImportRepresentation.attributes = ["remoteId": "42", "name": "toto"]
+	     - fastImportRepresentation.uniquingID = "User/42"
+	     - fastImportRepresentation.attributes = ["remoteID": "42", "name": "toto"]
 	     - fastImportRepresentation.relationships = ["zzBID": ...]
 	        -> "zzBID" is in the keys of the relationships: NOT OK (assertion failure at runtime in debug mode)
 	 */

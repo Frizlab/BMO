@@ -28,7 +28,7 @@ public struct ImportBridgeOperationResultsRequest<Bridge : BridgeProtocol> {
 	let operation: Bridge.BackOperation
 	
 	let expectedEntity: Bridge.Db.EntityDescription
-	let updatedObjectId: Bridge.Db.ObjectID?
+	let updatedObjectID: Bridge.Db.ObjectID?
 	
 	let userInfo: Bridge.UserInfo
 	

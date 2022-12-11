@@ -28,7 +28,7 @@ public struct FastImportRepresentation<DbEntityDescription, DbObject, Relationsh
 	
 	public let entity: DbEntityDescription
 	
-	public let uniquingId: AnyHashable?
+	public let uniquingID: AnyHashable?
 	public let attributes: [String: Any?]
 	public let relationships: [String: RelationshipValue]
 	
@@ -97,7 +97,7 @@ public struct FastImportRepresentation<DbEntityDescription, DbObject, Relationsh
 		guard shouldContinueHandler() else {return nil}
 		
 		entity = mixedRepresentation.entity
-		uniquingId = mixedRepresentation.uniquingId
+		uniquingID = mixedRepresentation.uniquingID
 		attributes = mixedRepresentation.attributes
 		relationships = relationshipsBuilding
 	}

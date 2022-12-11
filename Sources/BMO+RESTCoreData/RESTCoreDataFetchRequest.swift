@@ -25,11 +25,11 @@ public typealias RESTCoreDataFetchRequest = CoreDataFetchRequest<AdditionalRESTR
 
 extension CoreDataFetchRequest where AdditionalInfo == AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper> {
 	
-	public init(context: NSManagedObjectContext, entity: NSEntityDescription, resultType: NSFetchRequestResultType = .managedObjectResultType, remoteId: String, remoteIdPropertyName: String = "remoteId", flatifiedFields: String?, alwaysFetchProperties: Bool, leaveBridgeHandler lb: (() -> Bool)? = nil, preImportHandler pi: (() -> Bool)? = nil, preCompletionHandler pc: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)? = nil) {
+	public init(context: NSManagedObjectContext, entity: NSEntityDescription, resultType: NSFetchRequestResultType = .managedObjectResultType, remoteID: String, remoteIDPropertyName: String = "remoteID", flatifiedFields: String?, alwaysFetchProperties: Bool, leaveBridgeHandler lb: (() -> Bool)? = nil, preImportHandler pi: (() -> Bool)? = nil, preCompletionHandler pc: ((_ importResults: ImportResult<NSManagedObjectContext>) throws -> Void)? = nil) {
 		let fRequest = NSFetchRequest<NSFetchRequestResult>()
 		fRequest.entity = entity
 		fRequest.resultType = resultType
-		fRequest.predicate = NSPredicate(format: "%K == %@", remoteIdPropertyName, remoteId)
+		fRequest.predicate = NSPredicate(format: "%K == %@", remoteIDPropertyName, remoteID)
 		
 		self.init(
 			context: context, fetchRequest: fRequest, fetchType: (alwaysFetchProperties || !(flatifiedFields?.isEmpty ?? true)) ? .always : .onlyIfNoLocalResults,

@@ -66,10 +66,10 @@ public enum AnyCoreDataCLH<FetchedObject : NSManagedObject, Bridge, PageInfoRetr
 		}
 	}
 	
-	public func unsafeCachedObjectId(at index: Int) -> NSManagedObjectID {
+	public func unsafeCachedObjectID(at index: Int) -> NSManagedObjectID {
 		switch self {
-			case .search(let helper):      return helper.unsafeCachedObjectId(at: index)
-			case .listElement(let helper): return helper.unsafeCachedObjectId(at: index)
+			case .search(let helper):      return helper.unsafeCachedObjectID(at: index)
+			case .listElement(let helper): return helper.unsafeCachedObjectID(at: index)
 		}
 	}
 	
@@ -80,17 +80,17 @@ public enum AnyCoreDataCLH<FetchedObject : NSManagedObject, Bridge, PageInfoRetr
 		}
 	}
 	
-	public func unsafeFetchedObjectId(at index: Int, for preCompletionResults: ImportResult<NSManagedObjectContext>) -> NSManagedObjectID {
+	public func unsafeFetchedObjectID(at index: Int, for preCompletionResults: ImportResult<NSManagedObjectContext>) -> NSManagedObjectID {
 		switch self {
-			case .search(let helper):      return helper.unsafeFetchedObjectId(at: index, for: preCompletionResults)
-			case .listElement(let helper): return helper.unsafeFetchedObjectId(at: index, for: preCompletionResults)
+			case .search(let helper):      return helper.unsafeFetchedObjectID(at: index, for: preCompletionResults)
+			case .listElement(let helper): return helper.unsafeFetchedObjectID(at: index, for: preCompletionResults)
 		}
 	}
 	
-	public func unsafeRemove(objectId: NSManagedObjectID, hardDelete: Bool) {
+	public func unsafeRemove(objectID: NSManagedObjectID, hardDelete: Bool) {
 		switch self {
-			case .search(let helper):      return helper.unsafeRemove(objectId: objectId, hardDelete: hardDelete)
-			case .listElement(let helper): return helper.unsafeRemove(objectId: objectId, hardDelete: hardDelete)
+			case .search(let helper):      return helper.unsafeRemove(objectID: objectID, hardDelete: hardDelete)
+			case .listElement(let helper): return helper.unsafeRemove(objectID: objectID, hardDelete: hardDelete)
 		}
 	}
 	

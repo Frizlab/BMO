@@ -53,11 +53,11 @@ extension Result {
 		}
 	}
 	
-	public func simpleBackRequestSuccessValue<Request, Bridge>(forRequestPartId requestPartID: Request.RequestPartID) -> BridgeBackRequestResult<Bridge>? where Success == BackRequestResult<Request, Bridge> {
+	public func simpleBackRequestSuccessValue<Request, Bridge>(forRequestPartID requestPartID: Request.RequestPartID) -> BridgeBackRequestResult<Bridge>? where Success == BackRequestResult<Request, Bridge> {
 		return simpleBackRequestResult(forRequestPartID: requestPartID).successValue
 	}
 	
-	public func simpleBackRequestError<Request, Bridge>(forRequestPartId requestPartID: Request.RequestPartID) -> Swift.Error? where Success == BackRequestResult<Request, Bridge> {
+	public func simpleBackRequestError<Request, Bridge>(forRequestPartID requestPartID: Request.RequestPartID) -> Swift.Error? where Success == BackRequestResult<Request, Bridge> {
 		return simpleBackRequestResult(forRequestPartID: requestPartID).failure
 	}
 	

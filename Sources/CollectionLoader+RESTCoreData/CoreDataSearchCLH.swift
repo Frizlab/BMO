@@ -119,13 +119,13 @@ public class CoreDataSearchCLH<FetchedObject : NSManagedObject, Bridge : BridgeP
 		return preCompletionResults.rootObjectsAndRelationships.count
 	}
 	
-	public func unsafeFetchedObjectId(at index: Int, for preCompletionResults: ImportResult<NSManagedObjectContext>) -> NSManagedObjectID {
+	public func unsafeFetchedObjectID(at index: Int, for preCompletionResults: ImportResult<NSManagedObjectContext>) -> NSManagedObjectID {
 		return preCompletionResults.rootObjectsAndRelationships[index].object.objectID
 	}
 	
-	public func unsafeRemove(objectId: NSManagedObjectID, hardDelete: Bool) {
-		if !hardDelete, let deletionDateProperty = deletionDateProperty {context.object(with: objectId).setValue(Date(), forKey: deletionDateProperty.name)}
-		else                                                            {context.delete(context.object(with: objectId))}
+	public func unsafeRemove(objectID: NSManagedObjectID, hardDelete: Bool) {
+		if !hardDelete, let deletionDateProperty = deletionDateProperty {context.object(with: objectID).setValue(Date(), forKey: deletionDateProperty.name)}
+		else                                                            {context.delete(context.object(with: objectID))}
 	}
 	
 	public func nextPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: PageInfo, nElementsPerPage: Int) -> PageInfo?? {

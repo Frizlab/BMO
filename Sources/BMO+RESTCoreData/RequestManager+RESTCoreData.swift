@@ -36,7 +36,7 @@ extension RequestManager {
 	/**
 	 Fetches **one** object of the given type.
 	 If ever there were more than one object matching the given id, the first is returned and a warning is printed in the logs.
-	 (If there are no remoteId given, there must be one object of the given entity in the db.)
+	 (If there are no remoteID given, there must be one object of the given entity in the db.)
 	 
 	 Does **not** throw.
 	 If an error occurred fetching the object from Core Data, the error will silently be ignored and the returned object will be `nil`.
@@ -46,25 +46,25 @@ extension RequestManager {
 	 The handler _might_ be called before the function returns (in case there is a problem creating the back operations for instance). */
 	@available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
 	public func unsafeFetchObject<Bridge, Object : NSManagedObject>(
-		withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
+		withRemoteID remoteID: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIDAttributeName: String = "remoteID",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
 		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
 		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
 	) -> (fetchedObject: Object?, operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>)
 	{
-		return unsafeFetchObject(ofEntity: Object.entity(), withRemoteId: remoteId, flatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, remoteIdAttributeName: remoteIdAttributeName, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
+		return unsafeFetchObject(ofEntity: Object.entity(), withRemoteID: remoteID, flatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, remoteIDAttributeName: remoteIDAttributeName, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
 	}
 	
 	/* iOS 8 & 9 version of the method above. */
 	public func unsafeFetchObject<Bridge, Object: NSManagedObject>(
-		ofEntity entity: NSEntityDescription, withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
+		ofEntity entity: NSEntityDescription, withRemoteID remoteID: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIDAttributeName: String = "remoteID",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
 		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
 		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
 	) -> (fetchedObject: Object?, operation: BackRequestOperation<RESTCoreDataFetchRequest, Bridge>)
 	{
 		/* Creating the fetch request. */
-		let fetchRequest = RequestManager.fetchRequestForFetchingObject(ofEntity: entity, withRemoteId: remoteId, remoteIdAttributeName: remoteIdAttributeName)
+		let fetchRequest = RequestManager.fetchRequestForFetchingObject(ofEntity: entity, withRemoteID: remoteID, remoteIDAttributeName: remoteIDAttributeName)
 		
 		/* Retrieving the object. */
 		let object = (try? context.fetch(fetchRequest))?.first as! Object?
@@ -128,24 +128,24 @@ extension RequestManager {
 	@discardableResult
 	@available(macOS 10.12, tvOS 10.0, iOS 10.0, watchOS 3.0, *)
 	public func fetchObject<Bridge, Object : NSManagedObject>(
-		withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
+		withRemoteID remoteID: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIDAttributeName: String = "remoteID",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
 		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
 		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
 	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
-		return fetchObject(ofEntity: Object.entity(), withRemoteId: remoteId, flatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, remoteIdAttributeName: remoteIdAttributeName, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
+		return fetchObject(ofEntity: Object.entity(), withRemoteID: remoteID, flatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, remoteIDAttributeName: remoteIDAttributeName, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
 	}
 	
 	@discardableResult
 	public func fetchObject<Bridge, Object : NSManagedObject>(
-		ofEntity entity: NSEntityDescription, withRemoteId remoteId: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
+		ofEntity entity: NSEntityDescription, withRemoteID remoteID: String?, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIDAttributeName: String = "remoteID",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
 		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
 		handler: ((_ fetchedObject: Object?, _ fullResponse: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
 	) -> BackRequestOperation<RESTCoreDataFetchRequest, Bridge>
 	{
-		let fetchRequest = RequestManager.fetchRequestForFetchingObject(ofEntity: entity, withRemoteId: remoteId, remoteIdAttributeName: remoteIdAttributeName)
+		let fetchRequest = RequestManager.fetchRequestForFetchingObject(ofEntity: entity, withRemoteID: remoteID, remoteIDAttributeName: remoteIDAttributeName)
 		return fetchObject(fromFetchRequest: fetchRequest, withFlatifiedFields: flatifiedFields, keyPathPaginatorInfo: keyPathPaginatorInfo, fetchType: fetchType, onContext: context, bridge: bridge, handler: handler)
 	}
 	
@@ -221,7 +221,7 @@ extension RequestManager {
 	 The handler (if any) **won't** be called on the context. */
 	@discardableResult
 	public func fetchObject<Bridge>(
-		ofEntity entity: NSEntityDescription, withRemoteId remoteId: String, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIdAttributeName: String = "remoteId",
+		ofEntity entity: NSEntityDescription, withRemoteID remoteID: String, flatifiedFields: String? = nil, keyPathPaginatorInfo: [String: Any]? = nil, remoteIDAttributeName: String = "remoteID",
 		fetchType: RESTCoreDataFetchRequest.FetchType = .always,
 		onContext context: NSManagedObjectContext, bridge: Bridge? = nil,
 		handler: ((_ response: Result<BridgeBackRequestResult<Bridge>, Error>) -> Void)? = nil
@@ -229,7 +229,7 @@ extension RequestManager {
 	{
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>()
 		fetchRequest.entity = entity
-		fetchRequest.predicate = NSPredicate(format: "%K == %@", remoteIdAttributeName, remoteId)
+		fetchRequest.predicate = NSPredicate(format: "%K == %@", remoteIDAttributeName, remoteID)
 		return operationForFetchingObjects(fromFetchRequest: fetchRequest, additionalRequestInfo: AdditionalRESTRequestInfo(flatifiedFields: flatifiedFields, inEntity: entity, keyPathPaginatorInfo: keyPathPaginatorInfo), fetchType: fetchType, onContext: context, bridge: bridge, autoStart: true, handler: handler)
 	}
 	
@@ -341,9 +341,9 @@ extension RequestManager {
 	   MARK: - Private
 	   *************** */
 	
-	private static func fetchRequestForFetchingObject(ofEntity entity: NSEntityDescription, withRemoteId remoteId: String?, remoteIdAttributeName: String = "remoteId") -> NSFetchRequest<NSFetchRequestResult> {
+	private static func fetchRequestForFetchingObject(ofEntity entity: NSEntityDescription, withRemoteID remoteID: String?, remoteIDAttributeName: String = "remoteID") -> NSFetchRequest<NSFetchRequestResult> {
 		let fetchRequest = NSFetchRequest<NSFetchRequestResult>(); fetchRequest.entity = entity; fetchRequest.fetchLimit = 1
-		if let remoteId = remoteId {fetchRequest.predicate = NSPredicate(format: "%K == %@", remoteIdAttributeName, remoteId)}
+		if let remoteID {fetchRequest.predicate = NSPredicate(format: "%K == %@", remoteIDAttributeName, remoteID)}
 		return fetchRequest
 	}
 	

@@ -156,9 +156,9 @@ public final class BackRequestOperation<Request : BackRequest, Bridge : BridgePr
 			
 			var operations = [BridgeOperation]()
 			
-			for (dbRequestId, dbRequestPart) in try safePart?.requestParts ?? request.backRequestParts() {
+			for (dbRequestID, dbRequestPart) in try safePart?.requestParts ?? request.backRequestParts() {
 				guard !isCancelled else {throw OperationError.cancelled}
-				guard let operation = try bridgeOperation(forDbRequestPart: dbRequestPart, withId: dbRequestId) else {continue}
+				guard let operation = try bridgeOperation(forDbRequestPart: dbRequestPart, withID: dbRequestID) else {continue}
 				operations.append(operation)
 			}
 			
@@ -175,7 +175,7 @@ public final class BackRequestOperation<Request : BackRequest, Bridge : BridgePr
 		}
 	}
 	
-	private func bridgeOperation(forDbRequestPart part: BackRequestPart<Request.Db.Object, Request.Db.FetchRequest, Request.AdditionalRequestInfo>, withId requestPartId: Request.RequestPartID) throws -> BridgeOperation? {
+	private func bridgeOperation(forDbRequestPart part: BackRequestPart<Request.Db.Object, Request.Db.FetchRequest, Request.AdditionalRequestInfo>, withID requestPartID: Request.RequestPartID) throws -> BridgeOperation? {
 		var userInfo = bridge.createUserInfoObject()
 		
 		/* Retrieve the back operation part of the bridge operation. */
@@ -195,14 +195,14 @@ public final class BackRequestOperation<Request : BackRequest, Bridge : BridgePr
 		
 		let parseOperation: Operation?
 		let resultsProcessingOperation: Operation
-		if let db = request.dbForImportingResults(ofRequestPart: part, withId: requestPartId) {
+		if let db = request.dbForImportingResults(ofRequestPart: part, withID: requestPartID) {
 			let resultsImportRequest = ImportBridgeOperationResultsRequest(
 				db: db, bridge: bridge, operation: backOperation, expectedEntity: expectedEntity,
-				updatedObjectId: updatedObject.flatMap{ self.request.db.unsafeObjectID(forObject: $0) },
+				updatedObjectID: updatedObject.flatMap{ self.request.db.unsafeObjectID(forObject: $0) },
 				userInfo: userInfo,
-				importPreparationBlock: { try self.request.prepareResultsImport(ofRequestPart: part, withId: requestPartId, inDb: db) },
-				importSuccessBlock: { try self.request.endResultsImport(ofRequestPart: part, withId: requestPartId, inDb: db, importResults: $0) },
-				importErrorBlock: { self.request.processResultsImportError(ofRequestPart: part, withId: requestPartId, inDb: db, error: $0) }
+				importPreparationBlock: { try self.request.prepareResultsImport(ofRequestPart: part, withID: requestPartID, inDb: db) },
+				importSuccessBlock: { try self.request.endResultsImport(ofRequestPart: part, withID: requestPartID, inDb: db, importResults: $0) },
+				importErrorBlock: { self.request.processResultsImportError(ofRequestPart: part, withID: requestPartID, inDb: db, error: $0) }
 			)
 			/* Maybe think about it a little more, but it seems normal that if there is no importer, we should crash.
 			 * Another solution would be to gracefully simply not import the results…
@@ -210,12 +210,12 @@ public final class BackRequestOperation<Request : BackRequest, Bridge : BridgePr
 			let importOperation = ImportBridgeOperationResultsRequestOperation(request: resultsImportRequest, importer: importer!)
 			importOperation.addDependency(backOperation)
 			parseOperation = importOperation
-			resultsProcessingOperation = BlockOperation{ self.resultsBuilding[requestPartId] = importOperation.result }
+			resultsProcessingOperation = BlockOperation{ self.resultsBuilding[requestPartID] = importOperation.result }
 			resultsProcessingOperation.addDependency(importOperation)
 		} else {
 			parseOperation = nil
 			resultsProcessingOperation = BlockOperation{
-				self.resultsBuilding[requestPartId] =
+				self.resultsBuilding[requestPartID] =
 					self.bridge.error(from: backOperation).map{ .failure($0) } ??
 						.success(BridgeBackRequestResult(metadata: nil, returnedObjectIDsAndRelationships: [], asyncChanges: ChangesDescription()))
 			}

@@ -68,7 +68,7 @@ public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeP
 					}
 					
 					/* Once the import has started, it cannot be cancelled anymore. */
-					let result = try unsafeImport(using: importer, in: self.request.db, updatingObject: self.request.updatedObjectId.flatMap{ try? self.request.db.unsafeRetrieveExistingObject(fromObjectID: $0) })
+					let result = try unsafeImport(using: importer, in: self.request.db, updatingObject: self.request.updatedObjectID.flatMap{ try? self.request.db.unsafeRetrieveExistingObject(fromObjectID: $0) })
 					try self.request.importSuccessBlock?(result.importResult)
 					
 					self.result = .success(result.bridgeBackRequestResult)

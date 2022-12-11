@@ -95,7 +95,7 @@ In effect, if you’re fetching an object already in the local database, the loc
 The object that was already in the database will be updated.
 The property can be named however you like, but must have the same name in all your entities.
 
-Example of a simple model with the uniquing property name `bmoId`:
+Example of a simple model with the uniquing property name `bmoID`:
 
 ![CoreData Model](https://github.com/happn-app/BMO/blob/master/docs/images/CoreDataModelExample1.png)
 
@@ -115,7 +115,7 @@ For a standard "REST bridge," you'll probably want to use the **RESTUtils** modu
 The module will provide you with conveniences to convert a fetch or save request to an URL Operation that you can return to BMO, as well as converting a parsed JSON to a `MixedRepresentation` (don't worry, we'll definitely explain what's a `MixedRepresentation` later).
 
 An example is worth a thousand words. Let's say we have a `User` entity in the Core Data model with the following properties:
-- bmoId (String)
+- bmoID (String)
 - username (String)
 - firstname (String)
 - age (Int)
@@ -137,9 +137,9 @@ In our bridge, we'd keep a REST Mapper that would look like this:
 private lazy var restMapper: RESTMapper<NSEntityDescription, NSPropertyDescription> = {
    let userMapping: [_RESTConvenienceMappingForEntity] = [
       .restPath("/users(/|username|)"),
-      .uniquingPropertyName("bmoId"),
+      .uniquingPropertyName("bmoID"),
       .propertiesMapping([
-         "bmoId":     [.restName("id")],
+         "bmoID":     [.restName("id")],
          "username":  [.restName("user_name")],
          "firstname": [.restName("first_name")],
          "age":       [.restName("age"),       .restToLocalTransformer(RESTIntTransformer())]
@@ -206,12 +206,11 @@ func mixedRepresentation(fromRemoteObjectRepresentation remoteRepresentation: Re
     * that we will use to build the MixedRepresentation instance we want. */
    let mixedRepresentationDictionary = restMapper.mixedRepresentation(ofEntity: entity, fromRESTRepresentation: remoteRepresentation, userInfo: userInfo)
 
-   /* We need to use the REST mapper once again to retrieve the uniquing
-    * id from the Dictionary we created above. */
-   let uniquingId = restMapper.uniquingId(forLocalRepresentation: mixedRepresentationDictionary, ofEntity: entity)
+   /* We need to use the REST mapper once again to retrieve the uniquing ID from the Dictionary we created above. */
+   let uniquingID = restMapper.uniquingID(forLocalRepresentation: mixedRepresentationDictionary, ofEntity: entity)
    /* Finally, with everything we have retrieved above, we can create the
     * MixedRepresentation instance that we return to the caller. */
-   return MixedRepresentation(entity: entity, uniquingId: uniquingId, mixedRepresentationDictionary: mixedRepresentationDictionary, userInfo: userInfo)
+   return MixedRepresentation(entity: entity, uniquingID: uniquingID, mixedRepresentationDictionary: mixedRepresentationDictionary, userInfo: userInfo)
 }
 ```
 
@@ -240,7 +239,7 @@ class AppDelegate : NSObject, UIApplicationDelegate {
    private struct BMOBackResultsImporterForCoreDataWithFastImportRepresentationFactory : AnyBackResultsImporterFactory {
 
       func createResultsImporter<Bridge : BridgeProtocol>() -> AnyBackResultsImporter<Bridge>? {
-         return (AnyBackResultsImporter(importer: BackResultsImporterForCoreDataWithFastImportRepresentation<YourBridge>(uniquingPropertyName: "bmoId")) as! AnyBackResultsImporter<Bridge>)
+         return (AnyBackResultsImporter(importer: BackResultsImporterForCoreDataWithFastImportRepresentation<YourBridge>(uniquingPropertyName: "bmoID")) as! AnyBackResultsImporter<Bridge>)
       }
 
    }

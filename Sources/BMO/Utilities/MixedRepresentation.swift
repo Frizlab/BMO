@@ -28,15 +28,15 @@ public struct MixedRepresentation<DbEntityDescription, RemoteRelationshipAndMeta
 	
 	public let entity: DbEntityDescription
 	
-	public let uniquingId: AnyHashable?
+	public let uniquingID: AnyHashable?
 	public let attributes: [String: Any?]
 	public let relationships: [String: RelationshipValue]
 	
 	public let userInfo: BridgeUserInfo
 	
-	public init(entity e: DbEntityDescription, uniquingId uid: AnyHashable?, attributes attrs: [String: Any?], relationships rels: [String: RelationshipValue], userInfo ui: BridgeUserInfo) {
+	public init(entity e: DbEntityDescription, uniquingID uid: AnyHashable?, attributes attrs: [String: Any?], relationships rels: [String: RelationshipValue], userInfo ui: BridgeUserInfo) {
 		entity = e
-		uniquingId = uid
+		uniquingID = uid
 		attributes = attrs
 		relationships = rels
 		userInfo = ui

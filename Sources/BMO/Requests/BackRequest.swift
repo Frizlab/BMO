@@ -64,7 +64,7 @@ public protocol BackRequest {
 	
 	/* TODO: The request should be able to give a different importer per request part id (for instance to specify an importer with a more thorough uniquing algorithm when dealing with db who has a parent).
 	 *       This would offload the responsability of getting an importer from the client and move it to the request.
-	func backResultsImporter<Bridge : BridgeProtocol>(for requestPartId: RequestPartID) -> AnyBackResultsImporter<Bridge>? where Bridge.Db == Db, Bridge.AdditionalRequestInfo == AdditionalRequestInfo */
+	func backResultsImporter<Bridge : BridgeProtocol>(for requestPartID: RequestPartID) -> AnyBackResultsImporter<Bridge>? where Bridge.Db == Db, Bridge.AdditionalRequestInfo == AdditionalRequestInfo */
 	
 	/**
 	 Perform here the actions required after the operations for the given request have been computed.
@@ -87,20 +87,20 @@ public protocol BackRequest {
 	/* ********* */
 	
 	/** Return `nil` if the results of the request part should not be processed. */
-	func dbForImportingResults(ofRequestPart requestPart: BackRequestPart<Db.Object, Db.FetchRequest, AdditionalRequestInfo>, withId id: RequestPartID) -> Db?
+	func dbForImportingResults(ofRequestPart requestPart: BackRequestPart<Db.Object, Db.FetchRequest, AdditionalRequestInfo>, withID id: RequestPartID) -> Db?
 	
 	/**
 	 Perform here the actions to prepare for the import of the data for the given request part.
 	 Return false if the results should not be imported.
 	 
 	 Will always be called on the context. */
-	func prepareResultsImport(ofRequestPart requestPart: BackRequestPart<Db.Object, Db.FetchRequest, AdditionalRequestInfo>, withId id: RequestPartID, inDb db: Db) throws -> Bool
+	func prepareResultsImport(ofRequestPart requestPart: BackRequestPart<Db.Object, Db.FetchRequest, AdditionalRequestInfo>, withID id: RequestPartID, inDb db: Db) throws -> Bool
 	
 	/**
 	 Perform here the actions to finish the import of the data for the given request part.
 	 
 	 Will always be called on the context. */
-	func endResultsImport(ofRequestPart requestPart: BackRequestPart<Db.Object, Db.FetchRequest, AdditionalRequestInfo>, withId id: RequestPartID, inDb db: Db, importResults: ImportResult<Db>) throws
+	func endResultsImport(ofRequestPart requestPart: BackRequestPart<Db.Object, Db.FetchRequest, AdditionalRequestInfo>, withID id: RequestPartID, inDb db: Db, importResults: ImportResult<Db>) throws
 	
 	/**
 	 Perform here the actions to finish the import of the data for the given request part, after an error occurred.
@@ -108,6 +108,6 @@ public protocol BackRequest {
 	 __Not__ called if `prepareResultsImport...` returns `false` though.
 	 
 	 Will always be called on the context. */
-	func processResultsImportError(ofRequestPart requestPart: BackRequestPart<Db.Object, Db.FetchRequest, AdditionalRequestInfo>, withId id: RequestPartID, inDb db: Db, error: Swift.Error)
+	func processResultsImportError(ofRequestPart requestPart: BackRequestPart<Db.Object, Db.FetchRequest, AdditionalRequestInfo>, withID id: RequestPartID, inDb db: Db, error: Swift.Error)
 	
 }

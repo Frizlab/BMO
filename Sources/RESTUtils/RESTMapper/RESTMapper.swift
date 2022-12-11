@@ -49,7 +49,7 @@ public class RESTMapper<DbEntityDescription : DbRESTEntityDescription & Hashable
 		return params
 	}
 	
-	public func uniquingId(forLocalRepresentation localRepresentation: [String: Any?], ofEntity entity: DbEntityDescription) -> String? {
+	public func uniquingID(forLocalRepresentation localRepresentation: [String: Any?], ofEntity entity: DbEntityDescription) -> String? {
 		switch restMapping.entityUniquingType(forEntity: entity) {
 			case .none:                                               return nil
 			case .singleton(let v):                                   return v

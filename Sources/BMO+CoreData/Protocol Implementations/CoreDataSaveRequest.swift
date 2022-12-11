@@ -96,21 +96,21 @@ public struct CoreDataSaveRequest<AdditionalInfo> : BackRequest {
 		db.rollback()
 	}
 	
-	public func dbForImportingResults(ofRequestPart requestPart: BackRequestPart<NSManagedObject, NSFetchRequest<NSFetchRequestResult>, AdditionalInfo>, withId id: RequestPartID) -> NSManagedObjectContext? {
+	public func dbForImportingResults(ofRequestPart requestPart: BackRequestPart<NSManagedObject, NSFetchRequest<NSFetchRequestResult>, AdditionalInfo>, withID id: RequestPartID) -> NSManagedObjectContext? {
 		return (!internals.deletedObjectIDs.contains(id) ? db : nil)
 	}
 	
-	public func prepareResultsImport(ofRequestPart requestPart: BackRequestPart<NSManagedObject, NSFetchRequest<NSFetchRequestResult>, AdditionalInfo>, withId id: RequestPartID, inDb db: NSManagedObjectContext) throws -> Bool {
+	public func prepareResultsImport(ofRequestPart requestPart: BackRequestPart<NSManagedObject, NSFetchRequest<NSFetchRequestResult>, AdditionalInfo>, withID id: RequestPartID, inDb db: NSManagedObjectContext) throws -> Bool {
 		guard db.parent == nil else {db.saveToDiskOrRollback(); return false} /* We do not support sub-context with our current importers */
 		return true
 	}
 	
-	public func endResultsImport(ofRequestPart requestPart: BackRequestPart<NSManagedObject, NSFetchRequest<NSFetchRequestResult>, AdditionalInfo>, withId id: NSManagedObjectContext.ObjectID, inDb db: NSManagedObjectContext, importResults: ImportResult<NSManagedObjectContext>) throws {
+	public func endResultsImport(ofRequestPart requestPart: BackRequestPart<NSManagedObject, NSFetchRequest<NSFetchRequestResult>, AdditionalInfo>, withID id: NSManagedObjectContext.ObjectID, inDb db: NSManagedObjectContext, importResults: ImportResult<NSManagedObjectContext>) throws {
 		assert(db.parent == nil)
 		db.saveToDiskOrRollback()
 	}
 	
-	public func processResultsImportError(ofRequestPart requestPart: BackRequestPart<NSManagedObject, NSFetchRequest<NSFetchRequestResult>, AdditionalInfo>, withId id: NSManagedObjectContext.ObjectID, inDb db: NSManagedObjectContext, error: Swift.Error) {
+	public func processResultsImportError(ofRequestPart requestPart: BackRequestPart<NSManagedObject, NSFetchRequest<NSFetchRequestResult>, AdditionalInfo>, withID id: NSManagedObjectContext.ObjectID, inDb db: NSManagedObjectContext, error: Swift.Error) {
 		db.rollback()
 	}
 	

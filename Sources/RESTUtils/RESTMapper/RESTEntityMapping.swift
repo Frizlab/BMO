@@ -54,9 +54,9 @@ struct RESTEntityMapping<DbPropertyDescription : Hashable> {
 	/**
 	 The REST path for fetching the entity.
 	 
-	 For example, for a user, it could be set to `users(/|remoteId|)`:
-	  when creating a user (remoteId would be nil), the resolved REST path would be `users` whereas when fetching a user,
-	  or updating an existing user, the path would be `users/:userId` as expected. */
+	 For example, for a user, it could be set to `users(/|remoteID|)`:
+	  when creating a user (remoteID would be nil), the resolved REST path would be `users` whereas when fetching a user,
+	  or updating an existing user, the path would be `users/:userID` as expected. */
 	let restPath: RESTPath?
 	/**
 	 How can we match a given REST representation to its entity?

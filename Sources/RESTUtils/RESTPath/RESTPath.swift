@@ -23,7 +23,7 @@ public enum RESTPath : LosslessStringConvertible, CustomDebugStringConvertible {
 	case variable(String)
 	case components([RESTPath], isRoot: Bool)
 	
-	/* Format: parent_element/|relationshipToParent.remoteId|/child_element(/|remoteId|)
+	/* Format: parent_element/|relationshipToParent.remoteID|/child_element(/|remoteID|)
 	 * The special characters "|", "(", ")" and "\" can be escaped with a backslash ("\").
 	 * A non-special character being escaped will result in an error (failed initialization).
 	 * Parenthesis can be nested.

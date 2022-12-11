@@ -36,7 +36,7 @@ public class CoreDataListElementCLH<FetchedObject : NSManagedObject, Bridge : Br
 	
 	public let resultsController: NSFetchedResultsController<FetchedObject>
 	
-	public var listElementObjectId: NSManagedObjectID?
+	public var listElementObjectID: NSManagedObjectID?
 	
 	public convenience init(
 		listElementEntity: NSEntityDescription, additionalElementFetchInfo aefi: AdditionalRESTRequestInfo<NSPropertyDescriptionHashableWrapper>?, listProperty lp: NSRelationshipDescription,
@@ -69,14 +69,14 @@ public class CoreDataListElementCLH<FetchedObject : NSManagedObject, Bridge : Br
 		apiOrderProperty = aop
 		apiOrderDelta = aod
 		
-		var listObjectId: NSManagedObjectID? = nil
-		c.performAndWait{ listObjectId = (try? c.fetch(listElementFetchRequest))?.first?.objectID }
-		listElementObjectId = listObjectId
+		var listObjectID: NSManagedObjectID? = nil
+		c.performAndWait{ listObjectID = (try? c.fetch(listElementFetchRequest))?.first?.objectID }
+		listElementObjectID = listObjectID
 		
 		let fetchedResultsControllerFetchRequest = NSFetchRequest<FetchedObject>()
 		fetchedResultsControllerFetchRequest.entity = listProperty.destinationEntity!
 		fetchedResultsControllerFetchRequest.sortDescriptors = [NSSortDescriptor(key: aop.name, ascending: true)]
-		if let listObjectId = listObjectId {fetchedResultsControllerFetchRequest.predicate = NSPredicate(format: "%K == %@", lp.inverseRelationship!.name, listObjectId)}
+		if let listObjectID {fetchedResultsControllerFetchRequest.predicate = NSPredicate(format: "%K == %@", lp.inverseRelationship!.name, listObjectID)}
 		else {
 			/* We want to retrieve the objects whose inverse relationship name of the list property match the list element fetch request,
 			 *  but the list element fetch request currently matches nothing.
@@ -115,12 +115,12 @@ public class CoreDataListElementCLH<FetchedObject : NSManagedObject, Bridge : Br
 			
 			assert(!root.objectID.isTemporaryID)
 			
-			if let curRootObjectID = self.listElementObjectId, curRootObjectID != root.objectID {
+			if let curRootObjectID = self.listElementObjectID, curRootObjectID != root.objectID {
 				if #available(tvOS 10.0, iOS 10.0, watchOS 3.0, *) {
 					BMOConfig.oslog.flatMap{ os_log("Got different root object id from a result of a request for a list element collection loader helper than previous one. Replacing with new one. Previous: %{public}@; retrieved: %{public}@", log: $0, type: .info, curRootObjectID, root.objectID) }
 				}
 			}
-			self.listElementObjectId = root.objectID
+			self.listElementObjectID = root.objectID
 			
 			let apiOrderPropertyName = self.apiOrderProperty.name
 			let collection = (root.value(forKey: self.listProperty.name) as! NSOrderedSet).array as! [NSManagedObject]
@@ -143,12 +143,12 @@ public class CoreDataListElementCLH<FetchedObject : NSManagedObject, Bridge : Br
 		return preCompletionResults.rootObjectsAndRelationships.first?.relationships![listProperty.name]?.rootObjectsAndRelationships.count ?? 0
 	}
 	
-	public func unsafeFetchedObjectId(at index: Int, for preCompletionResults: ImportResult<NSManagedObjectContext>) -> NSManagedObjectID {
+	public func unsafeFetchedObjectID(at index: Int, for preCompletionResults: ImportResult<NSManagedObjectContext>) -> NSManagedObjectID {
 		return preCompletionResults.rootObjectsAndRelationships.first!.relationships![listProperty.name]!.rootObjectsAndRelationships[index].object.objectID
 	}
 	
-	public func unsafeRemove(objectId: NSManagedObjectID, hardDelete: Bool) {
-		context.object(with: objectId).setValue(nil, forKey: listProperty.inverseRelationship!.name)
+	public func unsafeRemove(objectID: NSManagedObjectID, hardDelete: Bool) {
+		context.object(with: objectID).setValue(nil, forKey: listProperty.inverseRelationship!.name)
 	}
 	
 	public func nextPageInfo(for completionResults: BridgeBackRequestResult<Bridge>, from pageInfo: Any, nElementsPerPage: Int) -> Any?? {

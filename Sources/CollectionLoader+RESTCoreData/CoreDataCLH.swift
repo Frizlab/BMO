@@ -37,7 +37,7 @@ public extension CoreDataCLH {
 		return resultsController.fetchedObjects?.count ?? 0
 	}
 	
-	func unsafeCachedObjectId(at index: Int) -> FetchedObjectID {
+	func unsafeCachedObjectID(at index: Int) -> FetchedObjectID {
 		return resultsController.fetchedObjects![index].objectID
 	}
 	

@@ -17,26 +17,26 @@ import Foundation
 
 
 
-public struct RESTMaxIdPaginatorInfo {
+public struct RESTMaxIDPaginatorInfo {
 	
-	public let maxReachedId: String?
+	public let maxReachedID: String?
 	public let count: Int
 	
-	public init(maxReachedId i: String?, count c: Int) {
-		maxReachedId = i
+	public init(maxReachedID i: String?, count c: Int) {
+		maxReachedID = i
 		count = c
 	}
 	
 }
 
 
-public class RESTMaxIdPaginator : RESTPaginator {
+public class RESTMaxIDPaginator : RESTPaginator {
 	
-	public let maxReachedIdKey: String
+	public let maxReachedIDKey: String
 	public let countKey: String
 	
-	public init(maxReachedIdKey mrik: String, countKey ck: String = "count") {
-		maxReachedIdKey = mrik
+	public init(maxReachedIDKey mrik: String, countKey ck: String = "count") {
+		maxReachedIDKey = mrik
 		countKey = ck
 	}
 	
@@ -45,10 +45,10 @@ public class RESTMaxIdPaginator : RESTPaginator {
 	}
 	
 	public func paginationParams(withPaginatorInfo info: Any) -> [String: String]? {
-		guard let info = info as? RESTMaxIdPaginatorInfo else {return nil}
+		guard let info = info as? RESTMaxIDPaginatorInfo else {return nil}
 		
 		var ret = [countKey: String(info.count)]
-		if let mri = info.maxReachedId {ret[maxReachedIdKey] = mri}
+		if let mri = info.maxReachedID {ret[maxReachedIDKey] = mri}
 		return ret
 	}
 	
