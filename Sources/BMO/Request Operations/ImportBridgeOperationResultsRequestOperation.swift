@@ -58,7 +58,7 @@ public final class ImportBridgeOperationResultsRequestOperation<Bridge : BridgeP
 			 * - Not waiting would make us convert the operation to an asynchronous operation,
 			 *    which is not a trivial task
 			 *    and is not justified as per the previous point. */
-			try request.db.performAndWait {
+			try request.db.performAndWait{
 				try self.throwIfCancelled()
 				
 				do {

@@ -52,7 +52,7 @@ public protocol BackRequest {
 	 
 	 Throwing an error also aborts the computation of the operations.
 	 
-	 Will be called on the context if needsEnteringBridgeOnContext is `true`.
+	 Will be called on the context if `needsEnteringBridgeOnContext` is `true`.
 	 Setting this property to `false` will not guarantee you will not be called on the context though. */
 	func enterBridge() throws -> Bool
 	
@@ -73,7 +73,9 @@ public protocol BackRequest {
 	 
 	 Throwing an error also aborts the launch of the operations.
 	 
-	 Will always be called on the context. */
+	 Will always be called on the context.
+	 
+	 Will always be called if `enterBridge()` returned `true`, even if `backRequestParts()` throwed an error (TODO). */
 	func leaveBridge() throws -> Bool
 	
 	/**

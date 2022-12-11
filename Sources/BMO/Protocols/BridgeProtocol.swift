@@ -53,6 +53,7 @@ public protocol BridgeProtocol {
 	   MARK: - Methods
 	   MARK: → Local to Remote
 	   *********************** */
+	/* Called on a db context. */
 	
 	func expectedResultEntity(for fetchRequest: Db.FetchRequest, additionalInfo: AdditionalRequestInfo?) -> Db.EntityDescription
 	func expectedResultEntity(for object: Db.Object) -> Db.EntityDescription

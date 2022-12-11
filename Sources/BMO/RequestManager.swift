@@ -175,7 +175,13 @@ public final class RequestManager {
 	 If `nil`, the first bridge of the correct type in the bridges property will be used.
 	 - Parameter resultsImporterFactory: The results importer factory to use to create the results importer that’ll be used to import the results of the bridge operation to the database. */
 	@discardableResult
-	public func operation<Request, Bridge>(forBackRequest request: Request, withBridge bridge: Bridge? = nil, resultsImporterFactory: AnyBackResultsImporterFactory? = nil, autoStart: Bool, handler: ((_ response: Result<BackRequestResult<Request, Bridge>, Error>) -> Void)? = nil) -> BackRequestOperation<Request, Bridge> {
+	public func operation<Request : BackRequest, Bridge : BridgeProtocol>(
+		forBackRequest request: Request,
+		withBridge bridge: Bridge? = nil,
+		resultsImporterFactory: AnyBackResultsImporterFactory? = nil,
+		autoStart: Bool,
+		handler: ((_ response: Result<BackRequestResult<Request, Bridge>, Error>) -> Void)? = nil
+	) -> BackRequestOperation<Request, Bridge> {
 		let bridge = getBridge(from: bridge)
 		let importerFactory = resultsImporterFactory ?? defaultResultsImporterFactory
 		let operation = BackRequestOperation(request: request, bridge: bridge, importer: importerFactory?.createResultsImporter(), backOperationQueue: backOperationQueue, parseOperationQueue: parseOperationQueue, requestManager: self)

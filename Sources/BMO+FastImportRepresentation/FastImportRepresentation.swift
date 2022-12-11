@@ -61,8 +61,8 @@ public struct FastImportRepresentation<DbEntityDescription, DbObject, Relationsh
 	 If the init succeeds however, the returned fast-import representation is guaranteed to be the complete translation of the remote representation.
 	 (The init will never return a half-completed translation.) */
 	init?<Bridge : BridgeProtocol>(remoteRepresentation: Bridge.RemoteObjectRepresentation, expectedEntity: DbEntityDescription, userInfo info: Bridge.UserInfo, bridge: Bridge, shouldContinueHandler: () -> Bool = {true})
-	throws
-	where DbEntityDescription == Bridge.Db.EntityDescription, DbObject == Bridge.Db.Object, RelationshipUserInfo == Bridge.Metadata
+		throws
+		where DbEntityDescription == Bridge.Db.EntityDescription, DbObject == Bridge.Db.Object, RelationshipUserInfo == Bridge.Metadata
 	{
 		guard let mixedRepresentation = try bridge.mixedRepresentation(from: remoteRepresentation, expectedEntity: expectedEntity, userInfo: info) else {
 			return nil

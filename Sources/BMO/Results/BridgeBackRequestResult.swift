@@ -27,7 +27,7 @@ public struct BridgeBackRequestResult<Bridge : BridgeProtocol> {
 	public let metadata: Bridge.Metadata?
 	
 	/**
-	 The ids of the (root) objects that were retrieved from the async operation, in the order they were retrieved.
+	 The IDs of the (root) objects that were retrieved from the async operation, in the order they were retrieved.
 	 
 	 Some importers might decide to drop the relationships part of the result for performance reasons (hence the optionality of the relationships part of the tuple). */
 	public let returnedObjectIDsAndRelationships: [(objectID: Bridge.Db.ObjectID, relationships: [String: BridgeBackRequestResult<Bridge>]?)]

@@ -75,12 +75,12 @@ public final class BackRequestOperation<Request : BackRequest, Bridge : BridgePr
 		} else {
 			do {
 				let safePrepareResults = try prepareStartSafePart()
-				if let requestParts = safePrepareResults.requestParts, requestParts.count == 0 {
+				if let requestParts = safePrepareResults.requestParts, requestParts.isEmpty {
 					assert(safePrepareResults.enteredBridge)
 					launchOperations([])
 					return
 				}
-				request.db.perform {
+				request.db.perform{
 					do {
 						guard !self.isCancelled else {throw OperationError.cancelled}
 						self.launchOperations(try self.unsafePrepareStart(withSafePartResults: safePrepareResults))
