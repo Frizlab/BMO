@@ -17,6 +17,8 @@ let package = Package(
 		.package(url: "https://github.com/happn-app/CollectionLoader.git", .branch("dev.tests"))
 	],
 	targets: [
+		.target(name: "BMO2"),
+		
 		.target(name: "BMO",                           dependencies: []),
 		.target(name: "RESTUtils",                     dependencies: []),
 		.target(name: "BMO+FastImportRepresentation",  dependencies: ["BMO"]),
