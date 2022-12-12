@@ -18,7 +18,7 @@ import XCTest
 
 
 
-class BMOTests: XCTestCase {
+final class BMOTests : XCTestCase {
 	
 	func testExample() {
 		/* This is an example of a functional test case.
