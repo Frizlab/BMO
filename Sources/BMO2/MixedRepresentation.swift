@@ -17,25 +17,19 @@ import Foundation
 
 
 
-public struct MixedRepresentation<LocalDb : LocalDbProtocol, RemoteObjectsReader : RemoteObjectsReaderProtocol> {
+public struct MixedRepresentation<LocalDb : LocalDbProtocol, RemoteObjectsReader : BridgeRelationshipProtocol> {
 	
-	public typealias LocalDbEntityDescription = LocalDb.Object.EntityDescription
-	public typealias RelationshipMergeType = BMO2.RelationshipMergeType<LocalDb.Object, LocalDb.Object.RelationshipDescription>
-	
-	/* Should be a struct. */
-	public typealias RelationshipValue = (expectedEntity: LocalDbEntityDescription, mergeType: RelationshipMergeType, value: RemoteObjectsReader)?
-	
-	public var entity: LocalDbEntityDescription
+	public var entity: LocalDb.Object.EntityDescription
 	
 	public var uniquingID: AnyHashable?
 	public var attributes: [LocalDb.Object.AttributeDescription: Any?]
-	public var relationships: [LocalDb.Object.RelationshipDescription: RelationshipValue]
+	public var relationships: [LocalDb.Object.RelationshipDescription: RemoteObjectsReader?]
 	
 	public init(
-		entity: LocalDbEntityDescription,
+		entity: LocalDb.Object.EntityDescription,
 		uniquingID: AnyHashable? = nil,
 		attributes: [LocalDb.Object.AttributeDescription : Any?] = [:],
-		relationships: [LocalDb.Object.RelationshipDescription : RelationshipValue] = [:]
+		relationships: [LocalDb.Object.RelationshipDescription : RemoteObjectsReader?] = [:]
 	) {
 		self.entity = entity
 		self.uniquingID = uniquingID

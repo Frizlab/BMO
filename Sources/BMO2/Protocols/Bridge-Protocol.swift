@@ -17,28 +17,6 @@ import Foundation
 
 
 
-public protocol RemoteObjectsReaderProtocol<LocalDb, Metadata> {
-	
-	associatedtype LocalDb : LocalDbProtocol
-	associatedtype RemoteDb : RemoteDbProtocol
-	
-	associatedtype Metadata
-	
-	associatedtype UserInfo
-	
-	init(remoteOperation: RemoteDb.RemoteOperation, userInfo: UserInfo)
-	
-	/* Conveniences init, disabled for now as not truly required. */
-//	init(relationship: LocalDb.Object.RelationshipDescription, of remoteObject: RemoteDb.RemoteObject, userInfo: UserInfo)
-	/* With this init, the metadata will probably alwasy be nil (no access to the parent object which presumably contains the Metadata). */
-//	init(remoteObjects: [RemoteDb.RemoteObject], userInfo: UserInfo)
-	
-	func readMetadata() throws -> Metadata?
-	func readMixedRepresentations() throws -> [MixedRepresentation<LocalDb, Self>]
-	
-}
-
-
 public protocol BridgeProtocol {
 	
 	associatedtype LocalDb : LocalDbProtocol
@@ -63,7 +41,7 @@ public protocol BridgeProtocol {
 	
 	/**
 	 The type of the object that will be responsible for doing the actual conversion from the remote objects to local db representations (``MixedRepresentation`` to be precise). */
-	associatedtype RemoteObjectsReader : RemoteObjectsReaderProtocol where RemoteObjectsReader.UserInfo == UserInfo, RemoteObjectsReader.Metadata == Metadata
+	associatedtype BridgeObjects : BridgeObjectsProtocol where BridgeObjects.UserInfo == UserInfo, BridgeObjects.Metadata == Metadata
 	
 	func remoteOperation(forLocalFetch fetchRequest: LocalDb.FetchRequest, additionalRequestInfo: AdditionalRequestsInfo?) throws -> (RemoteDb.RemoteOperation, UserInfo)?
 	
