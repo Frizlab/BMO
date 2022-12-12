@@ -17,6 +17,7 @@ import Foundation
 
 
 
+
 public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 	
 	associatedtype LocalDb : LocalDbProtocol
@@ -24,36 +25,14 @@ public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 	
 	associatedtype Metadata
 	
-	func readMetadata() throws -> Metadata?
-	func readObjects() throws -> [RemoteDb.RemoteObject]
+	var remoteObjects: [RemoteDb.RemoteObject] {get}
 	
-	func readMergeType() throws -> RelationshipMergeType<LocalDb.Object, LocalDb.Object.RelationshipDescription>
+	var localMetadata: Metadata? {get}
+	var localEntity: LocalDb.Object.EntityDescription {get}
+	var localMergeType: RelationshipMergeType<LocalDb.Object, LocalDb.Object.RelationshipDescription> {get}
 	
-	/* These four methods should only be used by the readMixedRepresentations method in the extension of this protocol in this file.
-	 * We deemed it more convenient for an implementer to implement these four functions rather than having to implement the mixed representations one directly.
-	 * This is debatable and can easily be changed if needed. */
-	var expectedLocalEntity: LocalDb.Object.EntityDescription {get}
 	func uniquingID(from remoteObject: RemoteDb.RemoteObject) throws -> AnyHashable?
 	func attributes(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.Object.AttributeDescription: Any?]
 	func relationships(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.Object.RelationshipDescription: Self?]
-	
-}
-
-
-public extension BridgeObjectsProtocol {
-	
-	func readMixedRepresentations() throws -> [MixedRepresentation<LocalDb, Self>] {
-		return try readObjects().map{ object in
-			let uniquingID = try uniquingID(from: object)
-			let attributes = try attributes(from: object)
-			let relationships = try relationships(from: object)
-			return MixedRepresentation(
-				entity: expectedLocalEntity,
-				uniquingID: uniquingID,
-				attributes: attributes,
-				relationships: relationships
-			)
-		}
-	}
 	
 }
