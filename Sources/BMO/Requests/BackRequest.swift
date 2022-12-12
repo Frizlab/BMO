@@ -75,7 +75,7 @@ public protocol BackRequest {
 	 
 	 Will always be called on the context.
 	 
-	 Will always be called if `enterBridge()` returned `true`, even if `backRequestParts()` throwed an error (TODO). */
+	 Will not be called if an error is thrown by enterBridge or backRequestParts (processBridgeError is called instead). */
 	func leaveBridge() throws -> Bool
 	
 	/**
