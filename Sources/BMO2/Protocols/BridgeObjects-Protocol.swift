@@ -40,7 +40,7 @@ public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 	
 	func readMergeType() throws -> RelationshipMergeType<LocalDb.Object, LocalDb.Object.RelationshipDescription>
 	
-	/* We put these three methods as required methods of the protocol instead of the one there is in the extension for convenience.
+	/* We put these three methods as required methods of the protocol instead of the one there is in the extension, for convenience.
 	 * Whether it is more convenient is debatable.
 	 * If debate thinks no, simple replace these three functions by the one in the extension (and remove its implementation). */
 	func uniquingID(from remoteObject: RemoteDb.RemoteObject) throws -> AnyHashable?

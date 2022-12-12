@@ -17,19 +17,19 @@ import Foundation
 
 
 
-public struct MixedRepresentation<LocalDb : LocalDbProtocol, RemoteObjectsReader : BridgeRelationshipProtocol> {
+public struct MixedRepresentation<LocalDb : LocalDbProtocol, BridgeObjects : BridgeObjectsProtocol> {
 	
 	public var entity: LocalDb.Object.EntityDescription
 	
 	public var uniquingID: AnyHashable?
 	public var attributes: [LocalDb.Object.AttributeDescription: Any?]
-	public var relationships: [LocalDb.Object.RelationshipDescription: RemoteObjectsReader?]
+	public var relationships: [LocalDb.Object.RelationshipDescription: BridgeObjects?]
 	
 	public init(
 		entity: LocalDb.Object.EntityDescription,
 		uniquingID: AnyHashable? = nil,
 		attributes: [LocalDb.Object.AttributeDescription : Any?] = [:],
-		relationships: [LocalDb.Object.RelationshipDescription : RemoteObjectsReader?] = [:]
+		relationships: [LocalDb.Object.RelationshipDescription : BridgeObjects?] = [:]
 	) {
 		self.entity = entity
 		self.uniquingID = uniquingID
