@@ -17,7 +17,6 @@ import Foundation
 
 
 
-
 public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 	
 	associatedtype LocalDb : LocalDbProtocol
@@ -28,11 +27,11 @@ public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 	var remoteObjects: [RemoteDb.RemoteObject] {get}
 	
 	var localMetadata: Metadata? {get}
-	var localEntity: LocalDb.Object.EntityDescription {get}
-	var localMergeType: RelationshipMergeType<LocalDb.Object, LocalDb.Object.RelationshipDescription> {get}
+	var localEntity: LocalDb.DbObject.DbEntityDescription {get}
+	var localMergeType: RelationshipMergeType<LocalDb.DbObject, LocalDb.DbObject.DbRelationshipDescription> {get}
 	
 	func uniquingID(from remoteObject: RemoteDb.RemoteObject) throws -> AnyHashable?
-	func attributes(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.Object.AttributeDescription: Any?]
-	func relationships(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.Object.RelationshipDescription: Self?]
+	func attributes(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.DbObject.DbAttributeDescription: Any?]
+	func relationships(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.DbObject.DbRelationshipDescription: Self?]
 	
 }

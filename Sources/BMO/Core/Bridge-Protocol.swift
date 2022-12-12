@@ -50,7 +50,7 @@ public protocol BridgeProtocol {
 	
 	/* These two methods could probably be replaced by one async method.
 	 * This would also allow getting rid of the UserInfo associated type. */
-	func remoteOperation(for bmoRequest: BMORequest<LocalDb.Request, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
+	func remoteOperation(for bmoRequest: BMORequest<LocalDb.DbRequest, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
 	func bridgeObjects(for finishedRemoteOperation: RemoteDb.RemoteOperation, userInfo: UserInfo) throws -> BridgeObjects?
 	
 }

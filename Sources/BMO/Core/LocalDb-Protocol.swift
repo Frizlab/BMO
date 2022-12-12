@@ -19,18 +19,18 @@ import Foundation
 
 public protocol LocalDbObjectProtocol {
 	
-	associatedtype ID : Hashable & Sendable
+	associatedtype DbID : Hashable & Sendable
 	
-	associatedtype EntityDescription : Hashable
-	associatedtype AttributeDescription : Hashable
-	associatedtype RelationshipDescription : Hashable
+	associatedtype DbEntityDescription : Hashable
+	associatedtype DbAttributeDescription : Hashable
+	associatedtype DbRelationshipDescription : Hashable
 	
 }
 
 
 public protocol LocalDbProtocol {
 	
-	associatedtype Object : LocalDbObjectProtocol
-	associatedtype Request
+	associatedtype DbObject : LocalDbObjectProtocol
+	associatedtype DbRequest
 	
 }
