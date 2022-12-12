@@ -17,9 +17,24 @@ import Foundation
 
 
 
-public protocol BMORequest<Db> {
+public struct BMORequest<LocalDbRequest, RemoteUserInfo> {
 	
-	associatedtype Db : LocalDbProtocol
-	associatedtype AdditionalInfo
+	/**
+	 The request on the local database.
+	 Could be a fetch or a save request. */
+	public var localRequest: LocalDbRequest
+	/**
+	 Some user info to help the bridge convert the local request to a remote operation.
+	 
+	 A trivial example of information that could be there would be the fields to retrieve from an API.
+	 There are more complex real-life possibilities, of course.
+	 
+	 One might even put the complete pre-computed remote operation here depending on one’s need. */
+	public var remoteUserInfo: RemoteUserInfo
+	
+	public init(localRequest: LocalDbRequest, remoteUserInfo: RemoteUserInfo) {
+		self.localRequest = localRequest
+		self.remoteUserInfo = remoteUserInfo
+	}
 	
 }

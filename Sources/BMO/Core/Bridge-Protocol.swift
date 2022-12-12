@@ -23,6 +23,10 @@ public protocol BridgeProtocol {
 	associatedtype RemoteDb : RemoteDbProtocol
 	
 	/**
+	 The type for the additional user info needed to help convert a local db request to a remote operation. */
+	associatedtype RequestUserInfo
+	
+	/**
 	 The data returned by the remote operation that do not belong in the local db but that can be interested anyway.
 	 
 	 This can be the total number of items in a collection for instance. */
@@ -46,7 +50,7 @@ public protocol BridgeProtocol {
 	
 	/* These two methods could probably be replaced by one async method.
 	 * This would also allow getting rid of the UserInfo associated type. */
-	func remoteOperation(for localRequest: LocalDb.Request) throws -> (RemoteDb.RemoteOperation, UserInfo)?
+	func remoteOperation(for bmoRequest: BMORequest<LocalDb.Request, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
 	func bridgeObjects(for finishedRemoteOperation: RemoteDb.RemoteOperation, userInfo: UserInfo) throws -> BridgeObjects?
 	
 }
