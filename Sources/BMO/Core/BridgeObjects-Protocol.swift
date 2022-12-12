@@ -35,3 +35,22 @@ public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 	func relationships(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.DbObject.DbRelationshipDescription: Self?]
 	
 }
+
+
+public extension BridgeObjectsProtocol {
+	
+	func readMixedRepresentations() throws -> [MixedRepresentation<LocalDb, Self>] {
+		return try remoteObjects.map{ object in
+			let uniquingID = try uniquingID(from: object)
+			let attributes = try attributes(from: object)
+			let relationships = try relationships(from: object)
+			return MixedRepresentation(
+				entity: localEntity,
+				uniquingID: uniquingID,
+				attributes: attributes,
+				relationships: relationships
+			)
+		}
+	}
+	
+}
