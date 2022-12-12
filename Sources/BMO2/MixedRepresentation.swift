@@ -28,14 +28,14 @@ public struct MixedRepresentation<LocalDb : LocalDbProtocol, RemoteObjectsReader
 	public var entity: LocalDbEntityDescription
 	
 	public var uniquingID: AnyHashable?
-	public var attributes: [String: Any?]
-	public var relationships: [String: RelationshipValue]
+	public var attributes: [LocalDb.Object.AttributeDescription: Any?]
+	public var relationships: [LocalDb.Object.RelationshipDescription: RelationshipValue]
 	
 	public init(
 		entity: LocalDbEntityDescription,
 		uniquingID: AnyHashable? = nil,
-		attributes: [String : Any?] = [:],
-		relationships: [String : RelationshipValue] = [:]
+		attributes: [LocalDb.Object.AttributeDescription : Any?] = [:],
+		relationships: [LocalDb.Object.RelationshipDescription : RelationshipValue] = [:]
 	) {
 		self.entity = entity
 		self.uniquingID = uniquingID

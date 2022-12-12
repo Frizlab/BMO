@@ -22,7 +22,7 @@ public protocol LocalDbObjectProtocol {
 	associatedtype ID : Hashable & Sendable
 	
 	associatedtype EntityDescription : Hashable
-	associatedtype PropertyDescription : Hashable
+	associatedtype AttributeDescription : Hashable
 	associatedtype RelationshipDescription : Hashable
 	
 	var entity: EntityDescription {get}
