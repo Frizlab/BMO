@@ -17,15 +17,9 @@ import Foundation
 
 
 
-public protocol RemoteDbProtocol {
+public protocol BMORequest<Db> {
 	
-	/**
-	 An operation to do something on the remote db. */
-	associatedtype RemoteOperation : Operation
-	
-	/**
-	 Will typically be `[String: Any]`, or some kind of `JSON` enum (e.g. [GenericJSON](https://github.com/iwill/generic-json-swift)) if you don’t have the model of your API.
-	 If you do, you’ll probably want to make all of the types returned by your API to a common protocol and use this protocol here. */
-	associatedtype RemoteObject
+	associatedtype Db : LocalDbProtocol
+	associatedtype AdditionalInfo
 	
 }

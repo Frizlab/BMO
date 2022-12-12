@@ -25,30 +25,12 @@ public protocol LocalDbObjectProtocol {
 	associatedtype AttributeDescription : Hashable
 	associatedtype RelationshipDescription : Hashable
 	
-	var entity: EntityDescription {get}
-	var unsafeObjectID: ID {get}
-	
-}
-
-
-public protocol LocalDbFetchRequestProtocol {
-	
-	associatedtype EntityDescription : Hashable
-	
-	var entity: EntityDescription {get}
-	
 }
 
 
 public protocol LocalDbProtocol {
 	
 	associatedtype Object : LocalDbObjectProtocol
-	associatedtype FetchRequest : LocalDbFetchRequestProtocol where FetchRequest.EntityDescription == Object.EntityDescription
-	
-	/* Both these methods should be re-entrant. */
-	func perform(_ block: @escaping () -> Void)
-	func performAndWait(_ block: () throws -> Void) rethrows
-	
-	func unsafeRetrieveExistingObject(from objectID: Object.ID) throws -> Object
+	associatedtype Request
 	
 }

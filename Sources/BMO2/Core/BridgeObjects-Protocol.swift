@@ -24,25 +24,15 @@ public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 	
 	associatedtype Metadata
 	
-	associatedtype UserInfo
-	
-	init(remoteOperation: RemoteDb.RemoteOperation, expectedLocalEntity: LocalDb.Object.EntityDescription, userInfo: UserInfo)
-	
-	/* Conveniences init, disabled for now as not truly required. */
-//	init(relationship: LocalDb.Object.RelationshipDescription, of remoteObject: RemoteDb.RemoteObject, userInfo: UserInfo)
-	/* With this init, the metadata will probably alwasy be nil (no access to the parent object which presumably contains the Metadata). */
-//	init(remoteObjects: [RemoteDb.RemoteObject], expectedLocalEntity: LocalDb.Object.EntityDescription, userInfo: UserInfo)
-	
-	var expectedLocalEntity: LocalDb.Object.EntityDescription {get}
-	
-	func readLocalMetadata() throws -> Metadata?
-	func readRemoteObjects() throws -> [RemoteDb.RemoteObject]
+	func readMetadata() throws -> Metadata?
+	func readObjects() throws -> [RemoteDb.RemoteObject]
 	
 	func readMergeType() throws -> RelationshipMergeType<LocalDb.Object, LocalDb.Object.RelationshipDescription>
 	
-	/* We put these three methods as required methods of the protocol instead of the one there is in the extension, for convenience.
-	 * Whether it is more convenient is debatable.
-	 * If debate thinks no, simple replace these three functions by the one in the extension (and remove its implementation). */
+	/* These four methods should only be used by the readMixedRepresentations method in the extension of this protocol in this file.
+	 * We deemed it more convenient for an implementer to implement these four functions rather than having to implement the mixed representations one directly.
+	 * This is debatable and can easily be changed if needed. */
+	var expectedLocalEntity: LocalDb.Object.EntityDescription {get}
 	func uniquingID(from remoteObject: RemoteDb.RemoteObject) throws -> AnyHashable?
 	func attributes(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.Object.AttributeDescription: Any?]
 	func relationships(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.Object.RelationshipDescription: Self?]
@@ -53,7 +43,7 @@ public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 public extension BridgeObjectsProtocol {
 	
 	func readMixedRepresentations() throws -> [MixedRepresentation<LocalDb, Self>] {
-		return try readRemoteObjects().map{ object in
+		return try readObjects().map{ object in
 			let uniquingID = try uniquingID(from: object)
 			let attributes = try attributes(from: object)
 			let relationships = try relationships(from: object)

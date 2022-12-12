@@ -22,8 +22,6 @@ public protocol BridgeProtocol {
 	associatedtype LocalDb : LocalDbProtocol
 	associatedtype RemoteDb : RemoteDbProtocol
 	
-	associatedtype AdditionalRequestsInfo
-	
 	/**
 	 The data returned by the remote operation that do not belong in the local db but that can be interested anyway.
 	 
@@ -44,12 +42,11 @@ public protocol BridgeProtocol {
 	
 	/**
 	 The type of the object that will be responsible for doing the actual conversion from the remote objects to local db representations (``MixedRepresentation`` to be precise). */
-	associatedtype BridgeObjects : BridgeObjectsProtocol where BridgeObjects.UserInfo == UserInfo, BridgeObjects.Metadata == Metadata
+	associatedtype BridgeObjects : BridgeObjectsProtocol where BridgeObjects.Metadata == Metadata
 	
-	func remoteOperation(forLocalFetch fetchRequest: LocalDb.FetchRequest, additionalRequestInfo: AdditionalRequestsInfo?) throws -> (RemoteDb.RemoteOperation, UserInfo)?
-	
-	func remoteOperation(forLocallyInserted object: LocalDb.Object, additionalRequestInfo: AdditionalRequestsInfo?) throws -> (RemoteDb.RemoteOperation, UserInfo)?
-	func remoteOperation(forLocallyUpdated  object: LocalDb.Object, additionalRequestInfo: AdditionalRequestsInfo?) throws -> (RemoteDb.RemoteOperation, UserInfo)?
-	func remoteOperation(forLocallyDeleted  object: LocalDb.Object, additionalRequestInfo: AdditionalRequestsInfo?) throws -> (RemoteDb.RemoteOperation, UserInfo)?
+	/* These two methods could probably be replaced by one async method.
+	 * This would also allow getting rid of the UserInfo associated type. */
+	func remoteOperation(for localRequest: LocalDb.Request) throws -> (RemoteDb.RemoteOperation, UserInfo)?
+	func bridgeObjects(for finishedRemoteOperation: RemoteDb.RemoteOperation, userInfo: UserInfo) throws -> BridgeObjects?
 	
 }
