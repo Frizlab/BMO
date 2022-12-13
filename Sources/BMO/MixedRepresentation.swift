@@ -23,13 +23,13 @@ public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
 	
 	public var entity: DbObject.DbEntityDescription
 	
-	public var uniquingID: DbObject.UniquingID?
+	public var uniquingID: BridgeObjects.LocalDb.UniquingID?
 	public var attributes: [DbObject.DbAttributeDescription: Any?]
 	public var relationships: [DbObject.DbRelationshipDescription: BridgeObjects?]
 	
 	public init(
 		entity: DbObject.DbEntityDescription,
-		uniquingID: DbObject.UniquingID? = nil,
+		uniquingID: BridgeObjects.LocalDb.UniquingID? = nil,
 		attributes: [DbObject.DbAttributeDescription : Any?] = [:],
 		relationships: [DbObject.DbRelationshipDescription : BridgeObjects?] = [:]
 	) {
