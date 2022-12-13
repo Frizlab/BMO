@@ -21,6 +21,8 @@ public protocol LocalDbObjectProtocol {
 	
 	associatedtype DbID : Hashable & Sendable
 	
+	associatedtype UniquingID : Hashable & Sendable
+	
 	associatedtype DbEntityDescription : Hashable
 	associatedtype DbAttributeDescription : Hashable
 	associatedtype DbRelationshipDescription : Hashable

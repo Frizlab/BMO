@@ -30,27 +30,44 @@ public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
 	var localEntity: LocalDb.DbObject.DbEntityDescription {get}
 	var localMergeType: RelationshipMergeType<LocalDb.DbObject, LocalDb.DbObject.DbRelationshipDescription> {get}
 	
-	func uniquingID(from remoteObject: RemoteDb.RemoteObject) throws -> AnyHashable?
-	func attributes(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.DbObject.DbAttributeDescription: Any?]
-	func relationships(from remoteObject: RemoteDb.RemoteObject) throws -> [LocalDb.DbObject.DbRelationshipDescription: Self?]
+	/* If the object should not be imported at all, return nil. */
+	func mixedRepresentation(from remoteObject: RemoteDb.RemoteObject) throws -> MixedRepresentation<Self>?
 	
 }
 
 
 public extension BridgeObjectsProtocol {
 	
-	func readMixedRepresentations() throws -> [MixedRepresentation<LocalDb, Self>] {
-		return try remoteObjects.map{ object in
-			let uniquingID = try uniquingID(from: object)
-			let attributes = try attributes(from: object)
-			let relationships = try relationships(from: object)
-			return MixedRepresentation(
-				entity: localEntity,
-				uniquingID: uniquingID,
-				attributes: attributes,
-				relationships: relationships
-			)
-		}
+	func mixedRepresentations() throws -> [MixedRepresentation<Self>] {
+		return try remoteObjects.compactMap{ try mixedRepresentation(from: $0) }
 	}
 	
 }
+
+
+// TODO: Local Db Representation. Probably not here though.
+//public extension BridgeObjectsProtocol {
+//	
+//	/**
+//	 This will use the mixedRepresentation to create a local db representation.
+//	 
+//	 If isCancelled returns false at any point while this method has not returned, the result of this function should be considered garbage.
+//	 
+//	 Can probably be converted to async.
+//	 We’d use Task.isCancelled instead of an `isCancelled` block. */
+//	func convertToLocalDbRepresentations(isCancelled: () -> Bool = { false }) throws -> [LocalDbRepresentation<LocalDb.DbObject, Metadata>] {
+//		var res = [LocalDbRepresentation<LocalDb.DbObject, Metadata>]()
+//		return try remoteObjects.map{ object in
+//			let uniquingID = try uniquingID(from: object)
+//			let attributes = try attributes(from: object)
+//			let relationships = try relationships(from: object)
+//			return MixedRepresentation(
+//				entity: localEntity,
+//				uniquingID: uniquingID,
+//				attributes: attributes,
+//				relationships: relationships
+//			)
+//		}
+//	}
+//	
+//}

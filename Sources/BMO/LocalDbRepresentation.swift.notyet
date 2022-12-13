@@ -17,21 +17,22 @@ import Foundation
 
 
 
-public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
+public struct LocalDbRepresentation<DbObject : LocalDbObjectProtocol, RelationshipMetadata> {
 	
-	public typealias DbObject = BridgeObjects.LocalDb.DbObject
+	public typealias RelationshipMergeType = BMO.RelationshipMergeType<DbObject, DbObject.DbRelationshipDescription>
+	public typealias RelationshipValue = (value: [Self], mergeType: RelationshipMergeType, metadata: RelationshipMetadata)
 	
 	public var entity: DbObject.DbEntityDescription
 	
 	public var uniquingID: DbObject.UniquingID?
 	public var attributes: [DbObject.DbAttributeDescription: Any?]
-	public var relationships: [DbObject.DbRelationshipDescription: BridgeObjects?]
+	public var relationships: [DbObject.DbRelationshipDescription: RelationshipValue?]
 	
 	public init(
 		entity: DbObject.DbEntityDescription,
 		uniquingID: DbObject.UniquingID? = nil,
 		attributes: [DbObject.DbAttributeDescription : Any?] = [:],
-		relationships: [DbObject.DbRelationshipDescription : BridgeObjects?] = [:]
+		relationships: [DbObject.DbRelationshipDescription : RelationshipValue?] = [:]
 	) {
 		self.entity = entity
 		self.uniquingID = uniquingID
