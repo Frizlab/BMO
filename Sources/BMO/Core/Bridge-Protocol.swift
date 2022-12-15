@@ -17,40 +17,35 @@ import Foundation
 
 
 
-public protocol BridgeProtocol {
+public protocol BridgeProtocol<BridgeObjects, RequestUserInfo> {
 	
-	associatedtype LocalDb : LocalDbProtocol
-	associatedtype RemoteDb : RemoteDbProtocol
+	/**
+	 The type of the object that will be responsible for doing the actual conversion from the remote objects to local db representations (``MixedRepresentation`` to be precise). */
+	associatedtype BridgeObjects : BridgeObjectsProtocol
 	
 	/**
 	 The type for the additional user info needed to help convert a local db request to a remote operation. */
 	associatedtype RequestUserInfo
 	
 	/**
-	 The data returned by the remote operation that do not belong in the local db but that can be interested anyway.
+	 Some arbitrary type the bridge uses to ease or make possible the conversion between the finished operation and the bridge objects.
 	 
-	 This can be the total number of items in a collection for instance. */
-	associatedtype Metadata
-	
-	/**
-	 Some arbitrary type the bridge uses to ease or make possible the conversion between remote and local data.
-	 
-	 Remote data can be tricky; sometimes a “state” must be maintained in order for the conversion to be even possible.
+	 Usually a remote operation on its own will not contain any info for the local db.
+	 Sometimes a “state” must be maintained in order for the conversion to bridge objects to be possible.
 	 
 	 A simple example:
-	 When requesting only certain fields from an object from a remote API, the local db representation should only contain the requested fields.
+	 When requesting only certain fields from an object from a remote API, the generic local db objects should only contain the requested fields.
 	 Whose fields were requested usually cannot be known with certainty without some additional info.
 	 
 	 This is an example, but there are loads of cases that cannot be solved without user info. */
 	associatedtype UserInfo
 	
-	/**
-	 The type of the object that will be responsible for doing the actual conversion from the remote objects to local db representations (``MixedRepresentation`` to be precise). */
-	associatedtype BridgeObjects : BridgeObjectsProtocol where BridgeObjects.Metadata == Metadata
+	typealias LocalDb = BridgeObjects.LocalDb
+	typealias RemoteDb = BridgeObjects.RemoteDb
 	
 	/* These two methods could probably be replaced by one async method.
 	 * This would also allow getting rid of the UserInfo associated type. */
-	func remoteOperation(for bmoRequest: BMORequest<LocalDb.DbRequest, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
+	func onContext_remoteOperation(for bridgeRequest: BMOBridgeRequest<LocalDb.DbRequest, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
 	func bridgeObjects(for finishedRemoteOperation: RemoteDb.RemoteOperation, userInfo: UserInfo) throws -> BridgeObjects?
 	
 }

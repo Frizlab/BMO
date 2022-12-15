@@ -17,22 +17,38 @@ import Foundation
 
 
 
+public protocol LocalDbContext {
+	
+	/* We do not need that in BMO. */
+//	func performRO( block: @escaping () -> Void)
+//	func performAndWaitRO(_ block: @escaping () throws -> Void) rethrows
+	
+//	func performRW( block: @escaping () -> Void)
+//	func performAndWaitRW(_ block: @escaping () throws -> Void) rethrows
+	
+}
+
+
 public protocol LocalDbObjectProtocol {
 	
 	associatedtype DbID : Hashable & Sendable
 	
-	associatedtype DbEntityDescription : Hashable
-	associatedtype DbAttributeDescription : Hashable
-	associatedtype DbRelationshipDescription : Hashable
+	associatedtype DbEntityDescription : Hashable & Sendable
+	associatedtype DbAttributeDescription : Hashable & Sendable
+	associatedtype DbRelationshipDescription : Hashable & Sendable
 	
 }
 
 
 public protocol LocalDbProtocol {
 	
-	associatedtype UniquingID : Hashable & Sendable
+	associatedtype DbContext : LocalDbContext
 	
 	associatedtype DbObject : LocalDbObjectProtocol
 	associatedtype DbRequest
+	
+	associatedtype UniquingID : Hashable & Sendable
+	
+	var context: DbContext {get}
 	
 }

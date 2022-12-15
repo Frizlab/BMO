@@ -17,20 +17,43 @@ import Foundation
 
 
 
-public protocol BridgeObjectsProtocol<LocalDb, Metadata> {
+/**
+ A protocol that simplify the complex process of converting a remote object to the local db.
+ Objects conforming to this protocol are responsible for doing the business logic of the conversion from a remote object to an object in the local db.
+ 
+ The main goal of a “BridgeObjects” is to be able to convert a collection of remote objects to its corresponding collection of ``MixedRepresentation``.
+ 
+ A ``MixedRepresentation`` represents a single local db object.
+ The representation is “mixed” because
+  the attributes should be exactly what will be in the local db,
+  the relationships’ _keys_ are also 1:1 with the local db,
+  but the relationship’ _values_ will be ``BridgeObjectsProtocol``s (and the merge type of the relationship).
+ 
+ This way we create a way to traverse the whole remote objects tree while keeping the work from the protocol adopters relatively light. */
+public protocol BridgeObjectsProtocol {
 	
 	associatedtype LocalDb : LocalDbProtocol
 	associatedtype RemoteDb : RemoteDbProtocol
 	
+	/**
+	 The data returned by the remote operation that do not belong in the local db but that can be interested anyway.
+	 
+	 This can be the total number of items in a collection for instance. */
 	associatedtype Metadata
 	
+	var localMetadata: Metadata? {get}
 	var remoteObjects: [RemoteDb.RemoteObject] {get}
 	
-	var localMetadata: Metadata? {get}
-	var localEntity: LocalDb.DbObject.DbEntityDescription {get}
-	var localMergeType: RelationshipMergeType<LocalDb.DbObject, LocalDb.DbObject.DbRelationshipDescription> {get}
+	/* One of these two methods must be implemented.
+	 * Specifically, mixedRepresentations() is called by BMO explicitly.
+	 *
+	 * mixedRepresentation(from:) is a convenience that can be implemented instead of mixedRepresentations().
+	 * The default implementation of mixedRepresentations() will simply compactMap all the remote objects with their corresponding mixed representation.
+	 *
+	 * In general, implementing mixedRepresentation(from:) is ok and suffice.
+	 * If for some reasons it does not, you can override mixedRepresentations() directly, in which case mixedRepresentation(from:) will be completely ignored by BMO. */
 	
-	/* If the object should not be imported at all, return nil. */
+	func mixedRepresentations() throws -> [MixedRepresentation<Self>]
 	func mixedRepresentation(from remoteObject: RemoteDb.RemoteObject) throws -> MixedRepresentation<Self>?
 	
 }
@@ -42,32 +65,43 @@ public extension BridgeObjectsProtocol {
 		return try remoteObjects.compactMap{ try mixedRepresentation(from: $0) }
 	}
 	
+	func mixedRepresentation(from remoteObject: RemoteDb.RemoteObject) throws -> MixedRepresentation<Self>? {
+		return nil
+	}
+	
 }
 
 
-// TODO: Local Db Representation. Probably not here though.
-//public extension BridgeObjectsProtocol {
-//	
-//	/**
-//	 This will use the mixedRepresentation to create a local db representation.
-//	 
-//	 If isCancelled returns false at any point while this method has not returned, the result of this function should be considered garbage.
-//	 
-//	 Can probably be converted to async.
-//	 We’d use Task.isCancelled instead of an `isCancelled` block. */
-//	func convertToLocalDbRepresentations(isCancelled: () -> Bool = { false }) throws -> [LocalDbRepresentation<LocalDb.DbObject, Metadata>] {
-//		var res = [LocalDbRepresentation<LocalDb.DbObject, Metadata>]()
-//		return try remoteObjects.map{ object in
-//			let uniquingID = try uniquingID(from: object)
-//			let attributes = try attributes(from: object)
-//			let relationships = try relationships(from: object)
-//			return MixedRepresentation(
-//				entity: localEntity,
-//				uniquingID: uniquingID,
-//				attributes: attributes,
-//				relationships: relationships
-//			)
-//		}
-//	}
-//	
-//}
+
+/**
+ A structure that simplify the complex process of converting a remote object to the local db.
+ 
+ This works closely with the ``BridgeObjectsProtocol``.
+ See its documentation for more info. */
+public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
+	
+	public typealias DbObject = BridgeObjects.LocalDb.DbObject
+	public typealias MergeType = BMO.RelationshipMergeType<DbObject, DbObject.DbRelationshipDescription>
+	
+	public var entity: DbObject.DbEntityDescription
+	public var updatedObjectID: DbObject.DbID?
+	
+	public var uniquingID: BridgeObjects.LocalDb.UniquingID?
+	public var attributes: [DbObject.DbAttributeDescription: Any?]
+	public var relationships: [DbObject.DbRelationshipDescription: (objects: BridgeObjects, mergeType: MergeType)?]
+	
+	public init(
+		entity: DbObject.DbEntityDescription,
+		updatedObjectID: DbObject.DbID?,
+		uniquingID: BridgeObjects.LocalDb.UniquingID? = nil,
+		attributes: [DbObject.DbAttributeDescription : Any?] = [:],
+		relationships: [DbObject.DbRelationshipDescription: (BridgeObjects, MergeType)?] = [:]
+	) {
+		self.entity = entity
+		self.updatedObjectID = updatedObjectID
+		self.uniquingID = uniquingID
+		self.attributes = attributes
+		self.relationships = relationships
+	}
+	
+}

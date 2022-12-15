@@ -18,13 +18,19 @@ import Foundation
 
 
 /**
- A generic representation of an object to import in the local db. */
-public struct LocalDbRepresentation<DbObject : LocalDbObjectProtocol, UniquingID : Hashable & Sendable, RelationshipMetadata> {
+ A generic representation of an object to import in the local db.
+ 
+ This is the direct counterpart of a ``MixedRepresentation``, except the relationships are fully resolved in this structure.
+ 
+ You should rarely have to build a ``GenericLocalDbObject`` manually.
+ Instead, BMO will construct a collection of ``GenericLocalDbObject`` from a ``BridgeObjectsProtocol`` and pass them to a ``LocalDbImporterProtocol`` instance. */
+public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID : Hashable & Sendable, RelationshipMetadata> {
 	
 	public typealias RelationshipMergeType = BMO.RelationshipMergeType<DbObject, DbObject.DbRelationshipDescription>
 	public typealias RelationshipValue = (value: [Self], mergeType: RelationshipMergeType, metadata: RelationshipMetadata?)
 	
 	public var entity: DbObject.DbEntityDescription
+	public var updatedObjectID: DbObject.DbID?
 	
 	public var uniquingID: UniquingID?
 	public var attributes: [DbObject.DbAttributeDescription: Any?]
@@ -44,14 +50,15 @@ public struct LocalDbRepresentation<DbObject : LocalDbObjectProtocol, UniquingID
 			guard !taskCancelled() else {throw CancellationError()}
 			return self.init(
 				entity: mixedRepresentation.entity,
+				updatedObjectID: mixedRepresentation.updatedObjectID,
 				uniquingID: mixedRepresentation.uniquingID,
 				attributes: mixedRepresentation.attributes,
-				relationships: try mixedRepresentation.relationships.mapValues{ relationshipBridgeObjects in
-					guard let relationshipBridgeObjects else {
+				relationships: try mixedRepresentation.relationships.mapValues{ relationshipBridgeObjectsAndMergeType in
+					guard let (relationshipBridgeObjects, mergeType) = relationshipBridgeObjectsAndMergeType else {
 						return nil
 					}
 					let relationshipLocalRepresentation = try Self.representations(from: relationshipBridgeObjects, taskCancelled: taskCancelled)
-					return (value: relationshipLocalRepresentation, mergeType: relationshipBridgeObjects.localMergeType, metadata: relationshipBridgeObjects.localMetadata)
+					return (value: relationshipLocalRepresentation, mergeType: mergeType, metadata: relationshipBridgeObjects.localMetadata)
 				}
 			)
 		}
@@ -59,11 +66,13 @@ public struct LocalDbRepresentation<DbObject : LocalDbObjectProtocol, UniquingID
 	
 	public init(
 		entity: DbObject.DbEntityDescription,
+		updatedObjectID: DbObject.DbID?,
 		uniquingID: UniquingID? = nil,
 		attributes: [DbObject.DbAttributeDescription : Any?] = [:],
 		relationships: [DbObject.DbRelationshipDescription : RelationshipValue?] = [:]
 	) {
 		self.entity = entity
+		self.updatedObjectID = updatedObjectID
 		self.uniquingID = uniquingID
 		self.attributes = attributes
 		self.relationships = relationships
