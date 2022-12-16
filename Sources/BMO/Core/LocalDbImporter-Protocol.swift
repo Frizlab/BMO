@@ -22,7 +22,6 @@ import Foundation
 public protocol LocalDbImporterProtocol {
 	
 	associatedtype LocalDb : LocalDbProtocol
-	associatedtype ImportResults
 	
 	/**
 	 Import the given local representations into the given local db’s context.
@@ -31,9 +30,9 @@ public protocol LocalDbImporterProtocol {
 	 `contextSwitchHandler` must be called before doing anything on the context though.
 	 
 	 The handler is used by the bridge operation to notify interested parties the import _will_ start. */
-	func `import`<UniquingID : Hashable & Sendable, Metadata>(
-		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, UniquingID, Metadata>], in db: LocalDb,
-		contextSwitchHandler: @escaping @Sendable () throws -> Void
-	) throws -> ImportResults
+	func onContext_import<UniquingID : Hashable & Sendable, Metadata>(
+		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, UniquingID, Metadata>],
+		in db: LocalDb
+	) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
 	
 }

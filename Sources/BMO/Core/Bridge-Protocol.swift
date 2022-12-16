@@ -17,13 +17,13 @@ import Foundation
 
 
 
-public protocol BridgeProtocol<BridgeObjects, RequestUserInfo> {
+public protocol BridgeProtocol {
 	
 	/**
 	 The type of the object that will be responsible for doing the actual conversion from the remote objects to local db representations (``MixedRepresentation`` to be precise). */
 	associatedtype BridgeObjects : BridgeObjectsProtocol
 	
-	associatedtype RequestExecutor : RequestExecutorProtocol
+	associatedtype RequestHelper : RequestHelperProtocol
 	
 	/**
 	 The type for the additional user info needed to help convert a local db request to a remote operation. */
