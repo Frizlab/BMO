@@ -32,8 +32,7 @@ public protocol LocalDbImporterProtocol {
 	 
 	 The handler is used by the bridge operation to notify interested parties the import _will_ start. */
 	func `import`<UniquingID : Hashable & Sendable, Metadata>(
-		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, UniquingID, Metadata>],
-		in context: LocalDb.DbContext,
+		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, UniquingID, Metadata>], in db: LocalDb,
 		contextSwitchHandler: @escaping @Sendable () throws -> Void
 	) throws -> ImportResults
 	
