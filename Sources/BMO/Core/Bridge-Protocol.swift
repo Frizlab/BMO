@@ -23,6 +23,8 @@ public protocol BridgeProtocol<BridgeObjects, RequestUserInfo> {
 	 The type of the object that will be responsible for doing the actual conversion from the remote objects to local db representations (``MixedRepresentation`` to be precise). */
 	associatedtype BridgeObjects : BridgeObjectsProtocol
 	
+	associatedtype RequestExecutor : RequestExecutorProtocol
+	
 	/**
 	 The type for the additional user info needed to help convert a local db request to a remote operation. */
 	associatedtype RequestUserInfo
@@ -45,7 +47,7 @@ public protocol BridgeProtocol<BridgeObjects, RequestUserInfo> {
 	
 	/* These two methods could probably be replaced by one async method.
 	 * This would also allow getting rid of the UserInfo associated type. */
-	func onContext_remoteOperation(for bridgeRequest: BMOBridgeRequest<LocalDb.DbRequest, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
+	func remoteOperation(for bridgeRequest: Request<LocalDb.DbRequest, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
 	func bridgeObjects(for finishedRemoteOperation: RemoteDb.RemoteOperation, userInfo: UserInfo) throws -> BridgeObjects?
 	
 }

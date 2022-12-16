@@ -30,7 +30,6 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	public typealias RelationshipValue = (value: [Self], mergeType: RelationshipMergeType, metadata: RelationshipMetadata?)
 	
 	public var entity: DbObject.DbEntityDescription
-	public var updatedObjectID: DbObject.DbID?
 	
 	public var uniquingID: UniquingID?
 	public var attributes: [DbObject.DbAttributeDescription: Any?]
@@ -44,20 +43,24 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	 This conversion can take some time.
 	 That’s why it can be stopped at any point using the `taskCancelled` handler.
 	 If you call this method in a structured concurrency context, the handler can simply return `Task.isCancelled` for instance. */
-	public static func representations<BridgeObjects : BridgeObjectsProtocol>(from bridgeObjects: BridgeObjects, taskCancelled: () -> Bool = { false }) throws -> [Self]
+	public static func representations<BridgeObjects : BridgeObjectsProtocol>(from bridgeObjects: BridgeObjects, uniquingIDsPerEntities: inout [DbObject.DbEntityDescription: Set<UniquingID>], taskCancelled: () -> Bool = { false }) throws -> [Self]
 	where BridgeObjects.LocalDb.DbObject == DbObject, BridgeObjects.LocalDb.UniquingID == UniquingID, BridgeObjects.Metadata == RelationshipMetadata {
 		return try bridgeObjects.mixedRepresentations().map{ mixedRepresentation in
 			guard !taskCancelled() else {throw CancellationError()}
+			
+			if let uniquingID = mixedRepresentation.uniquingID {
+				uniquingIDsPerEntities[mixedRepresentation.entity, default: []].insert(uniquingID)
+			}
+			
 			return self.init(
 				entity: mixedRepresentation.entity,
-				updatedObjectID: mixedRepresentation.updatedObjectID,
 				uniquingID: mixedRepresentation.uniquingID,
 				attributes: mixedRepresentation.attributes,
 				relationships: try mixedRepresentation.relationships.mapValues{ relationshipBridgeObjectsAndMergeType in
 					guard let (relationshipBridgeObjects, mergeType) = relationshipBridgeObjectsAndMergeType else {
 						return nil
 					}
-					let relationshipLocalRepresentation = try Self.representations(from: relationshipBridgeObjects, taskCancelled: taskCancelled)
+					let relationshipLocalRepresentation = try Self.representations(from: relationshipBridgeObjects, uniquingIDsPerEntities: &uniquingIDsPerEntities, taskCancelled: taskCancelled)
 					return (value: relationshipLocalRepresentation, mergeType: mergeType, metadata: relationshipBridgeObjects.localMetadata)
 				}
 			)
@@ -66,13 +69,11 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	
 	public init(
 		entity: DbObject.DbEntityDescription,
-		updatedObjectID: DbObject.DbID?,
 		uniquingID: UniquingID? = nil,
 		attributes: [DbObject.DbAttributeDescription : Any?] = [:],
 		relationships: [DbObject.DbRelationshipDescription : RelationshipValue?] = [:]
 	) {
 		self.entity = entity
-		self.updatedObjectID = updatedObjectID
 		self.uniquingID = uniquingID
 		self.attributes = attributes
 		self.relationships = relationships

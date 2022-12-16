@@ -84,7 +84,6 @@ public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
 	public typealias MergeType = BMO.RelationshipMergeType<DbObject, DbObject.DbRelationshipDescription>
 	
 	public var entity: DbObject.DbEntityDescription
-	public var updatedObjectID: DbObject.DbID?
 	
 	public var uniquingID: BridgeObjects.LocalDb.UniquingID?
 	public var attributes: [DbObject.DbAttributeDescription: Any?]
@@ -98,7 +97,6 @@ public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
 		relationships: [DbObject.DbRelationshipDescription: (BridgeObjects, MergeType)?] = [:]
 	) {
 		self.entity = entity
-		self.updatedObjectID = updatedObjectID
 		self.uniquingID = uniquingID
 		self.attributes = attributes
 		self.relationships = relationships

@@ -24,7 +24,12 @@ public enum RelationshipMergeType<Object, Relationship> {
 	case insertAtBeginning
 	case custom((_ object: Object, _ relationship: Relationship, _ newValues: [Object]) -> Void)
 	
-	public var isReplace: Bool {
+}
+
+
+public extension RelationshipMergeType {
+	
+	var isReplace: Bool {
 		switch self {
 			case .replace: return true
 			default:       return false

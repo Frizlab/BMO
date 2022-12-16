@@ -17,26 +17,25 @@ import Foundation
 
 
 
-public struct LocalDbImportResult<LocalDbObject : LocalDbObjectProtocol> {
-	
-	/* NO bridge metadata here.
-	 * This stricly represents the results of the LocalDbImporter. */
+public struct LocalDbChanges<LocalDbObject : LocalDbObjectProtocol, Metadata> {
 	
 	public struct ImportedObject {
 		
 		public var object: LocalDbObject
-		public var modifiedRelationships: [LocalDbObject.DbRelationshipDescription: LocalDbImportResult]
+		public var modifiedRelationships: [LocalDbObject.DbRelationshipDescription: LocalDbChanges]
 		
-		internal init(object: LocalDbObject, modifiedRelationships: [LocalDbObject.DbRelationshipDescription : LocalDbImportResult]) {
+		internal init(object: LocalDbObject, modifiedRelationships: [LocalDbObject.DbRelationshipDescription : LocalDbChanges]) {
 			self.object = object
 			self.modifiedRelationships = modifiedRelationships
 		}
 		
 	}
 	
+	public var metadata: Metadata?
 	public var importedObjects: [ImportedObject]
 	
-	internal init(importedObjects: [ImportedObject]) {
+	internal init(metadata: Metadata, importedObjects: [ImportedObject]) {
+		self.metadata = metadata
 		self.importedObjects = importedObjects
 	}
 	

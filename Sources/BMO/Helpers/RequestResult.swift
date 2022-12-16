@@ -17,7 +17,7 @@ import Foundation
 
 
 
-public enum BMORequestResult<RemoteOperation : Operation & Sendable, LocalDbObject : LocalDbObjectProtocol, Metadata : Hashable & Sendable> : Sendable {
+public enum RequestResult<RemoteOperation : Operation, LocalDbObject : LocalDbObjectProtocol, Metadata : Hashable & Sendable> {
 	
 	/**
 	 This only happens if the bridge determines no operations were needed for the given request.
@@ -37,6 +37,6 @@ public enum BMORequestResult<RemoteOperation : Operation & Sendable, LocalDbObje
 	 Everything went well, except for the last step: the import of the local db representation to the actual db. */
 	case failureOfImport(Error, succeededRemoteOperation: RemoteOperation)
 	
-	case success(results: , remoteOperation: RemoteOperation)
+	case success(dbChanges: LocalDbChanges<LocalDbObject, Metadata>, remoteOperation: RemoteOperation)
 	
 }

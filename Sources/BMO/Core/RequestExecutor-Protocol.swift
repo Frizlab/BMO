@@ -17,14 +17,5 @@ import Foundation
 
 
 
-public protocol BMORequest {
-	
-	associatedtype LocalDbImporter : LocalDbImporterProtocol
-	associatedtype RemoteUserInfo
-	
-	typealias LocalDb = LocalDbImporter.LocalDb
-	
-	var importer: LocalDbImporter {get}
-	var onContext_bridgeRequest: BMOBridgeRequest<LocalDb.DbRequest, RemoteUserInfo> {get}
-	
+public protocol RequestExecutorProtocol {
 }

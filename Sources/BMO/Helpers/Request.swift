@@ -17,12 +17,12 @@ import Foundation
 
 
 
-public struct BMOBridgeRequest<LocalDbRequest, RemoteUserInfo> {
+public struct Request<LocalDbRequest, RemoteUserInfo> {
 	
 	/**
 	 The request on the local database.
-	 Could be a fetch or a save request. */
-	public var onContext_localRequest: LocalDbRequest
+	 Could be a fetch or a save request, or something else entirely (multiple requests in one, etc.). */
+	public var localRequest: LocalDbRequest
 	/**
 	 Some user info to help the bridge convert the local request to a remote operation.
 	 
@@ -33,7 +33,7 @@ public struct BMOBridgeRequest<LocalDbRequest, RemoteUserInfo> {
 	public var remoteUserInfo: RemoteUserInfo
 	
 	public init(localRequest: LocalDbRequest, remoteUserInfo: RemoteUserInfo) {
-		self.onContext_localRequest = localRequest
+		self.localRequest = localRequest
 		self.remoteUserInfo = remoteUserInfo
 	}
 	
