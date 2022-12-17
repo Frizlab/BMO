@@ -23,6 +23,8 @@ public protocol BridgeProtocol {
 	 The type of the object that will be responsible for doing the actual conversion from the remote objects to local db representations (``MixedRepresentation`` to be precise). */
 	associatedtype BridgeObjects : BridgeObjectsProtocol
 	
+	associatedtype RequestHelper : RequestHelperProtocol
+	
 	/**
 	 The type for the additional user info needed to help convert a local db request to a remote operation. */
 	associatedtype RequestUserInfo
@@ -42,6 +44,9 @@ public protocol BridgeProtocol {
 	
 	typealias LocalDb = BridgeObjects.LocalDb
 	typealias RemoteDb = BridgeObjects.RemoteDb
+	typealias Metadata = BridgeObjects.Metadata
+	
+	func requestHelper(for bridgeRequest: Request<LocalDb.DbRequest, RequestUserInfo>) -> RequestHelper
 	
 	/* These two methods could probably be replaced by one async method.
 	 * This would also allow getting rid of the UserInfo associated type. */

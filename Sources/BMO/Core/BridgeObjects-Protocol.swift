@@ -39,7 +39,7 @@ public protocol BridgeObjectsProtocol {
 	 The data returned by the remote operation that do not belong in the local db but that can be interested anyway.
 	 
 	 This can be the total number of items in a collection for instance. */
-	associatedtype Metadata
+	associatedtype Metadata : Sendable
 	
 	var localMetadata: Metadata? {get}
 	var remoteObjects: [RemoteDb.RemoteObject] {get}

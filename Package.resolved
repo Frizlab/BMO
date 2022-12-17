@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "hasresult",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Frizlab/HasResult.git",
+      "state" : {
+        "revision" : "a6eb60f65e33f9fb3ad425fea0838a05e298f270",
+        "version" : "1.0.0"
+      }
+    }
+  ],
+  "version" : 2
+}

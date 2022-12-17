@@ -46,7 +46,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	public static func representations<BridgeObjects : BridgeObjectsProtocol>(from bridgeObjects: BridgeObjects, uniquingIDsPerEntities: inout [DbObject.DbEntityDescription: Set<UniquingID>], taskCancelled: () -> Bool = { false }) throws -> [Self]
 	where BridgeObjects.LocalDb.DbObject == DbObject, BridgeObjects.LocalDb.UniquingID == UniquingID, BridgeObjects.Metadata == RelationshipMetadata {
 		return try bridgeObjects.mixedRepresentations().map{ mixedRepresentation in
-			guard !taskCancelled() else {throw CancellationError()}
+			guard !taskCancelled() else {throw OperationLifecycleError.cancelled}
 			
 			if let uniquingID = mixedRepresentation.uniquingID {
 				uniquingIDsPerEntities[mixedRepresentation.entity, default: []].insert(uniquingID)

@@ -10,13 +10,17 @@ let package = Package(
 		return res
 	}(),
 	dependencies: {
-		let res = [Package.Dependency]()
-//		res.append(.package(url: "https://github.com/happn-app/CollectionLoader.git", branch: "dev.tests"))
+		var res = [Package.Dependency]()
+		res.append(.package(url: "https://github.com/Frizlab/HasResult.git", from: "1.0.0"))
 		return res
 	}(),
 	targets: {
 		var res = [Target]()
-		res.append(.target(name: "BMO"))
+		res.append(.target(name: "BMO", dependencies: {
+			var res = [Target.Dependency]()
+			res.append(.product(name: "HasResult", package: "HasResult"))
+			return res
+		}()))
 		res.append(.testTarget(name: "BMOTests", dependencies: ["BMO"]))
 		return res
 	}()

@@ -17,25 +17,12 @@ import Foundation
 
 
 
-public enum RequestResult<RemoteOperation : Operation, LocalDbObject : LocalDbObjectProtocol, Metadata : Hashable & Sendable> {
+public enum RequestResult<RemoteOperation : Operation, LocalDbObject : LocalDbObjectProtocol, Metadata : Sendable> {
 	
 	/**
 	 This only happens if the bridge determines no operations were needed for the given request.
 	 Example: Update of an object that was not modified. */
 	case successNoop
-	
-	/**
-	 This happens when there was a remote operation for the request, but it failed.
-	 Nothing more happens after the remote operation fails. */
-	case failureOfRemoteOperation(Error, remoteOperation: RemoteOperation)
-	
-	/**
-	 The remote operation was returned for the given request, it succeeded, but its results could not be converted to a local db representation. */
-	case failureOfRemoteToLocalBridge(Error, succeededRemoteOperation: RemoteOperation)
-	
-	/**
-	 Everything went well, except for the last step: the import of the local db representation to the actual db. */
-	case failureOfImport(Error, succeededRemoteOperation: RemoteOperation)
 	
 	case success(dbChanges: LocalDbChanges<LocalDbObject, Metadata>, remoteOperation: RemoteOperation)
 	

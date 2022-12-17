@@ -21,9 +21,6 @@ public protocol RequestHelperProtocol {
 	
 	associatedtype LocalDb : LocalDbProtocol
 	associatedtype LocalDbImporter : LocalDbImporterProtocol where LocalDbImporter.LocalDb == LocalDb
-	associatedtype RemoteUserInfo
-	
-	init(localDb: LocalDb, request: Request<LocalDb.DbRequest, RemoteUserInfo>)
 	
 	func onContext_requestNeedsRemote() throws -> Bool
 	func onContext_failedRemoteConversion(_ error: Error)

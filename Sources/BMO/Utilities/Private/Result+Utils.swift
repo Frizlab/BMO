@@ -17,8 +17,20 @@ import Foundation
 
 
 
-/**
- An error representing an operation that was stopped because it was cancelled.
- 
- This can be removed when the minimum supported version of BMO is high enough (to be replaced by the native `Swift.CancellationError`). */
-public struct CancellationError : Error {}
+extension Result {
+	
+	var failure: Failure? {
+		switch self {
+			case .success:        return nil
+			case .failure(let f): return f
+		}
+	}
+	
+	var success: Success? {
+		switch self {
+			case .success(let v): return v
+			case .failure:        return nil
+		}
+	}
+	
+}
