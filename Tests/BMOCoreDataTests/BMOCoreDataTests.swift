@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License. */
 
 import XCTest
-@testable import BMOCoreDataImporter
+@testable import BMOCoreData
 
 
 
-final class BMOCoreDataImporterTests : XCTestCase {
+final class BMOCoreDataTests : XCTestCase {
 	
 	func testExample() {
 		/* This is an example of a functional test case.
