@@ -17,7 +17,7 @@ import Foundation
 
 
 
-@available(macOS 13, *)
+@available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
 public struct RequestHelperCollection<LocalDbImporter : LocalDbImporterProtocol> : RequestHelperProtocol {
 	
 	public let requestHelpers: [any RequestHelperProtocol<LocalDbImporter>]

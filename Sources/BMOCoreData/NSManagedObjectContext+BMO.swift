@@ -27,7 +27,7 @@ extension NSManagedObjectContext : LocalDbContext {
 	}
 	
 	public func performAndWaitRW(_ block: () throws -> Void) rethrows {
-		if #available(macOS 12.0, *) {
+		if #available(macOS 12, iOS 15, tvOS 16, watchOS 8, *) {
 			try performAndWait(block)
 		} else {
 			try withoutActuallyEscaping(block, do: { escapableBlock in
