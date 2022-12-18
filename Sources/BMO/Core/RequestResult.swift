@@ -24,6 +24,9 @@ public enum RequestResult<RemoteOperation : Operation, LocalDbObject : LocalDbOb
 	 Example: Update of an object that was not modified. */
 	case successNoop
 	
+	/** Either the bridge or the request helper determined the objects from the remote operation should not be imported in the local db. */
+	case successNoopFromRemote(RemoteOperation)
+	
 	case success(dbChanges: LocalDbChanges<LocalDbObject, Metadata>, remoteOperation: RemoteOperation)
 	
 }

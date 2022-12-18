@@ -24,7 +24,7 @@ public protocol LocalDbContext {
 //	func performAndWaitRO(_ block: @escaping () throws -> Void) rethrows
 	
 	func performRW( block: @escaping () -> Void)
-	func performAndWaitRW(_ block: @escaping () throws -> Void) rethrows
+	func performAndWaitRW(_ block: () throws -> Void) rethrows
 	
 }
 

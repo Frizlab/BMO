@@ -43,7 +43,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	 This conversion can take some time.
 	 That’s why it can be stopped at any point using the `taskCancelled` handler.
 	 If you call this method in a structured concurrency context, the handler can simply return `Task.isCancelled` for instance. */
-	public static func representations<BridgeObjects : BridgeObjectsProtocol>(from bridgeObjects: BridgeObjects, uniquingIDsPerEntities: inout [DbObject.DbEntityDescription: Set<UniquingID>], taskCancelled: () -> Bool = { false }) throws -> [Self]
+	public static func objects<BridgeObjects : BridgeObjectsProtocol>(from bridgeObjects: BridgeObjects, uniquingIDsPerEntities: inout [DbObject.DbEntityDescription: Set<UniquingID>], taskCancelled: () -> Bool = { false }) throws -> [Self]
 	where BridgeObjects.LocalDb.DbObject == DbObject, BridgeObjects.LocalDb.UniquingID == UniquingID, BridgeObjects.Metadata == RelationshipMetadata {
 		return try bridgeObjects.mixedRepresentations().map{ mixedRepresentation in
 			guard !taskCancelled() else {throw OperationLifecycleError.cancelled}
@@ -60,7 +60,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 					guard let (relationshipBridgeObjects, mergeType) = relationshipBridgeObjectsAndMergeType else {
 						return nil
 					}
-					let relationshipLocalRepresentation = try Self.representations(from: relationshipBridgeObjects, uniquingIDsPerEntities: &uniquingIDsPerEntities, taskCancelled: taskCancelled)
+					let relationshipLocalRepresentation = try Self.objects(from: relationshipBridgeObjects, uniquingIDsPerEntities: &uniquingIDsPerEntities, taskCancelled: taskCancelled)
 					return (value: relationshipLocalRepresentation, mergeType: mergeType, metadata: relationshipBridgeObjects.localMetadata)
 				}
 			)

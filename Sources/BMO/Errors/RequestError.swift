@@ -25,7 +25,7 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 		case bridge_getRemoteOperation
 		
 		case helper_willGoRemote
-		case remoteOperation
+		case bridge_remoteOperationToObjects
 		
 		case bridge_remoteToLocalObjects
 		case helper_willImport
@@ -33,6 +33,8 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 		case helper_didImport
 		
 	}
+	
+	public typealias GenericLocalDbObjects = [GenericLocalDbObject<Bridge.LocalDb.DbObject, Bridge.LocalDb.UniquingID, Bridge.Metadata>]
 	
 	public var failureStep: FailureStep
 	public var underlyingError: Error
@@ -44,6 +46,49 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 	
 	/**
 	 The local db objects that should have been imported, if they were retrieved. */
-	public var genericLocalDbObjects: [GenericLocalDbObject<Bridge.LocalDb.DbObject, Bridge.LocalDb.UniquingID, Bridge.Metadata>]?
+	public var genericLocalDbObjects: GenericLocalDbObjects?
+	
+	internal static func needsRemote(_ underlyingError: Error) -> Self {
+		return .init(failureStep: .helper_needsRemote, underlyingError: underlyingError)
+	}
+	
+	internal static func getRemoteOperation(_ underlyingError: Error) -> Self {
+		return .init(failureStep: .bridge_getRemoteOperation, underlyingError: underlyingError)
+	}
+	
+	internal static func willGoRemote(_ remoteOperation: Bridge.RemoteDb.RemoteOperation) -> (_ error: Error) -> Self {
+		return { .init(failureStep: .helper_willGoRemote, underlyingError: $0, remoteOperation: remoteOperation) }
+	}
+	
+	internal static func remoteOperationToObjects(_ remoteOperation: Bridge.RemoteDb.RemoteOperation) -> (_ error: Error) -> Self {
+		return { .init(failureStep: .bridge_remoteOperationToObjects, underlyingError: $0, remoteOperation: remoteOperation) }
+	}
+	
+	internal static func remoteToLocalObjects(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> (_ error: Error) -> Self {
+		return { .init(failureStep: .bridge_remoteToLocalObjects, underlyingError: $0, remoteOperation: remoteOperation) }
+	}
+	
+	internal static func willImport(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> (_ error: Error) -> Self {
+		return { .init(failureStep: .helper_willImport, underlyingError: $0, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects) }
+	}
+	
+	internal static func `import`(_ error: Error, _ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> Self {
+		return .init(failureStep: .importer_import, underlyingError: error, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects)
+	}
+	
+	internal static func didImport(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> (_ error: Error) -> Self {
+		return { .init(failureStep: .helper_didImport, underlyingError: $0, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects) }
+	}
+	
+	internal static func addRemoteOperation(_ remoteOperation: Bridge.RemoteDb.RemoteOperation) -> (_ error: Error) -> Error {
+		return { error in
+			guard var requestError = error as? Self else {
+				return error
+			}
+			assert(requestError.remoteOperation == nil)
+			requestError.remoteOperation = remoteOperation
+			return requestError
+		}
+	}
 	
 }

@@ -17,12 +17,14 @@ import Foundation
 
 
 
-public struct Request<LocalDbRequest, RemoteUserInfo> {
+public struct Request<LocalDb : LocalDbProtocol, RemoteUserInfo> {
+	
+	public var localDb: LocalDb
 	
 	/**
 	 The request on the local database.
 	 Could be a fetch or a save request, or something else entirely (multiple requests in one, etc.). */
-	public var localRequest: LocalDbRequest
+	public var localRequest: LocalDb.DbRequest
 	/**
 	 Some user info to help the bridge convert the local request to a remote operation.
 	 
@@ -32,7 +34,8 @@ public struct Request<LocalDbRequest, RemoteUserInfo> {
 	 One might even put the complete pre-computed remote operation here depending on one’s need. */
 	public var remoteUserInfo: RemoteUserInfo
 	
-	public init(localRequest: LocalDbRequest, remoteUserInfo: RemoteUserInfo) {
+	public init(localDb: LocalDb, localRequest: LocalDb.DbRequest, remoteUserInfo: RemoteUserInfo) {
+		self.localDb = localDb
 		self.localRequest = localRequest
 		self.remoteUserInfo = remoteUserInfo
 	}

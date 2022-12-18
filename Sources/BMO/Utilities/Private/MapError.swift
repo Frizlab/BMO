@@ -17,20 +17,9 @@ import Foundation
 
 
 
-extension Result {
-	
-	var failure: Failure? {
-		switch self {
-			case .success:        return nil
-			case .failure(let f): return f
-		}
-	}
-	
-	var successValue: Success? {
-		switch self {
-			case .success(let v): return v
-			case .failure:        return nil
-		}
-	}
-	
+infix operator !> : NilCoalescingPrecedence
+
+public func !><T>(_ lhs: @autoclosure () throws -> T, _ rhs: (Error) -> Error) throws -> T {
+	do    {return try lhs()}
+	catch {throw rhs(error)}
 }

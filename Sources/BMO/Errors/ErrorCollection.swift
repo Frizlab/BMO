@@ -17,20 +17,16 @@ import Foundation
 
 
 
-extension Result {
+public struct ErrorCollection : Error {
 	
-	var failure: Failure? {
-		switch self {
-			case .success:        return nil
-			case .failure(let f): return f
-		}
+	public var errors: [Error]
+	
+	public init(_ errors: Error...) {
+		self.errors = errors
 	}
 	
-	var successValue: Success? {
-		switch self {
-			case .success(let v): return v
-			case .failure:        return nil
-		}
+	public init(_ errors: [Error]) {
+		self.errors = errors
 	}
 	
 }

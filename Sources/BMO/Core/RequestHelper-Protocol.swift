@@ -17,10 +17,10 @@ import Foundation
 
 
 
-public protocol RequestHelperProtocol {
+public protocol RequestHelperProtocol<LocalDbImporter> {
 	
-	associatedtype LocalDb : LocalDbProtocol
-	associatedtype LocalDbImporter : LocalDbImporterProtocol where LocalDbImporter.LocalDb == LocalDb
+	typealias LocalDb = LocalDbImporter.LocalDb
+	associatedtype LocalDbImporter : LocalDbImporterProtocol
 	
 	func onContext_requestNeedsRemote() throws -> Bool
 	func onContext_failedRemoteConversion(_ error: Error)
@@ -28,6 +28,7 @@ public protocol RequestHelperProtocol {
 	
 	func importerForRemoteResults() -> LocalDbImporter?
 	func onContext_willImportRemoteResults() throws -> Bool
-	func onContext_didImportRemoteResults<Metadata>(_ result: Result<LocalDbChanges<LocalDb.DbObject, Metadata>, Error>) throws
+	func onContext_didImportRemoteResults<Metadata>(_ importChanges: LocalDbChanges<LocalDb.DbObject, Metadata>) throws
+	func onContext_didFailImportingRemoteResults(_ error: Error)
 	
 }
