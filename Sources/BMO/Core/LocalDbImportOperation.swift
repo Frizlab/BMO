@@ -158,7 +158,7 @@ private extension LocalDbImportOperation {
 		}
 		let dbChanges: LocalDbChanges<Bridge.LocalDb.DbObject, Bridge.Metadata>
 		do {
-			dbChanges = try importer.onContext_import(in: localDb)
+			dbChanges = try importer.onContext_import(in: localDb, taskCancelled: { self.isCancelled })
 		} catch {
 			helper?.onContext_didFailImportingRemoteResults(error)
 			throw RequestError.import(error, genericLocalDbObjects: genericLocalDbObjects)

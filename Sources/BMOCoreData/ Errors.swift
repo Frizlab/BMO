@@ -17,14 +17,11 @@ import Foundation
 
 
 
-/**
- Objects conforming to this protocol are responsible for importing ``GenericLocalDbObject``s into the local db, uniquing/deduplicating them. */
-public protocol LocalDbImporterProtocol<LocalDb> {
+public enum BMOCoreDataError : Error {
 	
-	associatedtype LocalDb : LocalDbProtocol
-	associatedtype Metadata
-	
-	/** Import the known local db representations into the given local db’s context. */
-	func onContext_import(in db: LocalDb, taskCancelled: () -> Bool) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
+	case tooManyRepresentationsToUpdateObject
+	case updatedObjectAndRepresentedObjectEntitiesDoNotMatch
 	
 }
+
+typealias Err = BMOCoreDataError

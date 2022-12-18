@@ -13,18 +13,15 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License. */
 
+import CoreData
 import Foundation
 
 
 
-/**
- Objects conforming to this protocol are responsible for importing ``GenericLocalDbObject``s into the local db, uniquing/deduplicating them. */
-public protocol LocalDbImporterProtocol<LocalDb> {
+internal extension NSManagedObject {
 	
-	associatedtype LocalDb : LocalDbProtocol
-	associatedtype Metadata
-	
-	/** Import the known local db representations into the given local db’s context. */
-	func onContext_import(in db: LocalDb, taskCancelled: () -> Bool) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
+	var isUsable: Bool {
+		return !isDeleted && managedObjectContext != nil
+	}
 	
 }

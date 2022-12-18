@@ -35,6 +35,10 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	public var attributes: [DbObject.DbAttributeDescription: Any?]
 	public var relationships: [DbObject.DbRelationshipDescription: RelationshipValue?]
 	
+	public var hasAttributesOrRelationships: Bool {
+		return !attributes.isEmpty || !relationships.isEmpty
+	}
+	
 	/**
 	 Convert the given bridge objects to an array of local db representations.
 	 

@@ -22,9 +22,9 @@ public struct LocalDbChanges<LocalDbObject : LocalDbObjectProtocol, Metadata> {
 	public struct ImportedObject {
 		
 		public var object: LocalDbObject
-		public var modifiedRelationships: [LocalDbObject.DbRelationshipDescription: LocalDbChanges]
+		public var modifiedRelationships: [LocalDbObject.DbRelationshipDescription: LocalDbChanges?]
 		
-		internal init(object: LocalDbObject, modifiedRelationships: [LocalDbObject.DbRelationshipDescription : LocalDbChanges]) {
+		public init(object: LocalDbObject, modifiedRelationships: [LocalDbObject.DbRelationshipDescription : LocalDbChanges?] = [:]) {
 			self.object = object
 			self.modifiedRelationships = modifiedRelationships
 		}
@@ -32,11 +32,37 @@ public struct LocalDbChanges<LocalDbObject : LocalDbObjectProtocol, Metadata> {
 	}
 	
 	public var metadata: Metadata?
-	public var importedObjects: [ImportedObject]
+	/**
+	 First level of imported objects.
+	 
+	 If you import an object `A` which has a relationship to object `B`, only object `A` will be present in this array.
+	 `B` will still be reachable through ``ImportedObject/modifiedRelationships``. */
+	public var importedObjects = [ImportedObject]()
 	
-	internal init(metadata: Metadata, importedObjects: [ImportedObject]) {
+	/**
+	 All the objects explicitly inserted by the importer for the given imported objects.
+	 
+	 If you import an object `A` which has a relationship to object `B` and `C`, with only `C` already present in the local db, this set will contain `A` and `B`.
+	 In the sub-imported objects for the relationship which contains `B`, only `B` will be present in this set.
+	 
+	 Implicit insertion may not be present. */
+	public var insertedDbObjects = Set<LocalDbObject>()
+	/**
+	 All the objects explicitly updated by the importer for the given imported objects.
+	 
+	 If you import an object `A` which has a relationship to object `B` and `C`, with `A` and `C` already present in the local db, this set will contain `A` and `C`.
+	 In the sub-imported objects for the relationship which contains `C`, `C` will still be present in the set.
+	 
+	 Implicit updates may not be present. */
+	public var updatedDbObjects = Set<LocalDbObject>()
+	/**
+	 All the objects explicitly deleted by the importer for the given imported objects.
+	 
+	 Implicit deletion may not be present. */
+	public var deletedDbObjects = Set<LocalDbObject>()
+	
+	public init(metadata: Metadata?) {
 		self.metadata = metadata
-		self.importedObjects = importedObjects
 	}
 	
 }

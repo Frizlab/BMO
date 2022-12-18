@@ -29,7 +29,7 @@ public protocol LocalDbContext {
 }
 
 
-public protocol LocalDbObjectProtocol {
+public protocol LocalDbObjectProtocol : Hashable {
 	
 	associatedtype DbID : Hashable & Sendable
 	
