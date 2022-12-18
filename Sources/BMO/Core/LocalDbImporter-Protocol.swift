@@ -30,8 +30,8 @@ public protocol LocalDbImporterProtocol {
 	 `contextSwitchHandler` must be called before doing anything on the context though.
 	 
 	 The handler is used by the bridge operation to notify interested parties the import _will_ start. */
-	func onContext_import<UniquingID : Hashable & Sendable, Metadata>(
-		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, UniquingID, Metadata>],
+	func onContext_import<Metadata>(
+		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, Metadata>],
 		in db: LocalDb
 	) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
 	
