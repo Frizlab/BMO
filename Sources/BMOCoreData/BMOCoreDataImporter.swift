@@ -20,9 +20,9 @@ import BMO
 
 
 
-public struct BMOCoreDataImporter<LocalDb : LocalDbProtocol> : LocalDbImporterProtocol where LocalDb.DbContext == NSManagedObjectContext {
+public struct BMOCoreDataImporter<LocalDb : LocalDbProtocol, Metadata> : LocalDbImporterProtocol where LocalDb.DbContext == NSManagedObjectContext {
 	
-	public func onContext_import<UniquingID, Metadata>(localRepresentations: [BMO.GenericLocalDbObject<LocalDb.DbObject, UniquingID, Metadata>], in db: LocalDb) throws -> BMO.LocalDbChanges<LocalDb.DbObject, Metadata> where UniquingID : Hashable, UniquingID : Sendable {
+	public func onContext_import(in db: LocalDb) throws -> LocalDbChanges<LocalDb.DbObject, Metadata> {
 		throw NotImplemented()
 	}
 	

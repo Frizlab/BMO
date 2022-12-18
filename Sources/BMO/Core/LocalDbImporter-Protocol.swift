@@ -19,20 +19,12 @@ import Foundation
 
 /**
  Objects conforming to this protocol are responsible for importing ``GenericLocalDbObject``s into the local db, uniquing/deduplicating them. */
-public protocol LocalDbImporterProtocol {
+public protocol LocalDbImporterProtocol<LocalDb> {
 	
 	associatedtype LocalDb : LocalDbProtocol
+	associatedtype Metadata
 	
-	/**
-	 Import the given local representations into the given local db’s context.
-	 
-	 This method will **NOT** be called on the given db context.
-	 `contextSwitchHandler` must be called before doing anything on the context though.
-	 
-	 The handler is used by the bridge operation to notify interested parties the import _will_ start. */
-	func onContext_import<Metadata>(
-		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, Metadata>],
-		in db: LocalDb
-	) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
+	/** Import the known local db representations into the given local db’s context. */
+	func onContext_import(in db: LocalDb) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
 	
 }

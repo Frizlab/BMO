@@ -45,9 +45,9 @@ public struct RequestHelperCollection<LocalDbImporter : LocalDbImporterProtocol>
 		}
 	}
 	
-	public func importerForRemoteResults() -> LocalDbImporter? {
-		/* We take the first non-nil local db importer… */
-		return requestHelpers.lazy.compactMap{ $0.importerForRemoteResults() }.first{ _ in true }
+	public func importerForRemoteResults(localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, LocalDbImporter.Metadata>], uniquingIDsPerEntities: [LocalDb.DbObject.DbEntityDescription : Set<LocalDb.UniquingID>]) -> LocalDbImporter? {
+		/* We take the first non-nil local db importer, and we ignore the errors… */
+		return requestHelpers.lazy.compactMap{ try? callHelperImporterForRemoteResults(requestHelper: $0, localRepresentations: localRepresentations, uniquingIDsPerEntities: uniquingIDsPerEntities) }.first{ _ in true }
 	}
 	
 	public func onContext_willImportRemoteResults() throws -> Bool {
@@ -63,7 +63,7 @@ public struct RequestHelperCollection<LocalDbImporter : LocalDbImporterProtocol>
 	
 	public func onContext_didImportRemoteResults<Metadata>(_ importChanges: LocalDbChanges<LocalDb.DbObject, Metadata>) throws {
 		let errors = requestHelpers.compactMap{ requestHelper in
-			do    {try callDidImportRemoteResults(requestHelper: requestHelper, importChanges: importChanges)}
+			do    {try callHelperDidImportRemoteResults(requestHelper: requestHelper, importChanges: importChanges)}
 			catch {return error}
 			return nil
 		}
@@ -77,7 +77,13 @@ public struct RequestHelperCollection<LocalDbImporter : LocalDbImporterProtocol>
 	}
 	
 	/* Maybe in a future version of Swift this method will be able to be skipped. */
-	private func callDidImportRemoteResults<RequestHelper : RequestHelperProtocol, Metadata>(requestHelper: RequestHelper, importChanges: LocalDbChanges<LocalDb.DbObject, Metadata>)
+	private func callHelperImporterForRemoteResults<RequestHelper : RequestHelperProtocol>(requestHelper: RequestHelper, localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, LocalDbImporter.Metadata>], uniquingIDsPerEntities: [LocalDb.DbObject.DbEntityDescription : Set<LocalDb.UniquingID>]) throws -> LocalDbImporter?
+	where RequestHelper.LocalDbImporter == LocalDbImporter {
+		return try requestHelper.importerForRemoteResults(localRepresentations: localRepresentations, uniquingIDsPerEntities: uniquingIDsPerEntities)
+	}
+	
+	/* Maybe in a future version of Swift this method will be able to be skipped. */
+	private func callHelperDidImportRemoteResults<RequestHelper : RequestHelperProtocol, Metadata>(requestHelper: RequestHelper, importChanges: LocalDbChanges<LocalDb.DbObject, Metadata>)
 	throws where RequestHelper.LocalDbImporter == LocalDbImporter {
 		try requestHelper.onContext_didImportRemoteResults(importChanges)
 	}

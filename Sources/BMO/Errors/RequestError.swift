@@ -28,6 +28,7 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 		case bridge_remoteOperationToObjects
 		
 		case bridge_remoteToLocalObjects
+		case importer_importPreparation
 		case helper_willImport
 		case importer_import
 		case helper_didImport
@@ -66,6 +67,10 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 	
 	internal static func remoteToLocalObjects(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> (_ error: Error) -> Self {
 		return { .init(failureStep: .bridge_remoteToLocalObjects, underlyingError: $0, remoteOperation: remoteOperation) }
+	}
+	
+	internal static func importPreparation(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> (_ error: Error) -> Self {
+		return { .init(failureStep: .importer_importPreparation, underlyingError: $0, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects) }
 	}
 	
 	internal static func willImport(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> (_ error: Error) -> Self {
