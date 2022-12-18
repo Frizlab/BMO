@@ -79,4 +79,11 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 		self.relationships = relationships
 	}
 	
+	public func insertUniquingIDsPerEntities(in uniquingIDsPerEntities: inout [DbObject.DbEntityDescription: Set<UniquingID>]) {
+		relationships.forEach{ $0.value?.value.forEach{ $0.insertUniquingIDsPerEntities(in: &uniquingIDsPerEntities) } }
+		if let uniquingID {
+			uniquingIDsPerEntities[entity, default: []].insert(uniquingID)
+		}
+	}
+	
 }

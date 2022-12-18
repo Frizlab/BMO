@@ -34,6 +34,8 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 	public typealias GenericLocalDbObject = BMO.GenericLocalDbObject<Bridge.LocalDb.DbObject, Bridge.LocalDb.UniquingID, Bridge.BridgeObjects.Metadata>
 	public typealias UniquingIDsPerEntities = [Bridge.LocalDb.DbObject.DbEntityDescription: Set<Bridge.LocalDb.UniquingID>]
 	
+	public typealias ImporterFactory = ([GenericLocalDbObject], UniquingIDsPerEntities) throws -> Bridge.RequestHelper.LocalDbImporter?
+	
 	public var request: Request
 	public var localDb: Bridge.LocalDb
 	/**
@@ -44,14 +46,11 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 	  the other do not make sense in the context of a local db import. */
 	public var helper: Bridge.RequestHelper?
 	/**
-	 The importer to use for the actual import phase.
+	 The importer block to use to create the importer that will be used in the actual import phase.
 	 
 	 In theory the importer is given by the helper.
-	 The helper being optional for the local db import operation, we require the importer be given explicitly.
-	 
-	 The importer can be nil, in which case no import will be done.
-	 This may seem useless, but in the context of a “finished remote operation” request, the results of the operation will still be validated even if the import is skipped. */
-	public var importer: Bridge.RequestHelper.LocalDbImporter?
+	 The helper being optional for the local db import operation, we require the importer factory be given explicitly. */
+	public var importerFactory: ImporterFactory
 	
 	public var startedOnContext: Bool
 	
@@ -60,11 +59,11 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 		set {lock.withLock{ _result = newValue }}
 	}
 	
-	init(request: Request, localDb: Bridge.LocalDb, helper: Bridge.RequestHelper? = nil, importer: Bridge.RequestHelper.LocalDbImporter?, startedOnContext: Bool = false) {
+	init(request: Request, localDb: Bridge.LocalDb, helper: Bridge.RequestHelper? = nil, importerFactory: @escaping ImporterFactory, startedOnContext: Bool = false) {
 		self.request = request
 		self.localDb = localDb
 		self.helper = helper
-		self.importer = importer
+		self.importerFactory = importerFactory
 		
 		self.startedOnContext = startedOnContext
 	}
@@ -127,10 +126,6 @@ private extension LocalDbImportOperation {
 	
 	func startFrom(bridgeObjects: Bridge.BridgeObjects) throws {
 		try throwIfCancelled()
-		guard importer != nil else {
-			/* No need to continue if we do not have an importer. */
-			return result = .success(nil)
-		}
 		var uniquingIDsPerEntities = UniquingIDsPerEntities()
 		let genericLocalDbObjects = try GenericLocalDbObject.objects(
 			from: bridgeObjects, uniquingIDsPerEntities: &uniquingIDsPerEntities, taskCancelled: { self.isCancelled }
@@ -140,7 +135,12 @@ private extension LocalDbImportOperation {
 	}
 	
 	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) throws {
-		guard let importer else {
+		let uniquingIDsPerEntities = uniquingIDsPerEntities ?? {
+			var res = UniquingIDsPerEntities()
+			genericLocalDbObjects.forEach{ $0.insertUniquingIDsPerEntities(in: &res) }
+			return res
+		}()
+		guard let importer = try importerFactory(genericLocalDbObjects, uniquingIDsPerEntities) else {
 			/* No need to continue if we do not have an importer. */
 			return result = .success(nil)
 		}
