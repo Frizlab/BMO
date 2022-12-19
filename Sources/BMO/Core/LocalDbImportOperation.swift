@@ -31,25 +31,35 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 	public typealias RequestResult = LocalDbChanges<Bridge.LocalDb.DbObject, Bridge.BridgeObjects.Metadata>?
 	public typealias RequestError = BMO.RequestError<Bridge>
 	
+	public typealias RequestHelperCollection = RequestHelperCollectionForOldRuntimes<Bridge.LocalDb.DbObject, Bridge.Metadata>
+	
 	public typealias GenericLocalDbObject = BMO.GenericLocalDbObject<Bridge.LocalDb.DbObject, Bridge.LocalDb.UniquingID, Bridge.BridgeObjects.Metadata>
 	public typealias UniquingIDsPerEntities = [Bridge.LocalDb.DbObject.DbEntityDescription: Set<Bridge.LocalDb.UniquingID>]
 	
-	public typealias ImporterFactory = ([GenericLocalDbObject], UniquingIDsPerEntities) throws -> Bridge.RequestHelper.LocalDbImporter?
+	public typealias ImporterFactory = ([GenericLocalDbObject], UniquingIDsPerEntities, _ isCancelled: () -> Bool) throws -> Bridge.LocalDbImporter
 	
 	public var request: Request
 	public var localDb: Bridge.LocalDb
 	/**
-	 A request helper.
+	 A collection of request helpers.
 	 
-	 The helper can be set to get notified at key points of the import.
-	 Only the willImport and didImport methods of the helper protocol will be called from this operation:
+	 A helper can be used to get notified at key points of the import.
+	 It is practically a part of the request: the bridge **must** return a request helper for a given request.
+	 
+	 In the context of a ``LocalDbImportOperation``, the original request is not known, that’s why we require the helper directly.
+	 
+	 We require a collection of helpers instead of just one helper because the client might be interested in getting notified/interacting with the request in addition to the bridge.
+	 
+	 Only the ``RequestHelperProtocol/onContext_willImportRemoteResults()``, ``RequestHelperProtocol/onContext_didImportRemoteResults(_:)`` and ``RequestHelperProtocol/onContext_didFailImportingRemoteResults(_:)``
+	  methods of the helper protocol will be called from this operation:
 	  the other do not make sense in the context of a local db import. */
-	public var helper: Bridge.RequestHelper?
+	public var helper: RequestHelperCollection
 	/**
 	 The importer block to use to create the importer that will be used in the actual import phase.
 	 
-	 In theory the importer is given by the helper.
-	 The helper being optional for the local db import operation, we require the importer factory be given explicitly. */
+	 The importer should be given by the bridge.
+	 In the case of a bridgeObjects or genericLocalDbObjects request, we want to avoid sending the bridge.
+	 So we ask for a factory instead. */
 	public var importerFactory: ImporterFactory
 	
 	public var startedOnContext: Bool
@@ -59,7 +69,7 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 		set {lock.withLock{ _result = newValue }}
 	}
 	
-	init(request: Request, localDb: Bridge.LocalDb, helper: Bridge.RequestHelper? = nil, importerFactory: @escaping ImporterFactory, startedOnContext: Bool = false) {
+	init(request: Request, localDb: Bridge.LocalDb, helper: RequestHelperCollection, importerFactory: @escaping ImporterFactory, startedOnContext: Bool = false) {
 		self.request = request
 		self.localDb = localDb
 		self.helper = helper
@@ -140,19 +150,16 @@ private extension LocalDbImportOperation {
 			genericLocalDbObjects.forEach{ $0.insertUniquingIDsPerEntities(in: &res) }
 			return res
 		}()
-		guard let importer = try importerFactory(genericLocalDbObjects, uniquingIDsPerEntities) else {
-			/* No need to continue if we do not have an importer. */
-			return result = .success(nil)
-		}
+		let importer = try importerFactory(genericLocalDbObjects, uniquingIDsPerEntities, { self.isCancelled })
 		if startedOnContext {                                      try onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, uniquingIDsPerEntities: uniquingIDsPerEntities)}
 		else                {try localDb.context.performAndWaitRW{ try onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, uniquingIDsPerEntities: uniquingIDsPerEntities) }}
 	}
 	
-	func onContext_startFrom(genericLocalDbObjects: [GenericLocalDbObject], importer: Bridge.RequestHelper.LocalDbImporter, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) throws {
+	func onContext_startFrom(genericLocalDbObjects: [GenericLocalDbObject], importer: Bridge.LocalDbImporter, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) throws {
 		try throwIfCancelled()
 		/* From there no more cancellation is possible. */
 		
-		guard try (helper?.onContext_willImportRemoteResults() ?? true) !> RequestError.willImport(genericLocalDbObjects: genericLocalDbObjects) else {
+		guard try helper.onContext_willImportRemoteResults() !> RequestError.willImport(genericLocalDbObjects: genericLocalDbObjects) else {
 			/* If the helper tells us not to import, we stop. */
 			return result = .success(nil)
 		}
@@ -160,10 +167,10 @@ private extension LocalDbImportOperation {
 		do {
 			dbChanges = try importer.onContext_import(in: localDb, taskCancelled: { self.isCancelled })
 		} catch {
-			helper?.onContext_didFailImportingRemoteResults(error)
+			helper.onContext_didFailImportingRemoteResults(error)
 			throw RequestError.import(error, genericLocalDbObjects: genericLocalDbObjects)
 		}
-		try helper?.onContext_didImportRemoteResults(dbChanges) !> RequestError.didImport(genericLocalDbObjects: genericLocalDbObjects)
+		try helper.onContext_didImportRemoteResults(dbChanges) !> RequestError.didImport(genericLocalDbObjects: genericLocalDbObjects)
 	}
 	
 }

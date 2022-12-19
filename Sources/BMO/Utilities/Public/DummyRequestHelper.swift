@@ -17,17 +17,26 @@ import Foundation
 
 
 
-public protocol RequestHelperProtocol<LocalDbObject, Metadata> {
+public struct DummyRequestHelper<LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
 	
-	associatedtype LocalDbObject : LocalDbObjectProtocol
-	associatedtype Metadata
+	public func onContext_requestNeedsRemote() throws -> Bool {
+		return true
+	}
 	
-	func onContext_requestNeedsRemote() throws -> Bool
-	func onContext_failedRemoteConversion(_ error: Error)
-	func onContext_willGoRemote() throws
+	public func onContext_failedRemoteConversion(_ error: Error) {
+	}
 	
-	func onContext_willImportRemoteResults() throws -> Bool
-	func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>) throws
-	func onContext_didFailImportingRemoteResults(_ error: Error)
+	public func onContext_willGoRemote() throws {
+	}
+	
+	public func onContext_willImportRemoteResults() throws -> Bool {
+		return true
+	}
+	
+	public func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>) throws {
+	}
+	
+	public func onContext_didFailImportingRemoteResults(_ error: Error) {
+	}
 	
 }

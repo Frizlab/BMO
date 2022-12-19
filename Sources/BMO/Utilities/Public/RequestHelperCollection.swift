@@ -17,16 +17,23 @@ import Foundation
 
 
 
+/**
+ A collection of ``RequestHelperProtocol``s, conforming to ``RequestHelperProtocol``.
+ 
+ If the collection is empty, this is equivalent to a ``DummyRequestHelper``. */
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
-public struct RequestHelperCollection<LocalDbImporter : LocalDbImporterProtocol> : RequestHelperProtocol {
+public struct RequestHelperCollection<LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
 	
-	public let requestHelpers: [any RequestHelperProtocol<LocalDbImporter>]
+	public let requestHelpers: [any RequestHelperProtocol<LocalDbObject, Metadata>]
 	
-	public init(requestHelpers: [any RequestHelperProtocol<LocalDbImporter>]) {
+	public init(requestHelpers: [any RequestHelperProtocol<LocalDbObject, Metadata>]) {
 		self.requestHelpers = requestHelpers
 	}
 	
 	public func onContext_requestNeedsRemote() throws -> Bool {
+		guard !requestHelpers.isEmpty else {
+			return true
+		}
 		return try requestHelpers.contains(where: { try $0.onContext_requestNeedsRemote() })
 	}
 	
@@ -36,18 +43,11 @@ public struct RequestHelperCollection<LocalDbImporter : LocalDbImporterProtocol>
 	
 	public func onContext_willGoRemote() throws {
 		let errors = requestHelpers.compactMap{ requestHelper in
-			do    {try requestHelper.onContext_willGoRemote()}
-			catch {return error}
-			return nil
+			Result{ try requestHelper.onContext_willGoRemote() }.failure
 		}
-		if !errors.isEmpty {
+		guard errors.isEmpty else {
 			throw ErrorCollection(errors)
 		}
-	}
-	
-	public func importerForRemoteResults(localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, LocalDbImporter.Metadata>], uniquingIDsPerEntities: [LocalDb.DbObject.DbEntityDescription : Set<LocalDb.UniquingID>]) -> LocalDbImporter? {
-		/* We take the first non-nil local db importer, and we ignore the errors… */
-		return requestHelpers.lazy.compactMap{ try? callHelperImporterForRemoteResults(requestHelper: $0, localRepresentations: localRepresentations, uniquingIDsPerEntities: uniquingIDsPerEntities) }.first{ _ in true }
 	}
 	
 	public func onContext_willImportRemoteResults() throws -> Bool {
@@ -55,19 +55,18 @@ public struct RequestHelperCollection<LocalDbImporter : LocalDbImporterProtocol>
 			Result{ try requestHelper.onContext_willImportRemoteResults() }
 		}
 		let errors = results.compactMap{ $0.failure }
-		if !errors.isEmpty {
+		guard errors.isEmpty else {
 			throw ErrorCollection(errors)
 		}
+		/* allSatisfy returns true if the collection is empty. */
 		return results.allSatisfy{ $0.successValue == true }
 	}
 	
-	public func onContext_didImportRemoteResults<Metadata>(_ importChanges: LocalDbChanges<LocalDb.DbObject, Metadata>) throws {
+	public func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>) throws {
 		let errors = requestHelpers.compactMap{ requestHelper in
-			do    {try callHelperDidImportRemoteResults(requestHelper: requestHelper, importChanges: importChanges)}
-			catch {return error}
-			return nil
+			Result{ try callHelperDidImportRemoteResults(requestHelper: requestHelper, importChanges: importChanges) }.failure
 		}
-		if !errors.isEmpty {
+		guard errors.isEmpty else {
 			throw ErrorCollection(errors)
 		}
 	}
@@ -77,14 +76,8 @@ public struct RequestHelperCollection<LocalDbImporter : LocalDbImporterProtocol>
 	}
 	
 	/* Maybe in a future version of Swift this method will be able to be skipped. */
-	private func callHelperImporterForRemoteResults<RequestHelper : RequestHelperProtocol>(requestHelper: RequestHelper, localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, LocalDbImporter.Metadata>], uniquingIDsPerEntities: [LocalDb.DbObject.DbEntityDescription : Set<LocalDb.UniquingID>]) throws -> LocalDbImporter?
-	where RequestHelper.LocalDbImporter == LocalDbImporter {
-		return try requestHelper.importerForRemoteResults(localRepresentations: localRepresentations, uniquingIDsPerEntities: uniquingIDsPerEntities)
-	}
-	
-	/* Maybe in a future version of Swift this method will be able to be skipped. */
-	private func callHelperDidImportRemoteResults<RequestHelper : RequestHelperProtocol, Metadata>(requestHelper: RequestHelper, importChanges: LocalDbChanges<LocalDb.DbObject, Metadata>)
-	throws where RequestHelper.LocalDbImporter == LocalDbImporter {
+	private func callHelperDidImportRemoteResults<RequestHelper : RequestHelperProtocol>(requestHelper: RequestHelper, importChanges: LocalDbChanges<LocalDbObject, Metadata>)
+	throws where RequestHelper.LocalDbObject == LocalDbObject, RequestHelper.Metadata == Metadata {
 		try requestHelper.onContext_didImportRemoteResults(importChanges)
 	}
 	

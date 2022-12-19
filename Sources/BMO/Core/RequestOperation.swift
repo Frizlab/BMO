@@ -27,8 +27,11 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation, HasRes
 	public typealias RequestResult = BMO.RequestResult<Bridge.RemoteDb.RemoteOperation, Bridge.LocalDb.DbObject, Bridge.Metadata>
 	public typealias RequestError = BMO.RequestError<Bridge>
 	
+	public typealias RequestHelperCollection = RequestHelperCollectionForOldRuntimes<Bridge.LocalDb.DbObject, Bridge.Metadata>
+	
 	public var bridge: Bridge
 	public var request: Request
+	public var additionalHelpers: RequestHelperCollection
 	
 	public var remoteOperationQueue: OperationQueue
 	public var computeOperationQueue: OperationQueue
@@ -39,9 +42,10 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation, HasRes
 		lock.withLock{ _result }
 	}
 	
-	init(bridge: Bridge, request: Request, remoteOperationQueue: OperationQueue, computeOperationQueue: OperationQueue, startedOnContext: Bool = false) {
+	init(bridge: Bridge, request: Request, additionalHelpers: RequestHelperCollection = .init(), remoteOperationQueue: OperationQueue, computeOperationQueue: OperationQueue, startedOnContext: Bool = false) {
 		self.bridge = bridge
 		self.request = request
+		self.additionalHelpers = additionalHelpers
 		
 		self.remoteOperationQueue = remoteOperationQueue
 		self.computeOperationQueue = computeOperationQueue
@@ -140,7 +144,8 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation, HasRes
 private extension RequestOperation {
 	
 	func onContext_beginOperation() throws {
-		let helper = bridge.requestHelper(for: request)
+		/* TODO: This is nooooot very efficient, yeah… */
+		let helper = RequestHelperCollection(bridge.requestHelper(for: request), additionalHelpers)
 		
 		/* Step 1: Check if retrieving the remote operation is needed. */
 		try throwIfCancelled()
@@ -171,12 +176,12 @@ private extension RequestOperation {
 		computeOperationQueue.addOperation(completionOperation)
 	}
 	
-	func continueOperation(finishedRemoteOperation: Bridge.RemoteDb.RemoteOperation, userInfo: Bridge.UserInfo, helper: Bridge.RequestHelper) throws {
+	func continueOperation(finishedRemoteOperation: Bridge.RemoteDb.RemoteOperation, userInfo: Bridge.UserInfo, helper: RequestHelperCollection) throws {
 		/* Step 4: Create the import operation and launch it. */
 		try throwIfCancelled()
 		let operation = LocalDbImportOperation(
 			request: .finishedRemoteOperation(finishedRemoteOperation, userInfo: userInfo, bridge: bridge),
-			localDb: request.localDb, helper: helper, importerFactory: helper.importerForRemoteResults
+			localDb: request.localDb, helper: helper, importerFactory: bridge.importerForRemoteResults(localRepresentations:uniquingIDsPerEntities:taskCancelled:)
 		)
 		importOperation = operation
 		let completionOperation = BlockOperation{ self.continueOperation{

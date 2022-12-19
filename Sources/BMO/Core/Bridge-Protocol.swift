@@ -23,8 +23,6 @@ public protocol BridgeProtocol {
 	 The type of the object that will be responsible for doing the actual conversion from the remote objects to local db representations (``MixedRepresentation`` to be precise). */
 	associatedtype BridgeObjects : BridgeObjectsProtocol
 	
-	associatedtype RequestHelper : RequestHelperProtocol where RequestHelper.LocalDb == LocalDb, RequestHelper.LocalDbImporter.Metadata == BridgeObjects.Metadata
-	
 	/**
 	 The type for the additional user info needed to help convert a local db request to a remote operation. */
 	associatedtype RequestUserInfo
@@ -42,15 +40,46 @@ public protocol BridgeProtocol {
 	 This is an example, but there are loads of cases that cannot be solved without user info. */
 	associatedtype UserInfo
 	
+	associatedtype LocalDbImporter : LocalDbImporterProtocol where LocalDbImporter.LocalDb == LocalDb, LocalDbImporter.Metadata == Metadata
+	
 	typealias LocalDb = BridgeObjects.LocalDb
 	typealias RemoteDb = BridgeObjects.RemoteDb
 	typealias Metadata = BridgeObjects.Metadata
 	
-	func requestHelper(for bridgeRequest: Request<LocalDb, RequestUserInfo>) -> RequestHelper
+	/**
+	 Returns a request helper for the given request.
+	 
+	 The lifecycle of a request in BMO is something relatively complex.
+	 The remote operation is first retrieved,
+	  then the results of the operation are transformed into generic local db objects,
+	  then the local db objects are imported.
+	 
+	 The general principle is not that complex, but in real life a lot of control is required at every point of the lifecycle of the request.
+	 
+	 This is the point of a request helper.
+	 
+	 The bridge is responsible for returning a request helper for a given request.
+	 This function may not return `nil` because we think a request without a helper would not really be viable.
+	 
+	 If you _really_ do not need a helper, you can return a ``DummyRequestHelper`` which does nothing and returns `true` for all the methods returning a `Bool`. */
+	func requestHelper(for request: Request<LocalDb, RequestUserInfo>) -> any RequestHelperProtocol<LocalDb.DbObject, Metadata>
 	
 	/* These two methods could probably be replaced by one async method.
 	 * This would also allow getting rid of the UserInfo associated type. */
-	func onContext_remoteOperation(for bridgeRequest: Request<LocalDb, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
+	func onContext_remoteOperation(for request: Request<LocalDb, RequestUserInfo>) throws -> (RemoteDb.RemoteOperation, UserInfo)?
 	func bridgeObjects(for finishedRemoteOperation: RemoteDb.RemoteOperation, userInfo: UserInfo) throws -> BridgeObjects?
+	
+	/**
+	 Generates an importer specifically made to import the given local representations.
+	 
+	 You’re given the local representations that will be imported and the uniquing IDs found in the local representations by entities.
+	 The uniquing IDs are given for possible optimization.
+	 
+	 If there are some other optimizations that should be pre-computed before doing the actual import on context, they should be done before returning the importer. */
+	func importerForRemoteResults(
+		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, Metadata>],
+		uniquingIDsPerEntities: [LocalDb.DbObject.DbEntityDescription: Set<LocalDb.UniquingID>],
+		taskCancelled: () -> Bool
+	) throws -> LocalDbImporter
 	
 }

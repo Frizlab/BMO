@@ -19,7 +19,7 @@ import Foundation
 
 /**
  Objects conforming to this protocol are responsible for importing ``GenericLocalDbObject``s into the local db, uniquing/deduplicating them. */
-public protocol LocalDbImporterProtocol<LocalDb> {
+public protocol LocalDbImporterProtocol<LocalDb, Metadata> {
 	
 	associatedtype LocalDb : LocalDbProtocol
 	associatedtype Metadata
