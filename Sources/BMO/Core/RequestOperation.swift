@@ -42,7 +42,7 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation, HasRes
 		lock.withLock{ _result }
 	}
 	
-	init(bridge: Bridge, request: Request, additionalHelpers: RequestHelperCollection = .init(), remoteOperationQueue: OperationQueue, computeOperationQueue: OperationQueue, startedOnContext: Bool = false) {
+	public init(bridge: Bridge, request: Request, additionalHelpers: RequestHelperCollection = .init(), remoteOperationQueue: OperationQueue, computeOperationQueue: OperationQueue, startedOnContext: Bool = false) {
 		self.bridge = bridge
 		self.request = request
 		self.additionalHelpers = additionalHelpers
