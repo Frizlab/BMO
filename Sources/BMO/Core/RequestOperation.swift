@@ -123,6 +123,7 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation, HasRes
 	private func finishOperation(_ r: Result<RequestResult, Error>) {
 		lock.withLock{
 			assert(_result.failure as? OperationLifecycleError == .operationInProgress)
+			assert(!(r.failure is OperationLifecycleError))
 			_result = r
 		}
 	}
