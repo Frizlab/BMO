@@ -15,11 +15,9 @@ limitations under the License. */
 
 import Foundation
 
-import HasResult
 
 
-
-public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, HasResult {
+public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public enum Request {
 		
