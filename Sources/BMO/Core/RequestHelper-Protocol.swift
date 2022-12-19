@@ -22,6 +22,9 @@ public protocol RequestHelperProtocol<LocalDbObject, Metadata> {
 	associatedtype LocalDbObject : LocalDbObjectProtocol
 	associatedtype Metadata
 	
+	/* TODO: Naming of this function.
+	 * In addition to determining whether remote is needed, some work might be needed before the remote operation computation is launched.
+	 * This method can be used to do such work, but current naming does not show that. */
 	func onContext_requestNeedsRemote() throws -> Bool
 	func onContext_failedRemoteConversion(_ error: Error)
 	func onContext_willGoRemote() throws
