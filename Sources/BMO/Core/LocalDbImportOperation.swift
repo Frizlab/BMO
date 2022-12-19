@@ -82,7 +82,6 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 		result = .failure(OperationLifecycleError.operationInProgress)
 		
 		do {
-			/* Step 4: Retrieve the bridge objects from the finished remote operation. */
 			switch request {
 				case let .finishedRemoteOperation(operation, userInfo: userInfo, bridge: bridge):
 					try startFrom(finishedRemoteOperation: operation, userInfo: userInfo, bridge: bridge)
@@ -171,6 +170,7 @@ private extension LocalDbImportOperation {
 			throw RequestError.import(error, genericLocalDbObjects: genericLocalDbObjects)
 		}
 		try helper.onContext_didImportRemoteResults(dbChanges) !> RequestError.didImport(genericLocalDbObjects: genericLocalDbObjects)
+		result = .success(dbChanges)
 	}
 	
 }
