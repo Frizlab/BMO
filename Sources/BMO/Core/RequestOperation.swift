@@ -181,7 +181,7 @@ private extension RequestOperation {
 		try throwIfCancelled()
 		let operation = LocalDbImportOperation(
 			request: .finishedRemoteOperation(finishedRemoteOperation, userInfo: userInfo, bridge: bridge),
-			localDb: request.localDb, helper: helper, importerFactory: bridge.importerForRemoteResults(localRepresentations:uniquingIDsPerEntities:taskCancelled:)
+			localDb: request.localDb, helper: helper, importerFactory: bridge.importerForRemoteResults(localRepresentations:rootMetadata:uniquingIDsPerEntities:taskCancelled:)
 		)
 		importOperation = operation
 		let completionOperation = BlockOperation{ self.continueOperation{

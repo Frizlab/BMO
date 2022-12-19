@@ -78,6 +78,7 @@ public protocol BridgeProtocol {
 	 If there are some other optimizations that should be pre-computed before doing the actual import on context, they should be done before returning the importer. */
 	func importerForRemoteResults(
 		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, Metadata>],
+		rootMetadata: Metadata?,
 		uniquingIDsPerEntities: [LocalDb.DbObject.DbEntityDescription: Set<LocalDb.UniquingID>],
 		taskCancelled: () -> Bool
 	) throws -> LocalDbImporter

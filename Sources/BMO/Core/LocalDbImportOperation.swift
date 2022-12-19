@@ -25,7 +25,7 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 		
 		case finishedRemoteOperation(Bridge.RemoteDb.RemoteOperation, userInfo: Bridge.UserInfo, bridge: Bridge)
 		case bridgeObjects(Bridge.BridgeObjects)
-		case genericLocalDbObjects([GenericLocalDbObject])
+		case genericLocalDbObjects([GenericLocalDbObject], rootMetadata: Bridge.Metadata?)
 		
 	}
 	public typealias RequestResult = LocalDbChanges<Bridge.LocalDb.DbObject, Bridge.BridgeObjects.Metadata>?
@@ -36,7 +36,7 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 	public typealias GenericLocalDbObject = BMO.GenericLocalDbObject<Bridge.LocalDb.DbObject, Bridge.LocalDb.UniquingID, Bridge.BridgeObjects.Metadata>
 	public typealias UniquingIDsPerEntities = [Bridge.LocalDb.DbObject.DbEntityDescription: Set<Bridge.LocalDb.UniquingID>]
 	
-	public typealias ImporterFactory = ([GenericLocalDbObject], UniquingIDsPerEntities, _ isCancelled: () -> Bool) throws -> Bridge.LocalDbImporter
+	public typealias ImporterFactory = ([GenericLocalDbObject], Bridge.Metadata?, UniquingIDsPerEntities, _ isCancelled: () -> Bool) throws -> Bridge.LocalDbImporter
 	
 	public var request: Request
 	public var localDb: Bridge.LocalDb
@@ -90,8 +90,8 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, 
 				case let .bridgeObjects(bridgeObjects):
 					try startFrom(bridgeObjects: bridgeObjects)
 					
-				case let .genericLocalDbObjects(objects):
-					try startFrom(genericLocalDbObjects: objects)
+				case let .genericLocalDbObjects(objects, rootMetadata: rootMetadata):
+					try startFrom(genericLocalDbObjects: objects, rootMetadata: rootMetadata)
 			}
 		} catch {
 			result = .failure(error)
@@ -141,16 +141,16 @@ private extension LocalDbImportOperation {
 			from: bridgeObjects, uniquingIDsPerEntities: &uniquingIDsPerEntities, taskCancelled: { self.isCancelled }
 		) !> RequestError.remoteToLocalObjects()
 		/* Next step. */
-		try startFrom(genericLocalDbObjects: genericLocalDbObjects, uniquingIDsPerEntities: uniquingIDsPerEntities)
+		try startFrom(genericLocalDbObjects: genericLocalDbObjects, rootMetadata: bridgeObjects.localMetadata, uniquingIDsPerEntities: uniquingIDsPerEntities)
 	}
 	
-	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) throws {
+	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], rootMetadata: Bridge.Metadata?, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) throws {
 		let uniquingIDsPerEntities = uniquingIDsPerEntities ?? {
 			var res = UniquingIDsPerEntities()
 			genericLocalDbObjects.forEach{ $0.insertUniquingIDsPerEntities(in: &res) }
 			return res
 		}()
-		let importer = try importerFactory(genericLocalDbObjects, uniquingIDsPerEntities, { self.isCancelled })
+		let importer = try importerFactory(genericLocalDbObjects, rootMetadata, uniquingIDsPerEntities, { self.isCancelled })
 		if startedOnContext {                                      try onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, uniquingIDsPerEntities: uniquingIDsPerEntities)}
 		else                {try localDb.context.performAndWaitRW{ try onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, uniquingIDsPerEntities: uniquingIDsPerEntities) }}
 	}
