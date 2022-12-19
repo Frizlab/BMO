@@ -82,7 +82,9 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation, HasRes
 	   MARK: Private
 	   ************* */
 	
-	private let lock = NSLock()
+	/* We use a recursive lock because isExecuting is called from within the didChangeValue call…
+	 * Another solution I think would be to use another lock and have separate variables for isExecuting and isFinished, modified within the separate lock. */
+	private let lock = NSRecursiveLock()
 	private var _result: Result<RequestResult, Error> = .failure(OperationLifecycleError.operationNotStarted) {
 		willSet {
 			let oldFinished = isFinished(with: _result)
