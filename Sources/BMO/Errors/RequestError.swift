@@ -85,12 +85,11 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 		return { .init(failureStep: .helper_didImport, underlyingError: $0, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects) }
 	}
 	
-	internal static func addRemoteOperation(_ remoteOperation: Bridge.RemoteDb.RemoteOperation) -> (_ error: Error) -> Error {
+	internal static func replaceRemoteOperation(_ remoteOperation: Bridge.RemoteDb.RemoteOperation) -> (_ error: Error) -> Error {
 		return { error in
 			guard var requestError = error as? Self else {
 				return error
 			}
-			assert(requestError.remoteOperation == nil)
 			requestError.remoteOperation = remoteOperation
 			return requestError
 		}

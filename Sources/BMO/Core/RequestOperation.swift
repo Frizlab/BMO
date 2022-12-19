@@ -199,7 +199,7 @@ private extension RequestOperation {
 		/* Step 5: Retrieve import operation results and finish the operation. */
 		/* We do NOT check whether we’re cancelled.
 		 * If we are, the import operation will have been cancelled and we’ll get the error from there. */
-		if let importResults = try finishedImportOperation.result.get() !> RequestError.addRemoteOperation(finishedRemoteOperation) {
+		if let importResults = try finishedImportOperation.result.get() !> RequestError.replaceRemoteOperation(finishedRemoteOperation) {
 			finishOperation(.success(.success(dbChanges: importResults, remoteOperation: finishedRemoteOperation)))
 		} else {
 			finishOperation(.success(.successNoopFromRemote(finishedRemoteOperation)))
