@@ -28,7 +28,14 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 		/* TODO: Implement this.
 		 * - Because we want to always have a non-modified Core Data view context, we have to allow using this workflow from a child context.
 		 * - When using a sub-context, the back results are not imported because the importer we use today do not support sub-contexts (no inter-context locking).
-		 *   A modification to BMO would allow us to change the importer per request part. */
+		 *
+		 * Note:
+		 * To implement this (properly), we might have to move the importer creation from the bridge to the helper………
+		 *  which is annoying because of all the types the importer brings with him.
+		 * Maybe another helper (ImporterFactory) would be required instead? idk
+		 *
+		 * Another (much easier) solution would be to give the original request to the bridge when asking to create the importer.
+		 * After all it’s already the bridge that decides what helper to use for a given request, it would make sense the proper importer should be chosen also by the bridge. */
 //		case saveAfterBackReturns
 		case rollbackBeforeBackReturns
 		case doNothing
