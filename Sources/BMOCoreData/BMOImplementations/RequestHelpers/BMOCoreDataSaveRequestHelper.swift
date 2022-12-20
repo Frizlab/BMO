@@ -71,7 +71,7 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 		return true
 	}
 	
-	public func onContext_didImportRemoteResults(_ importChanges: BMO.LocalDbChanges<NSManagedObject, Metadata>) throws {
+	public func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>) throws {
 		assert(context.parent == nil)
 		context.saveToDiskOrRollback()
 	}
