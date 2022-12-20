@@ -19,15 +19,15 @@ import Foundation
 
 public enum OperationLifecycleError : Error {
 	
+	/** The initial result of all BMO operations is a failure with this error until the operation is started. */
+	case notStarted
+	/** The result of all BMO operations are set to a failure with this error after the operation has started and until the operation is finished. */
+	case inProgress
+	
 	/**
 	 An error representing an operation that was stopped because it was cancelled.
 	 
 	 This can be removed when the minimum supported version of BMO is high enough (to be replaced by the native `Swift.CancellationError`). */
 	case cancelled
-	
-	/** The initial result of all BMO operations is a failure with this error until the operation is started. */
-	case operationNotStarted
-	/** The result of all BMO operations are set to a failure with this error after the operation has started and until the operation is finished. */
-	case operationInProgress
 	
 }

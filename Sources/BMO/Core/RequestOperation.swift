@@ -52,7 +52,7 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	}
 	
 	public override func start() {
-		lock.withLock{ _result = .failure(OperationLifecycleError.operationInProgress) }
+		lock.withLock{ _result = .failure(OperationLifecycleError.inProgress) }
 		continueOperation(switchToContext: !startedOnContext, onContext_beginOperation)
 	}
 	
@@ -83,7 +83,7 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	/* We use a recursive lock because isExecuting is called from within the didChangeValue call…
 	 * Another solution I think would be to use another lock and have separate variables for isExecuting and isFinished, modified within the separate lock. */
 	private let lock = NSRecursiveLock()
-	private var _result: Result<RequestResult, Error> = .failure(OperationLifecycleError.operationNotStarted) {
+	private var _result: Result<RequestResult, Error> = .failure(OperationLifecycleError.notStarted) {
 		willSet {
 			let oldFinished = isFinished(with: _result)
 			let newFinished = isFinished(with: newValue)
@@ -120,18 +120,18 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	
 	private func finishOperation(_ r: Result<RequestResult, Error>) {
 		lock.withLock{
-			assert(_result.failure as? OperationLifecycleError == .operationInProgress)
+			assert(_result.failure as? OperationLifecycleError == .inProgress)
 			assert(!(r.failure is OperationLifecycleError))
 			_result = r
 		}
 	}
 	
 	private func isExecuting(with result: Result<RequestResult, Error>) -> Bool {
-		return (result.failure as? OperationLifecycleError).flatMap{ $0 == .operationInProgress } ?? false
+		return (result.failure as? OperationLifecycleError).flatMap{ $0 == .inProgress } ?? false
 	}
 	
 	private func isFinished(with result: Result<RequestResult, Error>) -> Bool {
-		return (result.failure as? OperationLifecycleError).flatMap{ $0 != .operationNotStarted && $0 != .operationInProgress } ?? true
+		return (result.failure as? OperationLifecycleError).flatMap{ $0 != .notStarted && $0 != .inProgress } ?? true
 	}
 	
 }

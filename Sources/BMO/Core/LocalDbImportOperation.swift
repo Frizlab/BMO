@@ -77,7 +77,7 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	}
 	
 	public override func main() {
-		result = .failure(OperationLifecycleError.operationInProgress)
+		result = .failure(OperationLifecycleError.inProgress)
 		
 		do {
 			switch request {
@@ -109,7 +109,7 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	   *************** */
 	
 	private let lock = NSLock()
-	private var _result: Result<RequestResult, Error> = .failure(OperationLifecycleError.operationNotStarted)
+	private var _result: Result<RequestResult, Error> = .failure(OperationLifecycleError.notStarted)
 	
 	private func throwIfCancelled() throws {
 		guard !isCancelled else {
