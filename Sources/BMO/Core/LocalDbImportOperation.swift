@@ -154,7 +154,7 @@ private extension LocalDbImportOperation {
 	
 	func onContext_startFrom(genericLocalDbObjects: [GenericLocalDbObject], importer: Bridge.LocalDbImporter, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) throws {
 		try throwIfCancelled()
-		/* From there no more cancellation is possible. */
+		/* From there cancellation is not possible anymore. */
 		
 		guard try helper.onContext_willImportRemoteResults() !> RequestError.willImport(genericLocalDbObjects: genericLocalDbObjects) else {
 			/* If the helper tells us not to import, we stop. */
