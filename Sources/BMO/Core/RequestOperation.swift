@@ -29,6 +29,10 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public var bridge: Bridge
 	public var request: Request
+	/**
+	 A collection of helpers called in addition of the bridge helper.
+	 
+	 The additional helpers are called _before_ the bridge helper. */
 	public var additionalHelpers: RequestHelperCollection
 	
 	public var remoteOperationQueue: OperationQueue
@@ -146,7 +150,7 @@ private extension RequestOperation {
 	
 	func onContext_beginOperation() throws {
 		/* TODO: This is nooooot very efficient, yeah… */
-		let helper = RequestHelperCollection(bridge.requestHelper(for: request), additionalHelpers)
+		let helper = RequestHelperCollection(additionalHelpers, bridge.requestHelper(for: request))
 		
 		/* Step 1: Check if retrieving the remote operation is needed. */
 		try throwIfCancelled()
