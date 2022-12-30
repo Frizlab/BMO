@@ -75,6 +75,7 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 			context.saveToDiskOrRollback();
 			return false
 		}
+		assert(!context.hasChanges || saveWorkflow == .doNothing)
 		return true
 	}
 	

@@ -59,6 +59,7 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 	}
 	
 	public func onContext_willImportRemoteResults() throws -> Bool {
+		assert(!context.hasChanges)
 		return true
 	}
 	
