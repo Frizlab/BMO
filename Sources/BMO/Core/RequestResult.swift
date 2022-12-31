@@ -30,3 +30,23 @@ public enum RequestResult<RemoteOperation : Operation, LocalDbObject : LocalDbOb
 	case success(dbChanges: LocalDbChanges<LocalDbObject, Metadata>, remoteOperation: RemoteOperation)
 	
 }
+
+
+public extension RequestResult {
+	
+	var remoteOperation: RemoteOperation? {
+		switch self {
+			case .successNoop:                                          return nil
+			case .successNoopFromRemote(let remoteOp):                  return remoteOp
+			case .success(dbChanges: _, remoteOperation: let remoteOp): return remoteOp
+		}
+	}
+	
+	var dbChanges: LocalDbChanges<LocalDbObject, Metadata>? {
+		switch self {
+			case .successNoop, .successNoopFromRemote:                   return nil
+			case .success(dbChanges: let dbChanges, remoteOperation: _): return dbChanges
+		}
+	}
+	
+}
