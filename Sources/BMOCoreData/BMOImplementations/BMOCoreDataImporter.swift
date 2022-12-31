@@ -78,7 +78,7 @@ where LocalDb.DbObject == NSManagedObject,
 		localRepresentations: [GenericLocalDbObject],
 		rootMetadata: Metadata?,
 		uniquingIDsPerEntities: [NSEntityDescription: Set<LocalDb.UniquingID>],
-		taskCancelled: () -> Bool = { false }
+		cancellationCheck throwIfCancelled: () throws -> Void = { }
 	) throws {
 		self.uniquingProperty = uniquingProperty
 		

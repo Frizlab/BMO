@@ -45,8 +45,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	 This method will traverse the whole object tree represented by the bridge objects and convert each objects to a local db representation.
 	 
 	 This conversion can take some time.
-	 That’s why it can be stopped at any point using the `taskCancelled` handler.
-	 If you call this method in a structured concurrency context, the handler can simply return `Task.isCancelled` for instance. */
+	 That’s why it can be stopped at any point using the `throwIfCancelled` handler. */
 	public static func objects<BridgeObjects : BridgeObjectsProtocol>(from bridgeObjects: BridgeObjects, uniquingIDsPerEntities: inout [DbObject.DbEntityDescription: Set<UniquingID>], cancellationCheck throwIfCancelled: () throws -> Void = { }) throws -> [Self]
 	where BridgeObjects.LocalDb.DbObject == DbObject, BridgeObjects.LocalDb.UniquingID == UniquingID, BridgeObjects.Metadata == RelationshipMetadata {
 		return try bridgeObjects.mixedRepresentations().map{ mixedRepresentation in
