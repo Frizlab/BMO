@@ -40,34 +40,51 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 		self.fetchType = fetchType
 	}
 	
-	public func onContext_requestNeedsRemote() throws -> Bool {
-		/* Note:
-		 * We might wanna avoid fetching the entity if it is already set, however, it is difficult checking whether the entity has been set:
-		 *  if the property is accessed before being set, an (objc) execption is thrown… */
-		request.entity = context.persistentStoreCoordinator!.managedObjectModel.entitiesByName[request.entityName!]
+	/* *****************************************************************
+	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
+	   ***************************************************************** */
+	
+	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		switch fetchType {
-			case .always:               return true
-			case .onlyIfNoLocalResults: return try context.count(for: request) == 0
-			case .never:                return false
+			case .always: return true
+			case .never:  return false
+				
+			case .onlyIfNoLocalResults:
+				/* Note:
+				 * We might wanna avoid fetching the entity if it is already set, however, it is difficult checking whether the entity has been set:
+				 *  if the property is accessed before being set, an (objc) execption is thrown… */
+				request.entity = context.persistentStoreCoordinator!.managedObjectModel.entitiesByName[request.entityName!]
+				return try context.count(for: request) == 0
 		}
 	}
 	
-	public func onContext_failedRemoteConversion(_ error: Error) {
+	public func onContext_localToRemote_willGoRemote(cancellationCheck throwIfCancelled: () throws -> Void) throws {
 	}
 	
-	public func onContext_willGoRemote() throws {
+	public func onContext_localToRemoteFailed(_ error: Error) {
 	}
 	
-	public func onContext_willImportRemoteResults() throws -> Bool {
+	/* ************************************************************
+	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
+	   ************************************************************ */
+	
+	public func remoteFailed(_ error: Error) {
+	}
+	
+	/* *******************************************************************
+	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
+	   ******************************************************************* */
+	
+	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		assert(!context.hasChanges)
 		return true
 	}
 	
-	public func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>) throws {
+	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws {
 		try context.save()
 	}
 	
-	public func onContext_didFailImportingRemoteResults(_ error: Error) {
+	public func onContext_remoteToLocalFailed(_ error: Error) {
 		context.rollback()
 	}
 	

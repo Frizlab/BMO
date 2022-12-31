@@ -80,7 +80,7 @@ public protocol BridgeProtocol {
 		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, Metadata>],
 		rootMetadata: Metadata?,
 		uniquingIDsPerEntities: [LocalDb.DbObject.DbEntityDescription: Set<LocalDb.UniquingID>],
-		taskCancelled: () -> Bool
+		cancellationCheck throwIfCancelled: () throws -> Void
 	) throws -> LocalDbImporter
 	
 }

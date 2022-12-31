@@ -91,15 +91,13 @@ where LocalDb.DbObject == NSManagedObject,
 		assert(Self.validate(representations: localRepresentations, uniquingProperty: uniquingProperty))
 	}
 	
-	public func onContext_import(in db: LocalDb, taskCancelled: () -> Bool = { false }) throws -> LocalDbChanges<NSManagedObject, Metadata> {
+	public func onContext_import(in db: LocalDb, cancellationCheck throwIfCancelled: () throws -> Void) throws -> LocalDbChanges<LocalDb.DbObject, Metadata> {
 		let dbContext = db.context
 		
 		/* First we fetch all the objects that will be updated because their uniquing IDs are updated. */
 		var objectsByEntityAndUniquingIDs = [NSEntityDescription: [LocalDb.UniquingID: NSManagedObject]]()
 		for (entity, uniquingIDs) in uniquingIDsPerEntities {
-			guard !taskCancelled() else {
-				throw OperationLifecycleError.cancelled
-			}
+			try throwIfCancelled()
 			
 			let request = NSFetchRequest<NSManagedObject>()
 			request.entity = entity
@@ -120,17 +118,15 @@ where LocalDb.DbObject == NSManagedObject,
 			}
 		}
 		
-		/* Last chance to stop, after that we do not cancel the import whatever the reason. */
-		guard !taskCancelled() else {
-			throw OperationLifecycleError.cancelled
-		}
+		try throwIfCancelled()
 		
 		/* Next, let’s do the actual import. */
 		return try onContext_Import(
 			representations: localRepresentations,
 			metadata: rootMetadata,
 			in: dbContext,
-			prefetchedObjectsByEntityAndUniquingIDs: &objectsByEntityAndUniquingIDs
+			prefetchedObjectsByEntityAndUniquingIDs: &objectsByEntityAndUniquingIDs,
+			cancellationCheck: throwIfCancelled
 		)
 	}
 	
@@ -151,7 +147,8 @@ where LocalDb.DbObject == NSManagedObject,
 		metadata: Metadata?,
 		in db: NSManagedObjectContext,
 		updatingObject updatedObject: NSManagedObject? = nil,
-		prefetchedObjectsByEntityAndUniquingIDs uniqIDAndEntityToObject: inout [NSEntityDescription: [LocalDb.UniquingID: NSManagedObject]]
+		prefetchedObjectsByEntityAndUniquingIDs uniqIDAndEntityToObject: inout [NSEntityDescription: [LocalDb.UniquingID: NSManagedObject]],
+		cancellationCheck throwIfCancelled: () throws -> Void
 	) throws -> LocalDbChanges<NSManagedObject, Metadata> {
 		var res = LocalDbChanges<NSManagedObject, Metadata>(metadata: metadata)
 		
@@ -192,6 +189,8 @@ where LocalDb.DbObject == NSManagedObject,
 		}
 		
 		for representation in representations {
+			try throwIfCancelled()
+			
 			let object: NSManagedObject
 			if let uid = representation.uniquingID {
 				if let o = uniqIDAndEntityToObject[representation.entity]?[uid] {
@@ -229,6 +228,8 @@ where LocalDb.DbObject == NSManagedObject,
 			}
 			
 			for (relationshipName, relationshipValue) in representation.relationships {
+				try throwIfCancelled()
+				
 				guard let (relationshipObjects, mergeType, subMetadata) = relationshipValue else {
 					builtImportedObject.modifiedRelationships[relationshipName] = .some(nil)
 					object.setValue(nil, forKey: relationshipName)
@@ -239,7 +240,8 @@ where LocalDb.DbObject == NSManagedObject,
 					representations: relationshipObjects,
 					metadata: subMetadata,
 					in: db,
-					prefetchedObjectsByEntityAndUniquingIDs: &uniqIDAndEntityToObject
+					prefetchedObjectsByEntityAndUniquingIDs: &uniqIDAndEntityToObject,
+					cancellationCheck: throwIfCancelled
 				)
 				builtImportedObject.modifiedRelationships[relationshipName] = subDbChanges
 				res.insertedDbObjects.formUnion(subDbChanges.insertedDbObjects)

@@ -34,7 +34,7 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	public typealias GenericLocalDbObject = BMO.GenericLocalDbObject<Bridge.LocalDb.DbObject, Bridge.LocalDb.UniquingID, Bridge.BridgeObjects.Metadata>
 	public typealias UniquingIDsPerEntities = [Bridge.LocalDb.DbObject.DbEntityDescription: Set<Bridge.LocalDb.UniquingID>]
 	
-	public typealias ImporterFactory = ([GenericLocalDbObject], Bridge.Metadata?, UniquingIDsPerEntities, _ isCancelled: () -> Bool) throws -> Bridge.LocalDbImporter
+	public typealias ImporterFactory = ([GenericLocalDbObject], Bridge.Metadata?, UniquingIDsPerEntities, _ cancellationCheck: () throws -> Void) throws -> Bridge.LocalDbImporter
 	
 	public var request: Request
 	public var localDb: Bridge.LocalDb
@@ -117,14 +117,28 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 		}
 	}
 	
+	func remoteResults_passErrToHelper(_ error: Error) -> Error {
+		helper.remoteFailed(error)
+		return error
+	}
+	
+	func onContext_remoteToLocal_passErrToHelper(_ error: Error) -> Error {
+		helper.onContext_remoteToLocalFailed(error)
+		return error
+	}
+	
 }
 
 
 private extension LocalDbImportOperation {
 	
 	func startFrom(finishedRemoteOperation: Bridge.RemoteDb.RemoteOperation, userInfo: Bridge.UserInfo, bridge: Bridge) throws {
-		try throwIfCancelled()
-		guard let bridgeObjects = try bridge.bridgeObjects(for: finishedRemoteOperation, userInfo: userInfo) !> RequestError.remoteOperationToObjects(finishedRemoteOperation) else {
+		try throwIfCancelled() !> remoteResults_passErrToHelper(_:)
+		
+		guard let bridgeObjects = try bridge.bridgeObjects(for: finishedRemoteOperation, userInfo: userInfo)
+					!> remoteResults_passErrToHelper(_:)
+					!> RequestError.remoteOperationToObjects(finishedRemoteOperation)
+		else {
 			return result = .success(nil)
 		}
 		/* Next step. */
@@ -132,42 +146,46 @@ private extension LocalDbImportOperation {
 	}
 	
 	func startFrom(bridgeObjects: Bridge.BridgeObjects) throws {
-		try throwIfCancelled()
+		try throwIfCancelled() !> remoteResults_passErrToHelper(_:)
+		
 		var uniquingIDsPerEntities = UniquingIDsPerEntities()
 		let genericLocalDbObjects = try GenericLocalDbObject.objects(
-			from: bridgeObjects, uniquingIDsPerEntities: &uniquingIDsPerEntities, taskCancelled: { self.isCancelled }
-		) !> RequestError.remoteToLocalObjects()
+			from: bridgeObjects, uniquingIDsPerEntities: &uniquingIDsPerEntities, cancellationCheck: throwIfCancelled
+		) !> remoteResults_passErrToHelper(_:) !> RequestError.remoteToLocalObjects()
 		/* Next step. */
 		try startFrom(genericLocalDbObjects: genericLocalDbObjects, rootMetadata: bridgeObjects.localMetadata, uniquingIDsPerEntities: uniquingIDsPerEntities)
 	}
 	
 	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], rootMetadata: Bridge.Metadata?, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) throws {
-		let uniquingIDsPerEntities = uniquingIDsPerEntities ?? {
+		let uniquingIDsPerEntities = try uniquingIDsPerEntities ?? {
 			var res = UniquingIDsPerEntities()
-			genericLocalDbObjects.forEach{ $0.insertUniquingIDsPerEntities(in: &res) }
+			try genericLocalDbObjects.forEach{ try $0.insertUniquingIDsPerEntities(in: &res, cancellationCheck: throwIfCancelled) }
 			return res
-		}()
-		let importer = try importerFactory(genericLocalDbObjects, rootMetadata, uniquingIDsPerEntities, { self.isCancelled })
+		}() !> remoteResults_passErrToHelper(_:) !> RequestError.remoteToLocalObjects()
+		let importer = try importerFactory(genericLocalDbObjects, rootMetadata, uniquingIDsPerEntities, throwIfCancelled) !> remoteResults_passErrToHelper(_:) !> RequestError.importerForResults()
 		if startedOnContext {                                      try onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, uniquingIDsPerEntities: uniquingIDsPerEntities)}
 		else                {try localDb.context.performAndWaitRW{ try onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, uniquingIDsPerEntities: uniquingIDsPerEntities) }}
 	}
 	
 	func onContext_startFrom(genericLocalDbObjects: [GenericLocalDbObject], importer: Bridge.LocalDbImporter, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) throws {
-		try throwIfCancelled()
-		/* From there cancellation is not possible anymore. */
+		try throwIfCancelled() !> onContext_remoteToLocal_passErrToHelper(_:)
 		
-		guard try helper.onContext_willImportRemoteResults() !> RequestError.willImport(genericLocalDbObjects: genericLocalDbObjects) else {
+		guard try helper.onContext_remoteToLocal_willImportRemoteResults(cancellationCheck: throwIfCancelled)
+					!> onContext_remoteToLocal_passErrToHelper(_:)
+					!> RequestError.willImport(genericLocalDbObjects: genericLocalDbObjects)
+		else {
 			/* If the helper tells us not to import, we stop. */
 			return result = .success(nil)
 		}
-		let dbChanges: LocalDbChanges<Bridge.LocalDb.DbObject, Bridge.Metadata>
-		do {
-			dbChanges = try importer.onContext_import(in: localDb, taskCancelled: { self.isCancelled })
-		} catch {
-			helper.onContext_didFailImportingRemoteResults(error)
-			throw RequestError.import(error, genericLocalDbObjects: genericLocalDbObjects)
-		}
-		try helper.onContext_didImportRemoteResults(dbChanges) !> RequestError.didImport(genericLocalDbObjects: genericLocalDbObjects)
+		
+		let dbChanges = try importer.onContext_import(in: localDb, cancellationCheck: throwIfCancelled)
+			!> onContext_remoteToLocal_passErrToHelper(_:)
+			!> RequestError.import(genericLocalDbObjects: genericLocalDbObjects)
+		
+		try helper.onContext_remoteToLocal_didImportRemoteResults(dbChanges, cancellationCheck: throwIfCancelled)
+			!> onContext_remoteToLocal_passErrToHelper(_:)
+			!> RequestError.didImport(genericLocalDbObjects: genericLocalDbObjects)
+		
 		result = .success(dbChanges)
 	}
 	

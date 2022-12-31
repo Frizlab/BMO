@@ -30,55 +30,56 @@ public struct RequestHelperCollection<LocalDbObject : LocalDbObjectProtocol, Met
 		self.requestHelpers = requestHelpers
 	}
 	
-	public func onContext_requestNeedsRemote() throws -> Bool {
-		guard !requestHelpers.isEmpty else {
-			return true
-		}
-		return try requestHelpers.contains(where: { try $0.onContext_requestNeedsRemote() })
-	}
+	/* *****************************************************************
+	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
+	   ***************************************************************** */
 	
-	public func onContext_failedRemoteConversion(_ error: Error) {
-		requestHelpers.forEach{ $0.onContext_failedRemoteConversion(error) }
-	}
-	
-	public func onContext_willGoRemote() throws {
-		let errors = requestHelpers.compactMap{ requestHelper in
-			Result{ try requestHelper.onContext_willGoRemote() }.failure
-		}
-		guard errors.isEmpty else {
-			throw ErrorCollection(errors)
-		}
-	}
-	
-	public func onContext_willImportRemoteResults() throws -> Bool {
-		let results = requestHelpers.map{ requestHelper in
-			Result{ try requestHelper.onContext_willImportRemoteResults() }
-		}
-		let errors = results.compactMap{ $0.failure }
-		guard errors.isEmpty else {
-			throw ErrorCollection(errors)
-		}
+	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		/* allSatisfy returns true if the collection is empty. */
-		return results.allSatisfy{ $0.successValue == true }
+		/* Must NOT be lazy! We want all the helpers to be called (if they do not throw). */
+		return try requestHelpers
+			.map{ try $0.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled) }
+			.allSatisfy{ $0 }
 	}
 	
-	public func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>) throws {
-		let errors = requestHelpers.compactMap{ requestHelper in
-			Result{ try callHelperDidImportRemoteResults(requestHelper: requestHelper, importChanges: importChanges) }.failure
+	public func onContext_localToRemote_willGoRemote(cancellationCheck throwIfCancelled: () throws -> Void) throws {
+		try requestHelpers.forEach{
+			try $0.onContext_localToRemote_willGoRemote(cancellationCheck: throwIfCancelled)
 		}
-		guard errors.isEmpty else {
-			throw ErrorCollection(errors)
+	}
+	
+	public func onContext_localToRemoteFailed(_ error: Error) {
+		requestHelpers.forEach{ $0.onContext_localToRemoteFailed(error) }
+	}
+	
+	/* ************************************************************
+	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
+	   ************************************************************ */
+	
+	public func remoteFailed(_ error: Error) {
+		requestHelpers.forEach{ $0.remoteFailed(error) }
+	}
+	
+	/* *******************************************************************
+	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
+	   ******************************************************************* */
+	
+	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
+		/* allSatisfy returns true if the collection is empty. */
+		/* Must NOT be lazy! We want all the helpers to be called (if they do not throw). */
+		return try requestHelpers
+			.map{ try $0.onContext_remoteToLocal_willImportRemoteResults(cancellationCheck: throwIfCancelled) }
+			.allSatisfy{ $0 }
+	}
+	
+	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws {
+		try requestHelpers.forEach{
+			try $0.onContext_remoteToLocal_didImportRemoteResults(importChanges, cancellationCheck: throwIfCancelled)
 		}
 	}
 	
-	public func onContext_didFailImportingRemoteResults(_ error: Error) {
-		requestHelpers.forEach{ $0.onContext_didFailImportingRemoteResults(error) }
-	}
-	
-	/* Maybe in a future version of Swift this method will be able to be skipped. */
-	private func callHelperDidImportRemoteResults<RequestHelper : RequestHelperProtocol>(requestHelper: RequestHelper, importChanges: LocalDbChanges<LocalDbObject, Metadata>)
-	throws where RequestHelper.LocalDbObject == LocalDbObject, RequestHelper.Metadata == Metadata {
-		try requestHelper.onContext_didImportRemoteResults(importChanges)
+	public func onContext_remoteToLocalFailed(_ error: Error) {
+		requestHelpers.forEach{ $0.onContext_remoteToLocalFailed(error) }
 	}
 	
 }

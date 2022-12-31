@@ -24,7 +24,15 @@ public protocol LocalDbImporterProtocol<LocalDb, Metadata> {
 	associatedtype LocalDb : LocalDbProtocol
 	associatedtype Metadata
 	
-	/** Import the known local db representations into the given local db’s context. */
-	func onContext_import(in db: LocalDb, taskCancelled: () -> Bool) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
+	/**
+	 Import the known local db representations into the given local db’s context.
+	 
+	 Should import the given local db representation currently in your possession into the given local db.
+	 Usually the db context should _not_ be saved after the import; this should be the job of the request helper.
+	 
+	 During the import task, one should call `throwIfCancelled` from time to time.
+	 This block will throw if the calling operation is cancelled.
+	 Import should stop when this block throws. */
+	func onContext_import(in db: LocalDb, cancellationCheck throwIfCancelled: () throws -> Void) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
 	
 }

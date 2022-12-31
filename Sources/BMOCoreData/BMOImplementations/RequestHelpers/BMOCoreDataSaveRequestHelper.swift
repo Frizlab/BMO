@@ -52,16 +52,16 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 		self.saveWorkflow = saveWorkflow
 	}
 	
-	public func onContext_requestNeedsRemote() throws -> Bool {
+	/* *****************************************************************
+	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
+	   ***************************************************************** */
+	
+	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		context.processPendingChanges()
 		return true
 	}
 	
-	public func onContext_failedRemoteConversion(_ error: Error) {
-		context.rollback()
-	}
-	
-	public func onContext_willGoRemote() throws {
+	public func onContext_localToRemote_willGoRemote(cancellationCheck throwIfCancelled: () throws -> Void) throws {
 		switch saveWorkflow {
 			case .doNothing:                 (/*nop*/)
 			case .saveBeforeBackReturns:     try context.save()
@@ -69,22 +69,46 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 		}
 	}
 	
-	public func onContext_willImportRemoteResults() throws -> Bool {
+	public func onContext_localToRemoteFailed(_ error: Error) {
+		switch saveWorkflow {
+			case .doNothing:
+				(/*nop*/)
+				
+			case .saveBeforeBackReturns, .rollbackBeforeBackReturns:
+				/* We have to rollback even in the case of “rollbackBeforeBackReturns” save workflow in case the error happened before the “will go remote” step is reached. */
+				context.rollback()
+		}
+	}
+	
+	/* ************************************************************
+	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
+	   ************************************************************ */
+	
+	public func remoteFailed(_ error: Error) {
+		/* nop: either we’re in the “do nothing” workflow in which case we do nothing, or the save/rollback happened before the remote operation was started.
+		 * Of course, when (if) we implement saveAfterBackReturns we’ll have to rollback here if this save workflow is chosen. */
+	}
+	
+	/* *******************************************************************
+	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
+	   ******************************************************************* */
+	
+	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		/* We do not support sub-context with our current importers. */
 		guard context.parent == nil else {
-			context.saveToDiskOrRollback();
+			context.saveToDiskOrRollback()
 			return false
 		}
 		assert(!context.hasChanges || saveWorkflow == .doNothing)
 		return true
 	}
 	
-	public func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>) throws {
+	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws {
 		assert(context.parent == nil)
-		context.saveToDiskOrRollback()
+		try context.save()
 	}
 	
-	public func onContext_didFailImportingRemoteResults(_ error: Error) {
+	public func onContext_remoteToLocalFailed(_ error: Error) {
 		context.rollback()
 	}
 	

@@ -36,62 +36,62 @@ public struct RequestHelperCollectionForOldRuntimes<LocalDbObject : LocalDbObjec
 		self.requestHelper3 = requestHelper3
 	}
 	
-	public func onContext_requestNeedsRemote() throws -> Bool {
-		if try requestHelper1?.onContext_requestNeedsRemote() ?? false {return true}
-		if try requestHelper2?.onContext_requestNeedsRemote() ?? false {return true}
-		if try requestHelper3?.onContext_requestNeedsRemote() ?? false {return true}
-		
-		switch (requestHelper1, requestHelper2, requestHelper3) {
-			case (nil, nil, nil): return true
-			default:              return false
-		}
+	/* *****************************************************************
+	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
+	   ***************************************************************** */
+	
+	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
+		return [
+			try requestHelper1?.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled) ?? true,
+			try requestHelper2?.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled) ?? true,
+			try requestHelper3?.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled) ?? true
+		].allSatisfy{ $0 }
 	}
 	
-	public func onContext_failedRemoteConversion(_ error: Error) {
-		requestHelper1?.onContext_failedRemoteConversion(error)
-		requestHelper2?.onContext_failedRemoteConversion(error)
-		requestHelper3?.onContext_failedRemoteConversion(error)
+	public func onContext_localToRemote_willGoRemote(cancellationCheck throwIfCancelled: () throws -> Void) throws {
+		try requestHelper1?.onContext_localToRemote_willGoRemote(cancellationCheck: throwIfCancelled)
+		try requestHelper2?.onContext_localToRemote_willGoRemote(cancellationCheck: throwIfCancelled)
+		try requestHelper3?.onContext_localToRemote_willGoRemote(cancellationCheck: throwIfCancelled)
 	}
 	
-	public func onContext_willGoRemote() throws {
-		let errors = [
-			Result{ try requestHelper1?.onContext_willGoRemote() }.failure,
-			Result{ try requestHelper1?.onContext_willGoRemote() }.failure,
-			Result{ try requestHelper1?.onContext_willGoRemote() }.failure
-		].compactMap{ $0 }
-		guard errors.isEmpty else {
-			throw ErrorCollection(errors)
-		}
+	public func onContext_localToRemoteFailed(_ error: Error) {
+		requestHelper1?.onContext_localToRemoteFailed(error)
+		requestHelper2?.onContext_localToRemoteFailed(error)
+		requestHelper3?.onContext_localToRemoteFailed(error)
 	}
 	
-	public func onContext_willImportRemoteResults() throws -> Bool {
-		let results = [
-			Result{ try requestHelper1?.onContext_willImportRemoteResults() },
-			Result{ try requestHelper1?.onContext_willImportRemoteResults() },
-			Result{ try requestHelper1?.onContext_willImportRemoteResults() }
-		]
-		let errors = results.compactMap{ $0.failure }
-		guard errors.isEmpty else {
-			throw ErrorCollection(errors)
-		}
-		return results.allSatisfy{ $0.successValue == true }
+	/* ************************************************************
+	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
+	   ************************************************************ */
+	
+	public func remoteFailed(_ error: Error) {
+		requestHelper1?.remoteFailed(error)
+		requestHelper2?.remoteFailed(error)
+		requestHelper3?.remoteFailed(error)
 	}
 	
-	public func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>) throws {
-		let errors = [
-			Result{ try requestHelper1?.onContext_didImportRemoteResults(importChanges) }.failure,
-			Result{ try requestHelper1?.onContext_didImportRemoteResults(importChanges) }.failure,
-			Result{ try requestHelper1?.onContext_didImportRemoteResults(importChanges) }.failure
-		].compactMap{ $0 }
-		guard errors.isEmpty else {
-			throw ErrorCollection(errors)
-		}
+	/* *******************************************************************
+	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
+	   ******************************************************************* */
+	
+	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
+		return [
+			try requestHelper1?.onContext_remoteToLocal_willImportRemoteResults(cancellationCheck: throwIfCancelled) ?? true,
+			try requestHelper2?.onContext_remoteToLocal_willImportRemoteResults(cancellationCheck: throwIfCancelled) ?? true,
+			try requestHelper3?.onContext_remoteToLocal_willImportRemoteResults(cancellationCheck: throwIfCancelled) ?? true
+		].allSatisfy{ $0 }
 	}
 	
-	public func onContext_didFailImportingRemoteResults(_ error: Error) {
-		requestHelper1?.onContext_didFailImportingRemoteResults(error)
-		requestHelper2?.onContext_didFailImportingRemoteResults(error)
-		requestHelper3?.onContext_didFailImportingRemoteResults(error)
+	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws {
+		try requestHelper1?.onContext_remoteToLocal_didImportRemoteResults(importChanges, cancellationCheck: throwIfCancelled)
+		try requestHelper2?.onContext_remoteToLocal_didImportRemoteResults(importChanges, cancellationCheck: throwIfCancelled)
+		try requestHelper3?.onContext_remoteToLocal_didImportRemoteResults(importChanges, cancellationCheck: throwIfCancelled)
+	}
+	
+	public func onContext_remoteToLocalFailed(_ error: Error) {
+		requestHelper1?.onContext_remoteToLocalFailed(error)
+		requestHelper2?.onContext_remoteToLocalFailed(error)
+		requestHelper3?.onContext_remoteToLocalFailed(error)
 	}
 	
 }

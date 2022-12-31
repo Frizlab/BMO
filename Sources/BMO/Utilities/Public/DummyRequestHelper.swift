@@ -19,24 +19,38 @@ import Foundation
 
 public struct DummyRequestHelper<LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
 	
-	public func onContext_requestNeedsRemote() throws -> Bool {
+	/* *****************************************************************
+	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
+	   ***************************************************************** */
+	
+	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		return true
 	}
 	
-	public func onContext_failedRemoteConversion(_ error: Error) {
+	public func onContext_localToRemote_willGoRemote(cancellationCheck throwIfCancelled: () throws -> Void) throws {
 	}
 	
-	public func onContext_willGoRemote() throws {
+	public func onContext_localToRemoteFailed(_ error: Error) {
 	}
 	
-	public func onContext_willImportRemoteResults() throws -> Bool {
+	/* ************************************************************
+	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
+	   ************************************************************ */
+	
+	public func remoteFailed(_ error: Error) {
+	}
+	
+	/* *******************************************************************
+	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
+	   ******************************************************************* */
+	
+	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		return true
 	}
-	
-	public func onContext_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>) throws {
+	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws {
 	}
 	
-	public func onContext_didFailImportingRemoteResults(_ error: Error) {
+	public func onContext_remoteToLocalFailed(_ error: Error) {
 	}
 	
 }
