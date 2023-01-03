@@ -22,19 +22,13 @@ import BMO
 
 public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 	
-	public enum FetchType {
-		case always
-		case onlyIfNoLocalResults
-		case never
-	}
-	
 	public typealias LocalDbObject = NSManagedObject
 	
 	public var request: NSFetchRequest<NSFetchRequestResult>
 	public var context: NSManagedObjectContext
-	public var fetchType: FetchType
+	public var fetchType: RemoteFetchType
 	
-	public init(request: NSFetchRequest<NSFetchRequestResult>, context: NSManagedObjectContext, fetchType: FetchType) {
+	public init(request: NSFetchRequest<NSFetchRequestResult>, context: NSManagedObjectContext, fetchType: RemoteFetchType) {
 		self.request = request
 		self.context = context
 		self.fetchType = fetchType
@@ -55,6 +49,10 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 				 *  if the property is accessed before being set, an (objc) execption is thrown… */
 				request.entity = context.persistentStoreCoordinator!.managedObjectModel.entitiesByName[request.entityName!]
 				return try context.count(for: request) == 0
+				
+			case let .custom(handler):
+				request.entity = context.persistentStoreCoordinator!.managedObjectModel.entitiesByName[request.entityName!]
+				return try handler(request)
 		}
 	}
 	
