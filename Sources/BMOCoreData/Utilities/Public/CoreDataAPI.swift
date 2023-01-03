@@ -31,7 +31,7 @@ public protocol CoreDataAPIDefaultsSettings {
 	static var remoteIDPropertyName: String {get}
 	static var requestUserInfo: Bridge.RequestUserInfo {get}
 	
-	static var fetchRequestToBridgeRequest: (NSFetchRequest<NSManagedObject>) -> Bridge.LocalDb.DbRequest {get}
+	static var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>) -> Bridge.LocalDb.DbRequest {get}
 	
 }
 
@@ -46,7 +46,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 		public var remoteIDPropertyName: String
 		public var requestUserInfo: Bridge.RequestUserInfo
 		
-		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSManagedObject>) -> Bridge.LocalDb.DbRequest
+		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>) -> Bridge.LocalDb.DbRequest
 		
 		public init() {
 			self.remoteOperationQueue  = DefaultSettings.remoteOperationQueue
@@ -63,7 +63,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 			computeOperationQueue: OperationQueue,
 			remoteIDPropertyName: String,
 			requestUserInfo: Bridge.RequestUserInfo,
-			fetchRequestToBridgeRequest: @escaping (NSFetchRequest<NSManagedObject>) -> Bridge.LocalDb.DbRequest
+			fetchRequestToBridgeRequest: @escaping (NSFetchRequest<NSFetchRequestResult>) -> Bridge.LocalDb.DbRequest
 		) {
 			self.remoteOperationQueue = remoteOperationQueue
 			self.computeOperationQueue = computeOperationQueue
@@ -91,7 +91,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 		let fRequest = Object.fetchRequest()
 		fRequest.predicate = NSPredicate(format: "%K == %@", settings.remoteIDPropertyName, String(describing: remoteID))
 		fRequest.fetchLimit = 1
-		let bridgeRequest = settings.fetchRequestToBridgeRequest(fRequest as! NSFetchRequest<NSManagedObject>)
+		let bridgeRequest = settings.fetchRequestToBridgeRequest(fRequest)
 		let opRequest = Request(localDb: localDb, localRequest: bridgeRequest, remoteUserInfo: settings.requestUserInfo)
 		let op = RequestOperation(bridge: bridge, request: opRequest, remoteOperationQueue: settings.remoteOperationQueue, computeOperationQueue: settings.computeOperationQueue)
 		op.completionBlock = { /* We keep a strong ref to op but it’s not a problem because we nullify the completion block at the end of the block. */
