@@ -42,9 +42,11 @@ public protocol BridgeProtocol {
 	
 	associatedtype LocalDbImporter : LocalDbImporterProtocol where LocalDbImporter.LocalDb == LocalDb, LocalDbImporter.Metadata == Metadata
 	
+	/* Convenience typealiases. */
 	typealias LocalDb = BridgeObjects.LocalDb
 	typealias RemoteDb = BridgeObjects.RemoteDb
 	typealias Metadata = BridgeObjects.Metadata
+	typealias RequestResults = BMO.RequestResult<RemoteDb.RemoteOperation, LocalDb.DbObject, Metadata>
 	
 	/**
 	 Returns a request helper for the given request.
