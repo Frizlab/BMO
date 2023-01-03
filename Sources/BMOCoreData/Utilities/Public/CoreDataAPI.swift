@@ -31,7 +31,7 @@ public protocol CoreDataAPIDefaultsSettings {
 	static var remoteIDPropertyName: String {get}
 	static var requestUserInfo: Bridge.RequestUserInfo {get}
 	
-	static var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>) -> Bridge.LocalDb.DbRequest {get}
+	static var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest {get}
 	
 }
 
@@ -44,17 +44,13 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 		public var computeOperationQueue: OperationQueue
 		
 		public var remoteIDPropertyName: String
-		public var requestUserInfo: Bridge.RequestUserInfo
-		
-		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>) -> Bridge.LocalDb.DbRequest
+		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
 		
 		public init() {
 			self.remoteOperationQueue  = DefaultSettings.remoteOperationQueue
 			self.computeOperationQueue = DefaultSettings.computeOperationQueue
 			
 			self.remoteIDPropertyName = DefaultSettings.remoteIDPropertyName
-			self.requestUserInfo      = DefaultSettings.requestUserInfo
-			
 			self.fetchRequestToBridgeRequest = DefaultSettings.fetchRequestToBridgeRequest
 		}
 		
@@ -62,15 +58,12 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 			remoteOperationQueue: OperationQueue,
 			computeOperationQueue: OperationQueue,
 			remoteIDPropertyName: String,
-			requestUserInfo: Bridge.RequestUserInfo,
-			fetchRequestToBridgeRequest: @escaping (NSFetchRequest<NSFetchRequestResult>) -> Bridge.LocalDb.DbRequest
+			fetchRequestToBridgeRequest: @escaping (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
 		) {
 			self.remoteOperationQueue = remoteOperationQueue
 			self.computeOperationQueue = computeOperationQueue
 			
 			self.remoteIDPropertyName = remoteIDPropertyName
-			self.requestUserInfo = requestUserInfo
-			
 			self.fetchRequestToBridgeRequest = fetchRequestToBridgeRequest
 		}
 		
@@ -92,12 +85,21 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 	 If you have specific needs you can set `autoStart` to false and queue the operation yourself.
 	 
 	 - Important: Do not set the `completionBlock` of the operation if you want the handler to be called (otherwise it’s fine). */
-	public func remoteFetch<Object : NSManagedObject>(objectType: Object.Type = Object.self, remoteID: Bridge.LocalDb.UniquingID, settings: Settings = .init(), autoStart: Bool = true, handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, Error>) -> Void = { _ in }) -> RequestOperation<Bridge> {
+	public func remoteFetch<Object : NSManagedObject>(
+		objectType: Object.Type = Object.self,
+		remoteID: Bridge.LocalDb.UniquingID,
+		fetchType: RemoteFetchType = .always,
+		requestUserInfo: Bridge.RequestUserInfo = DefaultSettings.requestUserInfo,
+		settings: Settings = .init(),
+		autoStart: Bool = true,
+		handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, Error>) -> Void = { _ in }
+	) -> RequestOperation<Bridge> {
 		let fRequest = Object.fetchRequest()
 		fRequest.predicate = NSPredicate(format: "%K == %@", settings.remoteIDPropertyName, String(describing: remoteID))
 		fRequest.fetchLimit = 1
-		let bridgeRequest = settings.fetchRequestToBridgeRequest(fRequest)
-		let opRequest = Request(localDb: localDb, localRequest: bridgeRequest, remoteUserInfo: settings.requestUserInfo)
+		
+		let bridgeRequest = settings.fetchRequestToBridgeRequest(fRequest, fetchType)
+		let opRequest = Request(localDb: localDb, localRequest: bridgeRequest, remoteUserInfo: requestUserInfo)
 		let op = RequestOperation(bridge: bridge, request: opRequest, remoteOperationQueue: settings.remoteOperationQueue, computeOperationQueue: settings.computeOperationQueue)
 		op.completionBlock = { /* We keep a strong ref to op but it’s not a problem because we nullify the completion block at the end of the block. */
 			DispatchQueue.main.async{
