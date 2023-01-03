@@ -79,6 +79,11 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 	public var bridge: Bridge
 	public var localDb: Bridge.LocalDb
 	
+	public init(bridge: Bridge, localDb: Bridge.LocalDb) {
+		self.bridge = bridge
+		self.localDb = localDb
+	}
+	
 	/**
 	 Create and return the `RequestOperation` corresponding to a fetch request.
 	 
