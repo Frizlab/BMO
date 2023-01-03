@@ -86,7 +86,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 	 
 	 - Important: Do not set the `completionBlock` of the operation if you want the handler to be called (otherwise it’s fine). */
 	public func remoteFetch<Object : NSManagedObject>(
-		objectType: Object.Type = Object.self,
+		_ objectType: Object.Type = Object.self,
 		remoteID: Bridge.LocalDb.UniquingID,
 		fetchType: RemoteFetchType = .always,
 		requestUserInfo: Bridge.RequestUserInfo = DefaultSettings.requestUserInfo,
