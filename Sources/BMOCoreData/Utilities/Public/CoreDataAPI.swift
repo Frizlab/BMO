@@ -85,6 +85,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 	 If you have specific needs you can set `autoStart` to false and queue the operation yourself.
 	 
 	 - Important: Do not set the `completionBlock` of the operation if you want the handler to be called (otherwise it’s fine). */
+	@discardableResult
 	public func remoteFetch<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
 		remoteID: Bridge.LocalDb.UniquingID,
