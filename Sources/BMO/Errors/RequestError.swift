@@ -78,10 +78,4 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 		self.genericLocalDbObjects = nil
 	}
 	
-	internal func changingRemoteOperation(to newOperation: Bridge.RemoteDb.RemoteOperation?) -> Self {
-		var ret = self
-		ret.remoteOperation = newOperation
-		return ret
-	}
-	
 }

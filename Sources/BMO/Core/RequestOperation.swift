@@ -223,7 +223,7 @@ private extension RequestOperation {
 		/* We do NOT check whether we’re cancelled.
 		 * If we are, the import operation will have been cancelled and we’ll get the error from there. */
 		switch finishedImportOperation.result {
-			case .failure(let error):          return error.changingRemoteOperation(to: finishedRemoteOperation)
+			case .failure(let error):          return error
 			case .success(nil):                finishOperation(.success(.successNoopFromRemote(finishedRemoteOperation)))
 			case .success(let importResults?): finishOperation(.success(.success(dbChanges: importResults, remoteOperation: finishedRemoteOperation)))
 		}

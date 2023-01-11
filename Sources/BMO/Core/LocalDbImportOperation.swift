@@ -126,14 +126,14 @@ private extension LocalDbImportOperation {
 				return .success(nil)
 			}
 			/* Next step. */
-			return startFrom(bridgeObjects: bridgeObjects)
+			return startFrom(bridgeObjects: bridgeObjects, remoteOperation: finishedRemoteOperation)
 		} catch {
 			helper.remoteFailed(error)
 			return .failure(RequestError(failureStep: .bridge_remoteOperationToObjects, checkedUnderlyingError: error, remoteOperation: finishedRemoteOperation))
 		}
 	}
 	
-	func startFrom(bridgeObjects: Bridge.BridgeObjects) -> Result<RequestResult, RequestError> {
+	func startFrom(bridgeObjects: Bridge.BridgeObjects, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> Result<RequestResult, RequestError> {
 		do {
 			try throwIfCancelled()
 			var uniquingIDsPerEntities = UniquingIDsPerEntities()
@@ -141,14 +141,14 @@ private extension LocalDbImportOperation {
 				from: bridgeObjects, uniquingIDsPerEntities: &uniquingIDsPerEntities, cancellationCheck: throwIfCancelled
 			)
 			/* Next step. */
-			return startFrom(genericLocalDbObjects: genericLocalDbObjects, rootMetadata: bridgeObjects.localMetadata, uniquingIDsPerEntities: uniquingIDsPerEntities)
+			return startFrom(genericLocalDbObjects: genericLocalDbObjects, rootMetadata: bridgeObjects.localMetadata, uniquingIDsPerEntities: uniquingIDsPerEntities, remoteOperation: remoteOperation)
 		} catch {
 			helper.remoteFailed(error)
-			return .failure(RequestError(failureStep: .bridge_remoteToLocalObjects, checkedUnderlyingError: error))
+			return .failure(RequestError(failureStep: .bridge_remoteToLocalObjects, checkedUnderlyingError: error, remoteOperation: remoteOperation))
 		}
 	}
 	
-	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], rootMetadata: Bridge.Metadata?, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) -> Result<RequestResult, RequestError> {
+	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], rootMetadata: Bridge.Metadata?, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> Result<RequestResult, RequestError> {
 		var step: RequestError.FailureStep = .none
 		do {
 			try throwIfCancelled()
@@ -161,15 +161,15 @@ private extension LocalDbImportOperation {
 			try throwIfCancelled()
 			step = .bridge_importerForResults
 			let importer = try importerFactory(genericLocalDbObjects, rootMetadata, uniquingIDsPerEntities, throwIfCancelled)
-			if startedOnContext {return                                   onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, uniquingIDsPerEntities: uniquingIDsPerEntities)}
-			else                {return localDb.context.performAndWaitRW{ onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, uniquingIDsPerEntities: uniquingIDsPerEntities) }}
+			if startedOnContext {return                                   onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, remoteOperation: remoteOperation)}
+			else                {return localDb.context.performAndWaitRW{ onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, remoteOperation: remoteOperation) }}
 		} catch {
 			helper.remoteFailed(error)
-			return .failure(RequestError(failureStep: step, checkedUnderlyingError: error))
+			return .failure(RequestError(failureStep: step, checkedUnderlyingError: error, remoteOperation: remoteOperation))
 		}
 	}
 	
-	func onContext_startFrom(genericLocalDbObjects: [GenericLocalDbObject], importer: Bridge.LocalDbImporter, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil) -> Result<RequestResult, RequestError> {
+	func onContext_startFrom(genericLocalDbObjects: [GenericLocalDbObject], importer: Bridge.LocalDbImporter, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> Result<RequestResult, RequestError> {
 		var step: RequestError.FailureStep = .none
 		do {
 			try throwIfCancelled()
@@ -189,7 +189,7 @@ private extension LocalDbImportOperation {
 			return .success(dbChanges)
 		} catch {
 			helper.onContext_remoteToLocalFailed(error)
-			return .failure(RequestError(failureStep: step, checkedUnderlyingError: error, genericLocalDbObjects: genericLocalDbObjects))
+			return .failure(RequestError(failureStep: step, checkedUnderlyingError: error, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects))
 		}
 	}
 	
