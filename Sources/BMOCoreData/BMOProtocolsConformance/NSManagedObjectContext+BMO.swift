@@ -22,21 +22,21 @@ import BMO
 
 extension NSManagedObjectContext : LocalDbContext {
 	
-	public func performRW(block: @escaping () -> Void) {
+	public func performRW(_ block: @escaping () -> Void) {
 		perform(block)
 	}
 	
-	public func performAndWaitRW(_ block: () throws -> Void) rethrows {
+	public func performAndWaitRW<T>(_ block: () throws -> T) rethrows -> T {
 		if #available(macOS 12, iOS 15, tvOS 16, watchOS 8, *) {
-			try performAndWait(block)
+			return try performAndWait(block)
 		} else {
-			try withoutActuallyEscaping(block, do: { escapableBlock in
-				var errorOnContext: Error? = nil
+			return try withoutActuallyEscaping(block, do: { escapableBlock in
+				var retOnContext: Result<T, Error>? = nil
 				performAndWait{
-					do    {try escapableBlock()}
-					catch {errorOnContext = error}
+					do    {retOnContext = .success(try escapableBlock())}
+					catch {retOnContext = .failure(error)}
 				}
-				if let error = errorOnContext {throw error}
+				return try retOnContext!.get()
 			})
 		}
 	}

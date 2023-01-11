@@ -21,6 +21,12 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 	
 	public enum FailureStep {
 		
+		/**
+		 When the error do not come from the normal workflow (e.g. operation is cancelled).
+		 
+		 When the RequestError has the `none` failure step, the underlying error should be an ``OperationLifecycleError``. */
+		case none
+		
 		case helper_prepareRemoteConversion
 		case bridge_getRemoteOperation
 		
@@ -50,84 +56,32 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 	 The local db objects that should have been imported, if they were retrieved. */
 	public var genericLocalDbObjects: GenericLocalDbObjects?
 	
-	internal static func prepareRemoteConversion(_ underlyingError: Error) -> Error {
-		guard !isProtectedError(underlyingError) else {return underlyingError}
-		return Self(failureStep: .helper_prepareRemoteConversion, underlyingError: underlyingError)
+	internal init(failureStep: FailureStep, underlyingError: Error, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects? = nil) {
+		self.failureStep = failureStep
+		self.underlyingError = underlyingError
+		self.remoteOperation = remoteOperation
+		self.genericLocalDbObjects = genericLocalDbObjects
 	}
 	
-	internal static func getRemoteOperation(_ underlyingError: Error) -> Error {
-		guard !isProtectedError(underlyingError) else {return underlyingError}
-		return Self(failureStep: .bridge_getRemoteOperation, underlyingError: underlyingError)
-	}
-	
-	internal static func willGoRemote(_ remoteOperation: Bridge.RemoteDb.RemoteOperation) -> (_ error: Error) -> Error {
-		return { error in
-			guard !isProtectedError(error) else {return error}
-			return Self(failureStep: .helper_willGoRemote, underlyingError: error, remoteOperation: remoteOperation)
+	internal init(failureStep: FailureStep, checkedUnderlyingError underlyingError: Error, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects? = nil) {
+		if let lifecycleError = underlyingError as? OperationLifecycleError {
+			self.init(failureStep: .none, lifecycleError: lifecycleError)
+		} else {
+			self.init(failureStep: failureStep, underlyingError: underlyingError, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects)
 		}
 	}
 	
-	internal static func remoteOperationToObjects(_ remoteOperation: Bridge.RemoteDb.RemoteOperation) -> (_ error: Error) -> Error {
-		return { error in
-			guard !isProtectedError(error) else {return error}
-			return Self(failureStep: .bridge_remoteOperationToObjects, underlyingError: error, remoteOperation: remoteOperation)
-		}
+	internal init(failureStep: FailureStep, lifecycleError: OperationLifecycleError) {
+		self.failureStep = failureStep
+		self.underlyingError = lifecycleError
+		self.remoteOperation = nil
+		self.genericLocalDbObjects = nil
 	}
 	
-	internal static func remoteToLocalObjects(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> (_ error: Error) -> Error {
-		return { error in
-			guard !isProtectedError(error) else {return error}
-			return Self(failureStep: .bridge_remoteToLocalObjects, underlyingError: error, remoteOperation: remoteOperation)
-		}
-	}
-	
-	internal static func importerForResults(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> (_ error: Error) -> Error {
-		return { error in
-			guard !isProtectedError(error) else {return error}
-			return Self(failureStep: .bridge_importerForResults, underlyingError: error, remoteOperation: remoteOperation)
-		}
-	}
-	
-	internal static func importPreparation(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> (_ error: Error) -> Error {
-		return { error in
-			guard !isProtectedError(error) else {return error}
-			return Self(failureStep: .importer_importPreparation, underlyingError: error, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects)
-		}
-	}
-	
-	internal static func willImport(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> (_ error: Error) -> Error {
-		return { error in
-			guard !isProtectedError(error) else {return error}
-			return Self(failureStep: .helper_willImport, underlyingError: error, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects)
-		}
-	}
-	
-	internal static func `import`(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> (_ error: Error) -> Error {
-		return { error in
-			guard !isProtectedError(error) else {return error}
-			return Self(failureStep: .importer_import, underlyingError: error, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects)
-		}
-	}
-	
-	internal static func didImport(_ remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects) -> (_ error: Error) -> Error {
-		return { error in
-			guard !isProtectedError(error) else {return error}
-			return Self(failureStep: .helper_didImport, underlyingError: error, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects)
-		}
-	}
-	
-	internal static func replaceRemoteOperation(_ remoteOperation: Bridge.RemoteDb.RemoteOperation) -> (_ error: Error) -> Error {
-		return { error in
-			guard var requestError = error as? Self else {
-				return error
-			}
-			requestError.remoteOperation = remoteOperation
-			return requestError
-		}
-	}
-	
-	private static func isProtectedError(_ error: Error) -> Bool {
-		return error is OperationLifecycleError
+	internal func changingRemoteOperation(to newOperation: Bridge.RemoteDb.RemoteOperation?) -> Self {
+		var ret = self
+		ret.remoteOperation = newOperation
+		return ret
 	}
 	
 }

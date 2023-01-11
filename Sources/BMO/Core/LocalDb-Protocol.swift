@@ -20,11 +20,11 @@ import Foundation
 public protocol LocalDbContext {
 	
 	/* We do not need that in BMO. */
-//	func performRO( block: @escaping () -> Void)
-//	func performAndWaitRO(_ block: @escaping () throws -> Void) rethrows
+//	func performRO(_ block: @escaping () -> Void)
+//	func performAndWaitRO<T>(_ block: () throws -> T) rethrows -> T
 	
-	func performRW( block: @escaping () -> Void)
-	func performAndWaitRW(_ block: () throws -> Void) rethrows
+	func performRW(_ block: @escaping () -> Void)
+	func performAndWaitRW<T>(_ block: () throws -> T) rethrows -> T
 	
 }
 

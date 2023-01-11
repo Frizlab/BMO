@@ -93,7 +93,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 		requestUserInfo: Bridge.RequestUserInfo = DefaultSettings.requestUserInfo,
 		settings: Settings = .init(),
 		autoStart: Bool = true,
-		handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, Error>) -> Void = { _ in }
+		handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, RequestError<Bridge>>) -> Void = { _ in }
 	) -> RequestOperation<Bridge> {
 		let fRequest = Object.fetchRequest()
 		fRequest.predicate = NSPredicate(format: "%K == %@", settings.remoteIDPropertyName, String(describing: remoteID))

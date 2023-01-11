@@ -36,7 +36,7 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public var startedOnContext: Bool
 	
-	public var result: Result<RequestResult, Error> {
+	public var result: Result<RequestResult, RequestError> {
 		lock.withLock{ _result }
 	}
 	
@@ -58,7 +58,7 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	}
 	
 	public override func start() {
-		lock.withLock{ _result = .failure(OperationLifecycleError.inProgress) }
+		lock.withLock{ _result = .failure(RequestError(failureStep: .none, lifecycleError: .inProgress)) }
 		continueOperation(switchToContext: !startedOnContext, onContext_beginOperation)
 	}
 	
@@ -89,7 +89,7 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	/* We use a recursive lock because isExecuting is called from within the didChangeValue call…
 	 * Another solution I think would be to use another lock and have separate variables for isExecuting and isFinished, modified within the separate lock. */
 	private let lock = NSRecursiveLock()
-	private var _result: Result<RequestResult, Error> = .failure(OperationLifecycleError.notStarted) {
+	private var _result: Result<RequestResult, RequestError> = .failure(RequestError(failureStep: .none, lifecycleError: .notStarted)) {
 		willSet {
 			let oldFinished = isFinished(with: _result)
 			let newFinished = isFinished(with: newValue)
@@ -113,10 +113,11 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	private var remoteOperation: Bridge.RemoteDb.RemoteOperation?
 	private var importOperation: LocalDbImportOperation<Bridge>?
 	
-	private func continueOperation(switchToContext: Bool = false, _ block: @escaping () throws -> Void) {
+	private func continueOperation(switchToContext: Bool = false, _ block: @escaping () -> RequestError?) {
 		if !switchToContext {
-			do    {try block()}
-			catch {finishOperation(.failure(error))}
+			if let err = block() {
+				finishOperation(.failure(err))
+			}
 		} else {
 			request.localDb.context.performRW{
 				self.continueOperation(switchToContext: false, block)
@@ -124,20 +125,20 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 		}
 	}
 	
-	private func finishOperation(_ r: Result<RequestResult, Error>) {
+	private func finishOperation(_ r: Result<RequestResult, RequestError>) {
 		lock.withLock{
-			assert(_result.failure as? OperationLifecycleError == .inProgress)
-			assert(!(r.failure is OperationLifecycleError))
+			assert(_result.failure?.underlyingError as? OperationLifecycleError == .inProgress)
+			assert(!(r.failure?.underlyingError is OperationLifecycleError))
 			_result = r
 		}
 	}
 	
-	private func isExecuting(with result: Result<RequestResult, Error>) -> Bool {
-		return (result.failure as? OperationLifecycleError).flatMap{ $0 == .inProgress } ?? false
+	private func isExecuting(with result: Result<RequestResult, RequestError>) -> Bool {
+		return (result.failure?.underlyingError as? OperationLifecycleError).flatMap{ $0 == .inProgress } ?? false
 	}
 	
-	private func isFinished(with result: Result<RequestResult, Error>) -> Bool {
-		return (result.failure as? OperationLifecycleError).flatMap{ $0 != .notStarted && $0 != .inProgress } ?? true
+	private func isFinished(with result: Result<RequestResult, RequestError>) -> Bool {
+		return (result.failure?.underlyingError as? OperationLifecycleError).flatMap{ $0 != .notStarted && $0 != .inProgress } ?? true
 	}
 	
 }
@@ -150,66 +151,83 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 
 private extension RequestOperation {
 	
-	func onContext_beginOperation() throws {
-		/* Step 1: Check if retrieving the remote operation is needed. */
-		try throwIfCancelled() !> onContext_localToRemote_passErrToHelper(_:)
-		guard try helper.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled)
-					!> onContext_localToRemote_passErrToHelper(_:)
-					!> RequestError.prepareRemoteConversion(_:)
-		else {
-			return finishOperation(.success(.successNoop))
+	func onContext_beginOperation() -> RequestError? {
+		var step: RequestError.FailureStep = .none
+		do {
+			/* Step 1: Check if retrieving the remote operation is needed. */
+			try throwIfCancelled()
+			step = .helper_prepareRemoteConversion
+			guard try helper.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled) else {
+				finishOperation(.success(.successNoop))
+				return nil
+			}
+			
+			/* Step 2: Retrieve the remote operation. */
+			try throwIfCancelled()
+			step = .bridge_getRemoteOperation
+			guard let (operation, userInfo) = try bridge.onContext_remoteOperation(for: request) else {
+				finishOperation(.success(.successNoop))
+				return nil
+			}
+			remoteOperation = operation
+			let completionOperation = BlockOperation{ self.continueOperation{
+				self.remoteOperation = nil
+				return self.continueOperation(finishedRemoteOperation: operation, userInfo: userInfo)
+			} }
+			completionOperation.addDependency(operation)
+			
+			/* Step 3: Inform helper we’re launching the remote operation, and launch it. */
+			try throwIfCancelled()
+			step = .helper_willGoRemote
+			try helper.onContext_localToRemote_willGoRemote(cancellationCheck: throwIfCancelled)
+			remoteOperationQueue.addOperation(operation)
+			computeOperationQueue.addOperation(completionOperation)
+			
+			/* Finally we report everything went well to the caller. */
+			return nil
+		} catch {
+			/* Let’s inform theh helper(s) there was an issue. */
+			helper.onContext_localToRemoteFailed(error)
+			/* Then wrap the error in a RequestError and return it. */
+			return RequestError(failureStep: step, checkedUnderlyingError: error)
 		}
-		
-		/* Step 2: Retrieve the remote operation. */
-		try throwIfCancelled() !> onContext_localToRemote_passErrToHelper(_:)
-		guard let (operation, userInfo) = try bridge.onContext_remoteOperation(for: request)
-					!> onContext_localToRemote_passErrToHelper(_:)
-					!> RequestError.getRemoteOperation(_:)
-		else {
-			return finishOperation(.success(.successNoop))
-		}
-		remoteOperation = operation
-		let completionOperation = BlockOperation{ self.continueOperation{
-			self.remoteOperation = nil
-			try self.continueOperation(finishedRemoteOperation: operation, userInfo: userInfo)
-		} }
-		completionOperation.addDependency(operation)
-		
-		/* Step 3: Inform helper we’re launching the remote operation, and launch it. */
-		try throwIfCancelled() !> onContext_localToRemote_passErrToHelper(_:)
-		try helper.onContext_localToRemote_willGoRemote(cancellationCheck: throwIfCancelled)
-			!> onContext_localToRemote_passErrToHelper(_:)
-			!> RequestError.willGoRemote(operation)
-		remoteOperationQueue.addOperation(operation)
-		computeOperationQueue.addOperation(completionOperation)
 	}
 	
-	func continueOperation(finishedRemoteOperation: Bridge.RemoteDb.RemoteOperation, userInfo: Bridge.UserInfo) throws {
+	func continueOperation(finishedRemoteOperation: Bridge.RemoteDb.RemoteOperation, userInfo: Bridge.UserInfo) -> RequestError? {
 		/* Step 4: Create the import operation and launch it. */
-		try throwIfCancelled() !> remoteResults_passErrToHelper(_:)
-		let operation = LocalDbImportOperation(
-			request: .finishedRemoteOperation(finishedRemoteOperation, userInfo: userInfo, bridge: bridge),
-			localDb: request.localDb, helper: helper, importerFactory: bridge.importerForRemoteResults(localRepresentations:rootMetadata:uniquingIDsPerEntities:cancellationCheck:)
-		)
-		importOperation = operation
-		let completionOperation = BlockOperation{ self.continueOperation{
-			self.importOperation = nil
-			try self.continueOperation(finishedImportOperation: operation, finishedRemoteOperation: finishedRemoteOperation)
-		} }
-		completionOperation.addDependency(operation)
-		
-		computeOperationQueue.addOperations([operation, completionOperation], waitUntilFinished: false)
+		let step: RequestError.FailureStep = .none
+		do {
+			try throwIfCancelled()
+			let operation = LocalDbImportOperation(
+				request: .finishedRemoteOperation(finishedRemoteOperation, userInfo: userInfo, bridge: bridge),
+				localDb: request.localDb, helper: helper, importerFactory: bridge.importerForRemoteResults(localRepresentations:rootMetadata:uniquingIDsPerEntities:cancellationCheck:)
+			)
+			importOperation = operation
+			let completionOperation = BlockOperation{ self.continueOperation{
+				self.importOperation = nil
+				return self.continueOperation(finishedImportOperation: operation, finishedRemoteOperation: finishedRemoteOperation)
+			} }
+			completionOperation.addDependency(operation)
+			
+			computeOperationQueue.addOperations([operation, completionOperation], waitUntilFinished: false)
+			return nil
+		} catch {
+			helper.remoteFailed(error)
+			let step = (error is OperationLifecycleError ? .none : step)
+			return RequestError(failureStep: step, checkedUnderlyingError: error)
+		}
 	}
 	
-	func continueOperation(finishedImportOperation: LocalDbImportOperation<Bridge>, finishedRemoteOperation: Bridge.RemoteDb.RemoteOperation) throws {
+	func continueOperation(finishedImportOperation: LocalDbImportOperation<Bridge>, finishedRemoteOperation: Bridge.RemoteDb.RemoteOperation) -> RequestError? {
 		/* Step 5: Retrieve import operation results and finish the operation. */
 		/* We do NOT check whether we’re cancelled.
 		 * If we are, the import operation will have been cancelled and we’ll get the error from there. */
-		if let importResults = try finishedImportOperation.result.get() !> RequestError.replaceRemoteOperation(finishedRemoteOperation) {
-			finishOperation(.success(.success(dbChanges: importResults, remoteOperation: finishedRemoteOperation)))
-		} else {
-			finishOperation(.success(.successNoopFromRemote(finishedRemoteOperation)))
+		switch finishedImportOperation.result {
+			case .failure(let error):          return error.changingRemoteOperation(to: finishedRemoteOperation)
+			case .success(nil):                finishOperation(.success(.successNoopFromRemote(finishedRemoteOperation)))
+			case .success(let importResults?): finishOperation(.success(.success(dbChanges: importResults, remoteOperation: finishedRemoteOperation)))
 		}
+		return nil
 	}
 	
 }
@@ -221,16 +239,6 @@ private extension RequestOperation {
 		guard !isCancelled else {
 			throw OperationLifecycleError.cancelled
 		}
-	}
-	
-	func onContext_localToRemote_passErrToHelper(_ error: Error) -> Error {
-		helper.onContext_localToRemoteFailed(error)
-		return error
-	}
-	
-	func remoteResults_passErrToHelper(_ error: Error) -> Error {
-		helper.remoteFailed(error)
-		return error
 	}
 	
 	func doCancellation() {
