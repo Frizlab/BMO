@@ -56,6 +56,10 @@ public struct RequestError<Bridge : BridgeProtocol> : Error {
 	 The local db objects that should have been imported, if they were retrieved. */
 	public var genericLocalDbObjects: GenericLocalDbObjects?
 	
+	public var isCancelledError: Bool {
+		return (underlyingError as? OperationLifecycleError) == .cancelled
+	}
+	
 	internal init(failureStep: FailureStep, underlyingError: Error, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil, genericLocalDbObjects: GenericLocalDbObjects? = nil) {
 		self.failureStep = failureStep
 		self.underlyingError = underlyingError
