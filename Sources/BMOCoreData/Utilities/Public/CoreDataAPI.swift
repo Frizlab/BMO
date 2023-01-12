@@ -20,23 +20,7 @@ import BMO
 
 
 
-public protocol CoreDataAPIDefaultsSettings {
-	
-	associatedtype Bridge : BridgeProtocol where Bridge.LocalDb.DbObject == NSManagedObject,
-																Bridge.LocalDb.DbContext == NSManagedObjectContext
-	
-	static var remoteOperationQueue: OperationQueue {get}
-	static var computeOperationQueue: OperationQueue {get}
-	
-	static var remoteIDPropertyName: String {get}
-	static var requestUserInfo: Bridge.RequestUserInfo {get}
-	
-	static var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest {get}
-	
-}
-
-
-public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPIDefaultsSettings> where DefaultSettings.Bridge == Bridge {
+public struct CoreDataAPI<Bridge : BridgeProtocol> {
 	
 	public struct Settings {
 		
@@ -45,14 +29,6 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 		
 		public var remoteIDPropertyName: String
 		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
-		
-		public init() {
-			self.remoteOperationQueue  = DefaultSettings.remoteOperationQueue
-			self.computeOperationQueue = DefaultSettings.computeOperationQueue
-			
-			self.remoteIDPropertyName = DefaultSettings.remoteIDPropertyName
-			self.fetchRequestToBridgeRequest = DefaultSettings.fetchRequestToBridgeRequest
-		}
 		
 		public init(
 			remoteOperationQueue: OperationQueue,
@@ -72,9 +48,15 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 	public var bridge: Bridge
 	public var localDb: Bridge.LocalDb
 	
-	public init(bridge: Bridge, localDb: Bridge.LocalDb) {
+	public var defaultSettings: Settings
+	public var defaultRequestUserInfo: Bridge.RequestUserInfo
+	
+	public init(bridge: Bridge, localDb: Bridge.LocalDb, defaultSettings: Settings, defaultRequestUserInfo: Bridge.RequestUserInfo) {
 		self.bridge = bridge
 		self.localDb = localDb
+		
+		self.defaultSettings = defaultSettings
+		self.defaultRequestUserInfo = defaultRequestUserInfo
 	}
 	
 	/**
@@ -90,11 +72,14 @@ public struct CoreDataAPI<Bridge : BridgeProtocol, DefaultSettings : CoreDataAPI
 		_ objectType: Object.Type = Object.self,
 		remoteID: Bridge.LocalDb.UniquingID,
 		fetchType: RemoteFetchType = .always,
-		requestUserInfo: Bridge.RequestUserInfo = DefaultSettings.requestUserInfo,
-		settings: Settings = .init(),
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil,
 		autoStart: Bool = true,
 		handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, RequestError<Bridge>>) -> Void = { _ in }
 	) -> RequestOperation<Bridge> {
+		let settings = settings ?? defaultSettings
+		let requestUserInfo = requestUserInfo ?? defaultRequestUserInfo
+		
 		let fRequest = Object.fetchRequest()
 		fRequest.predicate = NSPredicate(format: "%K == %@", settings.remoteIDPropertyName, String(describing: remoteID))
 		fRequest.fetchLimit = 1
