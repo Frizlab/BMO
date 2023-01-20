@@ -157,7 +157,7 @@ private extension RequestOperation {
 			/* Step 1: Check if retrieving the remote operation is needed. */
 			try throwIfCancelled()
 			step = .helper_prepareRemoteConversion
-			guard try helper.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled) else {
+			guard try helper.onContext_localToRemote_prepareRemoteConversion(context: request.localDb.context, cancellationCheck: throwIfCancelled) else {
 				finishOperation(.success(.successNoop))
 				return nil
 			}
@@ -179,7 +179,7 @@ private extension RequestOperation {
 			/* Step 3: Inform helper we’re launching the remote operation, and launch it. */
 			try throwIfCancelled()
 			step = .helper_willGoRemote
-			try helper.onContext_localToRemote_willGoRemote(cancellationCheck: throwIfCancelled)
+			try helper.onContext_localToRemote_willGoRemote(context: request.localDb.context, cancellationCheck: throwIfCancelled)
 			remoteOperationQueue.addOperation(operation)
 			computeOperationQueue.addOperation(completionOperation)
 			
@@ -187,7 +187,7 @@ private extension RequestOperation {
 			return nil
 		} catch {
 			/* Let’s inform theh helper(s) there was an issue. */
-			helper.onContext_localToRemoteFailed(error)
+			helper.onContext_localToRemoteFailed(error, context: request.localDb.context)
 			/* Then wrap the error in a RequestError and return it. */
 			return RequestError(failureStep: step, checkedUnderlyingError: error)
 		}

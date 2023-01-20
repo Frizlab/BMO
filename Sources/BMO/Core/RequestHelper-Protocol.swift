@@ -38,13 +38,13 @@ public protocol RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata> {
 	 this helper method will check whether the fetch request has local results already.
 	 
 	 If it does, there are no needs for a remote operation and the method will return `false`. */
-	func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool
-	func onContext_localToRemote_willGoRemote(           cancellationCheck throwIfCancelled: () throws -> Void) throws
+	func onContext_localToRemote_prepareRemoteConversion(context: LocalDbContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool
+	func onContext_localToRemote_willGoRemote(           context: LocalDbContext, cancellationCheck throwIfCancelled: () throws -> Void) throws
 	/**
 	 Called if any part of the local to remote conversion fails.
 	 
 	 - Important: Can be called even _before_ ``onContext_localToRemote_prepareRemoteConversion(cancellationCheck:)`` is called (in which case it will obviously not be called). */
-	func onContext_localToRemoteFailed(_ error: Error)
+	func onContext_localToRemoteFailed(_ error: Error, context: LocalDbContext)
 	
 	/* ************************************************************
 	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
@@ -76,12 +76,12 @@ public protocol RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata> {
 	 
 	 If this method returns `false`, the import will not happen but the ``LocalDbImportOperation`` will not fail.
 	 If this method throws, the import will not happen and the ``LocalDbImportOperation`` will fail. */
-	func onContext_remoteToLocal_willImportRemoteResults(                                                         cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool
-	func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws
+	func onContext_remoteToLocal_willImportRemoteResults(                                                         context: LocalDbContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool
+	func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<LocalDbObject, Metadata>, context: LocalDbContext, cancellationCheck throwIfCancelled: () throws -> Void) throws
 	/**
 	 Called if any part of the import operation fails.
 	 
 	 - Important: Can be called even _before_ ``onContext_remoteToLocal_willImportRemoteResults(cancellationCheck:)`` is called (in which case it will obviously not be called). */
-	func onContext_remoteToLocalFailed(_ error: Error)
+	func onContext_remoteToLocalFailed(_ error: Error, context: LocalDbContext)
 	
 }

@@ -175,7 +175,7 @@ private extension LocalDbImportOperation {
 			try throwIfCancelled()
 			
 			step = .helper_willImport
-			guard try helper.onContext_remoteToLocal_willImportRemoteResults(cancellationCheck: throwIfCancelled) else {
+			guard try helper.onContext_remoteToLocal_willImportRemoteResults(context: localDb.context, cancellationCheck: throwIfCancelled) else {
 				/* If the helper tells us not to import, we stop. */
 				return .success(nil)
 			}
@@ -184,11 +184,11 @@ private extension LocalDbImportOperation {
 			let dbChanges = try importer.onContext_import(in: localDb, cancellationCheck: throwIfCancelled)
 			
 			step = .helper_didImport
-			try helper.onContext_remoteToLocal_didImportRemoteResults(dbChanges, cancellationCheck: throwIfCancelled)
+			try helper.onContext_remoteToLocal_didImportRemoteResults(dbChanges, context: localDb.context, cancellationCheck: throwIfCancelled)
 			
 			return .success(dbChanges)
 		} catch {
-			helper.onContext_remoteToLocalFailed(error)
+			helper.onContext_remoteToLocalFailed(error, context: localDb.context)
 			return .failure(RequestError(failureStep: step, checkedUnderlyingError: error, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects))
 		}
 	}

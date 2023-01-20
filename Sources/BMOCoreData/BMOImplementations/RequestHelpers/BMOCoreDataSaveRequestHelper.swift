@@ -23,7 +23,7 @@ import BMO
 /* Have to be a class because we can change the `context` var.
  * Probably TODO: Give the context for each methods in the request helper protocol.
  * A very good reason: we, as a request helper, can say “I want a new context,” but nothing tells the new context will actually be used. */
-public final class BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
+public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	
 	public typealias LocalDbObject = NSManagedObject
 	public typealias LocalDbContext = NSManagedObjectContext
@@ -62,14 +62,9 @@ public final class BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtoco
 		
 	}
 	
-	public let initialContext: NSManagedObjectContext
 	public let saveWorkflow: SaveWorkflow
 	
-	public private(set) var context: NSManagedObjectContext
-	
-	public init(context: NSManagedObjectContext, saveWorkflow: SaveWorkflow) {
-		self.context = context
-		self.initialContext = context
+	public init(saveWorkflow: SaveWorkflow) {
 		self.saveWorkflow = saveWorkflow
 	}
 	
@@ -77,19 +72,19 @@ public final class BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtoco
 	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
 	   ***************************************************************** */
 	
-	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
+	public func onContext_localToRemote_prepareRemoteConversion(context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		context.processPendingChanges()
 		return true
 	}
 	
-	public func onContext_localToRemote_willGoRemote(cancellationCheck throwIfCancelled: () throws -> Void) throws {
+	public func onContext_localToRemote_willGoRemote(context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws {
 		switch saveWorkflow {
 			case .saveBeforeGoingRemote:        try context.save()
 			case .doNothingChangeImportContext: (/*nop*/)
 		}
 	}
 	
-	public func onContext_localToRemoteFailed(_ error: Error) {
+	public func onContext_localToRemoteFailed(_ error: Error, context: NSManagedObjectContext) {
 		/* In case of the saveBeforeGoingRemote we rollback because we want the context to stay clean.
 		 * For doNothingChangeImportContext it is assumed the context is throwable so we do nothing. */
 		switch saveWorkflow {
@@ -114,20 +109,20 @@ public final class BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtoco
 	public func newContextForImportingRemoteResults() -> NSManagedObjectContext?? {
 		switch saveWorkflow {
 			case .saveBeforeGoingRemote:                        return nil
-			case .doNothingChangeImportContext(let newContext): context = newContext; return newContext
+			case .doNothingChangeImportContext(let newContext): return newContext
 		}
 	}
 	
-	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
+	public func onContext_remoteToLocal_willImportRemoteResults(context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		assert(!context.hasChanges)
 		return true
 	}
 	
-	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws {
+	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>, context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws {
 		try context.save()
 	}
 	
-	public func onContext_remoteToLocalFailed(_ error: Error) {
+	public func onContext_remoteToLocalFailed(_ error: Error, context: NSManagedObjectContext) {
 		context.rollback()
 	}
 	

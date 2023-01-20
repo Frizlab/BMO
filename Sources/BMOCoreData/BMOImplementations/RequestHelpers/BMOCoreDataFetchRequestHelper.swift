@@ -25,13 +25,11 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 	public typealias LocalDbObject = NSManagedObject
 	public typealias LocalDbContext = NSManagedObjectContext
 	
-	public var request: NSFetchRequest<NSFetchRequestResult>
-	public var context: NSManagedObjectContext
-	public var fetchType: RemoteFetchType
+	public let request: NSFetchRequest<NSFetchRequestResult>
+	public let fetchType: RemoteFetchType
 	
-	public init(request: NSFetchRequest<NSFetchRequestResult>, context: NSManagedObjectContext, fetchType: RemoteFetchType) {
+	public init(request: NSFetchRequest<NSFetchRequestResult>, fetchType: RemoteFetchType) {
 		self.request = request
-		self.context = context
 		self.fetchType = fetchType
 	}
 	
@@ -39,7 +37,7 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
 	   ***************************************************************** */
 	
-	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
+	public func onContext_localToRemote_prepareRemoteConversion(context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		switch fetchType {
 			case .always: return true
 			case .never:  return false
@@ -57,10 +55,10 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 		}
 	}
 	
-	public func onContext_localToRemote_willGoRemote(cancellationCheck throwIfCancelled: () throws -> Void) throws {
+	public func onContext_localToRemote_willGoRemote(context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws {
 	}
 	
-	public func onContext_localToRemoteFailed(_ error: Error) {
+	public func onContext_localToRemoteFailed(_ error: Error, context: NSManagedObjectContext) {
 	}
 	
 	/* ************************************************************
@@ -78,16 +76,16 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 		return nil
 	}
 	
-	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
+	public func onContext_remoteToLocal_willImportRemoteResults(context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		assert(!context.hasChanges)
 		return true
 	}
 	
-	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws {
+	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>, context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws {
 		try context.save()
 	}
 	
-	public func onContext_remoteToLocalFailed(_ error: Error) {
+	public func onContext_remoteToLocalFailed(_ error: Error, context: NSManagedObjectContext) {
 		context.rollback()
 	}
 	
