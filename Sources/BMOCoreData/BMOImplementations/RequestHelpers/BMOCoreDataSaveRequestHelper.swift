@@ -22,33 +22,51 @@ import BMO
 
 public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	
+	public typealias LocalDbObject = NSManagedObject
+	public typealias LocalDbContext = NSManagedObjectContext
+	
+	/**
+	 The save workflow for the save operation.
+	 
+	 There are many other save workflow that could exist, but we believe these two should be enough for more than 99% of the cases.
+	 We also want to avoid cases that would be useful for less than 1% of the cases.
+	 
+	 If you have a _very_ specific need you can always create your own save request helper. */
 	public enum SaveWorkflow {
 		
-		case saveBeforeBackReturns
-		/* TODO: Implement this.
-		 * - Because we want to always have a non-modified Core Data view context, we have to allow using this workflow from a child context.
-		 * - When using a sub-context, the back results are not imported because the importer we use today do not support sub-contexts (no inter-context locking).
-		 *
-		 * Note:
-		 * To implement this (properly), we might have to move the importer creation from the bridge to the helper………
-		 *  which is annoying because of all the types the importer brings with him.
-		 * Maybe another helper (ImporterFactory) would be required instead? idk
-		 *
-		 * Another (much easier) solution would be to give the original request to the bridge when asking to create the importer.
-		 * After all it’s already the bridge that decides what helper to use for a given request, it would make sense the proper importer should be chosen also by the bridge. */
-//		case saveAfterBackReturns
-		case rollbackBeforeBackReturns
-		case doNothing
+		/**
+		 Nothing is done on the original context (the context should be discarded once the save request operation is started)
+		  and the remote operation results are imported on another context (presumably the view context).
+		 
+		 This workflow is meant for save operation that do not need to be persisted on disk (“sync saves” where the user has to wait for the save to finish).
+		 
+		 For instance, when saving some profile info, if the save fail the user will be presented with a popup to inform him of the error.
+		 There will be no need to save the modification on disk as the local view model of the view will still have the modifications in memory. */
+		case doNothingChangeImportContext(NSManagedObjectContext)
+		/**
+		 The context is saved after computing the remote operation, but before launching it.
+		 The remote operation results are imported on the same context (presumably the view context).
+		 
+		 This workflow is meant for save operation that should be persisted on disk (“async saves” where the user fires and forgets the save).
+		 
+		 For instance when sending a message we do not want to lose the message if the sending fails.
+		 The message has to be persisted to disk, presumably with a bool indicating the message is being sent.
+		 When the sending is over, whether it failed or succeeded the bool would be changed to reflect the new state.
+		 
+		 Changing the bool state is still up to the caller.
+		 This can be done in another helper or directly in the completion of the request operation, or partly in the bridge, etc. */
+		case saveBeforeGoingRemote
 		
 	}
 	
-	public typealias LocalDbObject = NSManagedObject
+	public let initialContext: NSManagedObjectContext
+	public let saveWorkflow: SaveWorkflow
 	
-	public var context: NSManagedObjectContext
-	public var saveWorkflow: SaveWorkflow
+	public private(set) var context: NSManagedObjectContext
 	
 	public init(context: NSManagedObjectContext, saveWorkflow: SaveWorkflow) {
 		self.context = context
+		self.initialContext = context
 		self.saveWorkflow = saveWorkflow
 	}
 	
@@ -63,20 +81,17 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	
 	public func onContext_localToRemote_willGoRemote(cancellationCheck throwIfCancelled: () throws -> Void) throws {
 		switch saveWorkflow {
-			case .doNothing:                 (/*nop*/)
-			case .saveBeforeBackReturns:     try context.save()
-			case .rollbackBeforeBackReturns: context.rollback()
+			case .saveBeforeGoingRemote:        try context.save()
+			case .doNothingChangeImportContext: (/*nop*/)
 		}
 	}
 	
 	public func onContext_localToRemoteFailed(_ error: Error) {
+		/* In case of the saveBeforeGoingRemote we rollback because we want the context to stay clean.
+		 * For doNothingChangeImportContext it is assumed the context is throwable so we do nothing. */
 		switch saveWorkflow {
-			case .doNothing:
-				(/*nop*/)
-				
-			case .saveBeforeBackReturns, .rollbackBeforeBackReturns:
-				/* We have to rollback even in the case of “rollbackBeforeBackReturns” save workflow in case the error happened before the “will go remote” step is reached. */
-				context.rollback()
+			case .saveBeforeGoingRemote:        context.rollback()
+			case .doNothingChangeImportContext: (/*nop*/)
 		}
 	}
 	
@@ -93,18 +108,19 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
 	   ******************************************************************* */
 	
-	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
-		/* We do not support sub-context with our current importers. */
-		guard context.parent == nil else {
-			context.saveToDiskOrRollback()
-			return false
+	public func newContextForImportingRemoteResults() -> NSManagedObjectContext?? {
+		switch saveWorkflow {
+			case .saveBeforeGoingRemote:                        return nil
+			case .doNothingChangeImportContext(let newContext): return newContext
 		}
-		assert(!context.hasChanges || saveWorkflow == .doNothing)
+	}
+	
+	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
+		assert(!context.hasChanges)
 		return true
 	}
 	
 	public func onContext_remoteToLocal_didImportRemoteResults(_ importChanges: LocalDbChanges<NSManagedObject, Metadata>, cancellationCheck throwIfCancelled: () throws -> Void) throws {
-		assert(context.parent == nil)
 		try context.save()
 	}
 	

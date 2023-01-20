@@ -23,6 +23,7 @@ import BMO
 public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 	
 	public typealias LocalDbObject = NSManagedObject
+	public typealias LocalDbContext = NSManagedObjectContext
 	
 	public var request: NSFetchRequest<NSFetchRequestResult>
 	public var context: NSManagedObjectContext
@@ -72,6 +73,10 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 	/* *******************************************************************
 	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
 	   ******************************************************************* */
+	
+	public func newContextForImportingRemoteResults() -> NSManagedObjectContext?? {
+		return nil
+	}
 	
 	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		assert(!context.hasChanges)

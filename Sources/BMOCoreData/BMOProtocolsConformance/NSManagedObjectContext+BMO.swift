@@ -20,7 +20,7 @@ import BMO
 
 
 
-extension NSManagedObjectContext : LocalDbContext {
+extension NSManagedObjectContext : LocalDbContextProtocol {
 	
 	public func performRW(_ block: @escaping () -> Void) {
 		perform(block)
