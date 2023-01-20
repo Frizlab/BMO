@@ -38,6 +38,8 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public var request: Request
 	public var localDb: Bridge.LocalDb
+	public var localDbContextOverride: Bridge.LocalDb.DbContext?
+	public var localDbContext: Bridge.LocalDb.DbContext {localDbContextOverride ?? localDb.context}
 	/**
 	 A collection of request helpers.
 	 
@@ -72,9 +74,10 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	 
 	 - Important: The `startedOnImportContext` does mean started on the **import** context, which might be different than the local db context.
 	 Indeed, the import context can be changed by the request helper. */
-	init(request: Request, localDb: Bridge.LocalDb, helper: RequestHelperCollection, importerFactory: @escaping ImporterFactory, startedOnImportContext: Bool = false) {
+	init(request: Request, localDb: Bridge.LocalDb, localDbContextOverride: Bridge.LocalDb.DbContext? = nil, helper: RequestHelperCollection, importerFactory: @escaping ImporterFactory, startedOnImportContext: Bool = false) {
 		self.request = request
 		self.localDb = localDb
+		self.localDbContextOverride = localDbContextOverride
 		self.helper = helper
 		self.importerFactory = importerFactory
 		
@@ -156,7 +159,7 @@ private extension LocalDbImportOperation {
 	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], rootMetadata: Bridge.Metadata?, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> Result<RequestResult, RequestError> {
 		var step: RequestError.FailureStep = .none
 		do {
-			guard let newContext = helper.newContextForImportingRemoteResults() ?? localDb.context else {
+			guard let newContext = helper.newContextForImportingRemoteResults() ?? localDbContext else {
 				/* If the helper tells us not to import, we stop. */
 				return .success(nil)
 			}
@@ -185,20 +188,20 @@ private extension LocalDbImportOperation {
 			try throwIfCancelled()
 			
 			step = .helper_willImport
-			guard try helper.onContext_remoteToLocal_willImportRemoteResults(context: localDb.context, cancellationCheck: throwIfCancelled) else {
+			guard try helper.onContext_remoteToLocal_willImportRemoteResults(context: context, cancellationCheck: throwIfCancelled) else {
 				/* If the helper tells us not to import, we stop. */
 				return .success(nil)
 			}
 			
 			step = .importer_import
-			let dbChanges = try importer.onContext_import(in: localDb, cancellationCheck: throwIfCancelled)
+			let dbChanges = try importer.onContext_import(in: context, cancellationCheck: throwIfCancelled)
 			
 			step = .helper_didImport
-			try helper.onContext_remoteToLocal_didImportRemoteResults(dbChanges, context: localDb.context, cancellationCheck: throwIfCancelled)
+			try helper.onContext_remoteToLocal_didImportRemoteResults(dbChanges, context: context, cancellationCheck: throwIfCancelled)
 			
 			return .success(dbChanges)
 		} catch {
-			helper.onContext_remoteToLocalFailed(error, context: localDb.context)
+			helper.onContext_remoteToLocalFailed(error, context: context)
 			return .failure(RequestError(failureStep: step, checkedUnderlyingError: error, remoteOperation: remoteOperation, genericLocalDbObjects: genericLocalDbObjects))
 		}
 	}

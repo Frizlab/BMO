@@ -91,9 +91,7 @@ where LocalDb.DbObject == NSManagedObject,
 		assert(Self.validate(representations: localRepresentations, uniquingProperty: uniquingProperty))
 	}
 	
-	public func onContext_import(in db: LocalDb, cancellationCheck throwIfCancelled: () throws -> Void) throws -> LocalDbChanges<LocalDb.DbObject, Metadata> {
-		let dbContext = db.context
-		
+	public func onContext_import(in dbContext: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> LocalDbChanges<LocalDb.DbObject, Metadata> {
 		/* First we fetch all the objects that will be updated because their uniquing IDs are updated. */
 		var objectsByEntityAndUniquingIDs = [NSEntityDescription: [LocalDb.UniquingID: NSManagedObject]]()
 		for (entity, uniquingIDs) in uniquingIDsPerEntities {

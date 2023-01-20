@@ -22,6 +22,8 @@ public enum BMOCoreDataError : Error {
 	case tooManyRepresentationsToUpdateObject
 	case updatedObjectAndRepresentedObjectEntitiesDoNotMatch
 	
+	case invalidObjectType
+	
 }
 
 typealias Err = BMOCoreDataError

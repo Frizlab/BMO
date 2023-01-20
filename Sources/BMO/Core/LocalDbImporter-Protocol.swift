@@ -33,6 +33,6 @@ public protocol LocalDbImporterProtocol<LocalDb, Metadata> {
 	 During the import task, one should call `throwIfCancelled` from time to time.
 	 This block will throw if the calling operation is cancelled.
 	 Import should stop when this block throws. */
-	func onContext_import(in db: LocalDb, cancellationCheck throwIfCancelled: () throws -> Void) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
+	func onContext_import(in dbContext: LocalDb.DbContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> LocalDbChanges<LocalDb.DbObject, Metadata>
 	
 }

@@ -20,6 +20,11 @@ import Foundation
 public struct Request<LocalDb : LocalDbProtocol, RemoteUserInfo> {
 	
 	public var localDb: LocalDb
+	public var localDbContextOverwrite: LocalDb.DbContext?
+	
+	public var localDbContext: LocalDb.DbContext {
+		localDbContextOverwrite ?? localDb.context
+	}
 	
 	/**
 	 The request on the local database.
@@ -34,8 +39,10 @@ public struct Request<LocalDb : LocalDbProtocol, RemoteUserInfo> {
 	 One might even put the complete pre-computed remote operation here depending on one’s need. */
 	public var remoteUserInfo: RemoteUserInfo
 	
-	public init(localDb: LocalDb, localRequest: LocalDb.DbRequest, remoteUserInfo: RemoteUserInfo) {
+	public init(localDb: LocalDb, localDbContextOverwrite: LocalDb.DbContext? = nil, localRequest: LocalDb.DbRequest, remoteUserInfo: RemoteUserInfo) {
 		self.localDb = localDb
+		self.localDbContextOverwrite = localDbContextOverwrite
+		
 		self.localRequest = localRequest
 		self.remoteUserInfo = remoteUserInfo
 	}

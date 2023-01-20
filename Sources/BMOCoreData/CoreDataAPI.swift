@@ -20,7 +20,7 @@ import BMO
 
 
 
-public struct CoreDataAPI<Bridge : BridgeProtocol> {
+public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContext == NSManagedObjectContext {
 	
 	public struct Settings {
 		
@@ -28,19 +28,24 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> {
 		public var computeOperationQueue: OperationQueue
 		
 		public var remoteIDPropertyName: String
+		
 		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
+		public var updateObjectBridgeRequest: (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
 		
 		public init(
 			remoteOperationQueue: OperationQueue,
 			computeOperationQueue: OperationQueue,
 			remoteIDPropertyName: String,
-			fetchRequestToBridgeRequest: @escaping (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
+			fetchRequestToBridgeRequest: @escaping (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest,
+			updateObjectBridgeRequest: @escaping (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
 		) {
 			self.remoteOperationQueue = remoteOperationQueue
 			self.computeOperationQueue = computeOperationQueue
 			
 			self.remoteIDPropertyName = remoteIDPropertyName
+			
 			self.fetchRequestToBridgeRequest = fetchRequestToBridgeRequest
+			self.updateObjectBridgeRequest = updateObjectBridgeRequest
 		}
 		
 	}
@@ -116,6 +121,66 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> {
 		fRequest.predicate = NSPredicate(format: "%K == %@", (settings ?? defaultSettings).remoteIDPropertyName, String(describing: remoteID))
 		fRequest.fetchLimit = 1
 		return remoteFetch(fRequest, fetchType: fetchType, requestUserInfo: requestUserInfo, settings: settings, autoStart: autoStart, handler: handler)
+	}
+	
+	@discardableResult
+	public func updateAndSave<Object : NSManagedObject>(
+		_ objectType: Object.Type = Object.self,
+		objectID: NSManagedObjectID,
+		discardableUpdates: @escaping @Sendable (_ object: Object) -> Void,
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil,
+		autoStart: Bool = true,
+		handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, RequestError<Bridge>>) -> Void = { _ in }
+	) throws -> RequestOperation<Bridge> {
+		let settings = settings ?? defaultSettings
+		let requestUserInfo = requestUserInfo ?? defaultRequestUserInfo
+		
+		let discardableContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+		discardableContext.parent = localDb.context
+		
+		return try discardableContext.performAndWaitRW{
+			guard let discardableObject = try discardableContext.existingObject(with: objectID) as? Object else {
+				throw Err.invalidObjectType
+			}
+			discardableUpdates(discardableObject)
+			
+			let bridgeRequest = settings.updateObjectBridgeRequest(discardableObject, .doNothingChangeImportContext(localDb.context))
+			let opRequest = Request(localDb: localDb, localDbContextOverwrite: discardableContext, localRequest: bridgeRequest, remoteUserInfo: requestUserInfo)
+			let op = RequestOperation(bridge: bridge, request: opRequest, remoteOperationQueue: settings.remoteOperationQueue, computeOperationQueue: settings.computeOperationQueue)
+			op.completionBlock = { /* We keep a strong ref to op but it’s not a problem because we nullify the completion block at the end of the block. */
+				DispatchQueue.main.async{
+					handler(op.result)
+				}
+				op.completionBlock = nil /* In theory not needed anymore; I never tested that… */
+			}
+			if autoStart {
+				op.start() /* RequestOperations usually do not need to be queued at all: they mostly queue other info and don’t do much on their own. */
+			}
+			return op
+		}
+	}
+	
+	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
+	public func updateAndSave<Object : NSManagedObject>(
+		_ objectType: Object.Type = Object.self,
+		objectID: NSManagedObjectID,
+		discardableUpdates: @escaping @Sendable (_ object: Object) -> Void,
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil
+	) async throws -> Bridge.RequestResults {
+		return try await withCheckedThrowingContinuation{ continuation in
+			do {
+				try updateAndSave(
+					objectType, objectID: objectID, discardableUpdates: discardableUpdates,
+					requestUserInfo: requestUserInfo, settings: settings, autoStart: true, handler: { res in
+						continuation.resume(with: res.mapError{ $0 as Error })
+					}
+				)
+			} catch {
+				continuation.resume(throwing: error)
+			}
+		}
 	}
 	
 }
