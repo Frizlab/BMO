@@ -20,7 +20,10 @@ import BMO
 
 
 
-public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
+/* Have to be a class because we can change the `context` var.
+ * Probably TODO: Give the context for each methods in the request helper protocol.
+ * A very good reason: we, as a request helper, can say “I want a new context,” but nothing tells the new context will actually be used. */
+public final class BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	
 	public typealias LocalDbObject = NSManagedObject
 	public typealias LocalDbContext = NSManagedObjectContext
@@ -111,7 +114,7 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	public func newContextForImportingRemoteResults() -> NSManagedObjectContext?? {
 		switch saveWorkflow {
 			case .saveBeforeGoingRemote:                        return nil
-			case .doNothingChangeImportContext(let newContext): return newContext
+			case .doNothingChangeImportContext(let newContext): context = newContext; return newContext
 		}
 	}
 	
