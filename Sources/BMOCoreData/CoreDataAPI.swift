@@ -127,10 +127,10 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 	public func updateAndSave<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
 		objectID: NSManagedObjectID,
-		discardableUpdates: @escaping @Sendable (_ object: Object) -> Void,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
 		autoStart: Bool = true,
+		discardableUpdates: @escaping @Sendable (_ object: Object) -> Void,
 		handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, RequestError<Bridge>>) -> Void = { _ in }
 	) throws -> RequestOperation<Bridge> {
 		let settings = settings ?? defaultSettings
@@ -166,9 +166,9 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 	public func updateAndSave<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
 		objectID: NSManagedObjectID,
-		discardableUpdates: @escaping @Sendable (_ object: Object) -> Void,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
-		settings: Settings? = nil
+		settings: Settings? = nil,
+		discardableUpdates: @escaping @Sendable (_ object: Object) -> Void
 	) async throws -> Bridge.RequestResults {
 		return try await withCheckedThrowingContinuation{ continuation in
 			do {
