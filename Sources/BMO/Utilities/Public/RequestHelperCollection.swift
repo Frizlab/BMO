@@ -36,8 +36,8 @@ public struct RequestHelperCollection<LocalDbContext : LocalDbContextProtocol, L
 	
 	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		/* allSatisfy returns true if the collection is empty. */
-		/* Must NOT be lazy! We want all the helpers to be called (if they do not throw). */
-#warning("TODO: I’m pretty sure we want all the helpers to be called, _even_ if one throws.")
+		/* Must NOT be lazy! We want all the helpers to be called (if they do not throw).
+		 * We stop (throw) at the first helper that throws: all the helpers will have a chance to clean themselves up in onContext_localToRemoteFailed. */
 		return try requestHelpers
 			.map{ try $0.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled) }
 			.allSatisfy{ $0 }
@@ -71,8 +71,8 @@ public struct RequestHelperCollection<LocalDbContext : LocalDbContextProtocol, L
 	
 	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		/* allSatisfy returns true if the collection is empty. */
-		/* Must NOT be lazy! We want all the helpers to be called (if they do not throw). */
-#warning("TODO: I’m pretty sure we want all the helpers to be called, _even_ if one throws.")
+		/* Must NOT be lazy! We want all the helpers to be called (if they do not throw).
+		 * We stop (throw) at the first helper that throws: all the helpers will have a chance to clean themselves up in onContext_remoteToLocalFailed. */
 		return try requestHelpers
 			.map{ try $0.onContext_remoteToLocal_willImportRemoteResults(cancellationCheck: throwIfCancelled) }
 			.allSatisfy{ $0 }
