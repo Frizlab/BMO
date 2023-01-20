@@ -161,6 +161,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		}
 	}
 	
+	@discardableResult
 	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
 	public func updateAndSave<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
