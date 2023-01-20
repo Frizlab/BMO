@@ -173,8 +173,11 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		return try await withCheckedThrowingContinuation{ continuation in
 			do {
 				try updateAndSave(
-					objectType, objectID: objectID, discardableUpdates: discardableUpdates,
-					requestUserInfo: requestUserInfo, settings: settings, autoStart: true, handler: { res in
+					objectType, objectID: objectID,
+					requestUserInfo: requestUserInfo,
+					settings: settings, autoStart: true,
+					discardableUpdates: discardableUpdates,
+					handler: { res in
 						continuation.resume(with: res.mapError{ $0 as Error })
 					}
 				)
