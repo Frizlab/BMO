@@ -17,7 +17,7 @@ import Foundation
 
 
 
-public protocol LocalDbContext {
+public protocol LocalDbContextProtocol {
 	
 	/* We do not need that in BMO. */
 //	func performRO(_ block: @escaping () -> Void)
@@ -42,7 +42,7 @@ public protocol LocalDbObjectProtocol : Hashable {
 
 public protocol LocalDbProtocol {
 	
-	associatedtype DbContext : LocalDbContext
+	associatedtype DbContext : LocalDbContextProtocol
 	
 	associatedtype DbObject : LocalDbObjectProtocol
 	associatedtype DbRequest

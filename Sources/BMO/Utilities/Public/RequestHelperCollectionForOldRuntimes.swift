@@ -20,16 +20,16 @@ import Foundation
 /**
  A temporary workaround for replacing ``RequestHelperCollection`` when runtime is too old.
  Another workaround would have been to erase the protocol fully and use an array of erased objects. */
-public struct RequestHelperCollectionForOldRuntimes<LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
+public struct RequestHelperCollectionForOldRuntimes<LocalDbContext : LocalDbContextProtocol, LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
 	
-	public let requestHelper1: (any RequestHelperProtocol<LocalDbObject, Metadata>)?
-	public let requestHelper2: (any RequestHelperProtocol<LocalDbObject, Metadata>)?
-	public let requestHelper3: (any RequestHelperProtocol<LocalDbObject, Metadata>)?
+	public let requestHelper1: (any RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata>)?
+	public let requestHelper2: (any RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata>)?
+	public let requestHelper3: (any RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata>)?
 	
 	public init(
-		_ requestHelper1: (any RequestHelperProtocol<LocalDbObject, Metadata>)? = nil,
-		_ requestHelper2: (any RequestHelperProtocol<LocalDbObject, Metadata>)? = nil,
-		_ requestHelper3: (any RequestHelperProtocol<LocalDbObject, Metadata>)? = nil
+		_ requestHelper1: (any RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata>)? = nil,
+		_ requestHelper2: (any RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata>)? = nil,
+		_ requestHelper3: (any RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata>)? = nil
 	) {
 		self.requestHelper1 = requestHelper1
 		self.requestHelper2 = requestHelper2
@@ -73,6 +73,14 @@ public struct RequestHelperCollectionForOldRuntimes<LocalDbObject : LocalDbObjec
 	/* *******************************************************************
 	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
 	   ******************************************************************* */
+	
+	public func newContextForImportingRemoteResults() -> LocalDbContext?? {
+		return (
+			requestHelper1?.newContextForImportingRemoteResults() ??
+			requestHelper2?.newContextForImportingRemoteResults() ??
+			requestHelper3?.newContextForImportingRemoteResults()
+		)
+	}
 	
 	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		return [

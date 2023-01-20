@@ -22,11 +22,11 @@ import Foundation
  
  If the collection is empty, this is equivalent to a ``DummyRequestHelper``. */
 @available(macOS 13, iOS 16, tvOS 16, watchOS 9, *)
-public struct RequestHelperCollection<LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
+public struct RequestHelperCollection<LocalDbContext : LocalDbContextProtocol, LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
 	
-	public let requestHelpers: [any RequestHelperProtocol<LocalDbObject, Metadata>]
+	public let requestHelpers: [any RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata>]
 	
-	public init(requestHelpers: [any RequestHelperProtocol<LocalDbObject, Metadata>]) {
+	public init(requestHelpers: [any RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata>]) {
 		self.requestHelpers = requestHelpers
 	}
 	
@@ -37,6 +37,7 @@ public struct RequestHelperCollection<LocalDbObject : LocalDbObjectProtocol, Met
 	public func onContext_localToRemote_prepareRemoteConversion(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		/* allSatisfy returns true if the collection is empty. */
 		/* Must NOT be lazy! We want all the helpers to be called (if they do not throw). */
+#warning("TODO: I’m pretty sure we want all the helpers to be called, _even_ if one throws.")
 		return try requestHelpers
 			.map{ try $0.onContext_localToRemote_prepareRemoteConversion(cancellationCheck: throwIfCancelled) }
 			.allSatisfy{ $0 }
@@ -64,9 +65,14 @@ public struct RequestHelperCollection<LocalDbObject : LocalDbObjectProtocol, Met
 	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
 	   ******************************************************************* */
 	
+	public func newContextForImportingRemoteResults() -> LocalDbContext?? {
+		return requestHelpers.lazy.compactMap{ $0.newContextForImportingRemoteResults() }.first{ _ in true }
+	}
+	
 	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		/* allSatisfy returns true if the collection is empty. */
 		/* Must NOT be lazy! We want all the helpers to be called (if they do not throw). */
+#warning("TODO: I’m pretty sure we want all the helpers to be called, _even_ if one throws.")
 		return try requestHelpers
 			.map{ try $0.onContext_remoteToLocal_willImportRemoteResults(cancellationCheck: throwIfCancelled) }
 			.allSatisfy{ $0 }

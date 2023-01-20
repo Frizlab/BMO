@@ -29,7 +29,7 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	public typealias RequestResult = LocalDbChanges<Bridge.LocalDb.DbObject, Bridge.BridgeObjects.Metadata>?
 	public typealias RequestError = BMO.RequestError<Bridge>
 	
-	public typealias RequestHelperCollection = RequestHelperCollectionForOldRuntimes<Bridge.LocalDb.DbObject, Bridge.Metadata>
+	public typealias RequestHelperCollection = RequestHelperCollectionForOldRuntimes<Bridge.LocalDb.DbContext, Bridge.LocalDb.DbObject, Bridge.Metadata>
 	
 	public typealias GenericLocalDbObject = BMO.GenericLocalDbObject<Bridge.LocalDb.DbObject, Bridge.LocalDb.UniquingID, Bridge.BridgeObjects.Metadata>
 	public typealias UniquingIDsPerEntities = [Bridge.LocalDb.DbObject.DbEntityDescription: Set<Bridge.LocalDb.UniquingID>]

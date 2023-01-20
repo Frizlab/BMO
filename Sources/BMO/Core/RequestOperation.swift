@@ -25,7 +25,7 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	public typealias RequestResult = BMO.RequestResult<Bridge.RemoteDb.RemoteOperation, Bridge.LocalDb.DbObject, Bridge.Metadata>
 	public typealias RequestError = BMO.RequestError<Bridge>
 	
-	public typealias RequestHelperCollection = RequestHelperCollectionForOldRuntimes<Bridge.LocalDb.DbObject, Bridge.Metadata>
+	public typealias RequestHelperCollection = RequestHelperCollectionForOldRuntimes<Bridge.LocalDb.DbContext, Bridge.LocalDb.DbObject, Bridge.Metadata>
 	
 	public var bridge: Bridge
 	public var request: Request

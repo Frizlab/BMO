@@ -17,8 +17,9 @@ import Foundation
 
 
 
-public protocol RequestHelperProtocol<LocalDbObject, Metadata> {
+public protocol RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata> {
 	
+	associatedtype LocalDbContext : LocalDbContextProtocol
 	associatedtype LocalDbObject : LocalDbObjectProtocol
 	associatedtype Metadata
 	
@@ -61,7 +62,14 @@ public protocol RequestHelperProtocol<LocalDbObject, Metadata> {
 	/* *******************************************************************
 	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
 	   *******************************************************************
-	   The three methods that follow are guaranteed to all be called within the same “perform” block (if called at all). */
+	   The three onContext methods that follow are guaranteed to all be called within the same “perform” block (if called at all). */
+	
+	/**
+	 Get a new context for importing the results from the remote operation.
+	 
+	 If this returns nil the _same_ context is used as the original one (the import is **not** cancelled).
+	 If this returns .some(nil), the import is skipped. */
+	func newContextForImportingRemoteResults() -> LocalDbContext??
 	
 	/**
 	 Informs the helper the importer _will_ start importing the local db results.

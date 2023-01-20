@@ -64,7 +64,7 @@ public protocol BridgeProtocol {
 	 This function may not return `nil` because we think a request without a helper would not really be viable.
 	 
 	 If you _really_ do not need a helper, you can return a ``DummyRequestHelper`` which does nothing and returns `true` for all the methods returning a `Bool`. */
-	func requestHelper(for request: Request<LocalDb, RequestUserInfo>) -> any RequestHelperProtocol<LocalDb.DbObject, Metadata>
+	func requestHelper(for request: Request<LocalDb, RequestUserInfo>) -> any RequestHelperProtocol<LocalDb.DbContext, LocalDb.DbObject, Metadata>
 	
 	/* These two methods could probably be replaced by one async method.
 	 * This would also allow getting rid of the UserInfo associated type. */

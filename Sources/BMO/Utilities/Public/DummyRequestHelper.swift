@@ -17,7 +17,7 @@ import Foundation
 
 
 
-public struct DummyRequestHelper<LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
+public struct DummyRequestHelper<LocalDbContext : LocalDbContextProtocol, LocalDbObject : LocalDbObjectProtocol, Metadata> : RequestHelperProtocol {
 	
 	/* *****************************************************************
 	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
@@ -43,6 +43,10 @@ public struct DummyRequestHelper<LocalDbObject : LocalDbObjectProtocol, Metadata
 	/* *******************************************************************
 	   MARK: Request Lifecycle Part 3: Local Db Representation to Local Db
 	   ******************************************************************* */
+	
+	public func newContextForImportingRemoteResults() -> LocalDbContext?? {
+		return nil
+	}
 	
 	public func onContext_remoteToLocal_willImportRemoteResults(cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
 		return true
