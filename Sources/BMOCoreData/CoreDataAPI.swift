@@ -136,7 +136,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		let settings = settings ?? defaultSettings
 		let requestUserInfo = requestUserInfo ?? defaultRequestUserInfo
 		
-		let discardableContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+		let discardableContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
 		discardableContext.parent = localDb.context
 		
 		return try discardableContext.performAndWaitRW{
