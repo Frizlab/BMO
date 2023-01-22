@@ -21,7 +21,7 @@ public protocol RemoteDbProtocol {
 	
 	/**
 	 An operation to do something on the remote db. */
-	associatedtype RemoteOperation : Operation
+	associatedtype RemoteOperation : Operation & Sendable
 	
 	/**
 	 Will typically be `[String: Any]`, or some kind of `JSON` enum (e.g. [GenericJSON](https://github.com/iwill/generic-json-swift)) if you don’t have the model of your API.

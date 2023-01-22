@@ -21,7 +21,7 @@ import BMO
 
 
 
-public struct BMOCoreDataImporter<LocalDb : LocalDbProtocol, Metadata> : LocalDbImporterProtocol
+public struct BMOCoreDataImporter<LocalDb : LocalDbProtocol, Metadata : Sendable> : LocalDbImporterProtocol
 where LocalDb.DbObject == NSManagedObject,
 		LocalDb.DbContext == NSManagedObjectContext
 {

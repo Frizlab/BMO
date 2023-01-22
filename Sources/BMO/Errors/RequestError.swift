@@ -19,7 +19,7 @@ import Foundation
 
 public struct RequestError<Bridge : BridgeProtocol> : Error {
 	
-	public enum FailureStep {
+	public enum FailureStep : Sendable {
 		
 		/**
 		 When the error do not come from the normal workflow (e.g. operation is cancelled).

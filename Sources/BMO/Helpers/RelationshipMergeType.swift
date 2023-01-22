@@ -17,12 +17,12 @@ import Foundation
 
 
 
-public enum RelationshipMergeType<Object, Relationship> {
+public enum RelationshipMergeType<Object, Relationship> : Sendable {
 	
 	case replace
 	case append
 	case insertAtBeginning
-	case custom((_ object: Object, _ relationship: Relationship, _ newValues: [Object]) -> Void)
+	case custom(@Sendable (_ object: Object, _ relationship: Relationship, _ newValues: [Object]) -> Void)
 	
 }
 

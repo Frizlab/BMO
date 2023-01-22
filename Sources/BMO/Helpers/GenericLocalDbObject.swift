@@ -24,7 +24,7 @@ import Foundation
  
  You should rarely have to build a ``GenericLocalDbObject`` manually.
  Instead, BMO will construct a collection of ``GenericLocalDbObject`` from a ``BridgeObjectsProtocol`` and pass them to a ``LocalDbImporterProtocol`` instance. */
-public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID : Hashable & Sendable, RelationshipMetadata> {
+public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID : Hashable & Sendable, RelationshipMetadata : Sendable> : Sendable {
 	
 	public typealias RelationshipMergeType = BMO.RelationshipMergeType<DbObject, DbObject.DbRelationshipDescription>
 	public typealias RelationshipValue = (value: [Self], mergeType: RelationshipMergeType, metadata: RelationshipMetadata?)
@@ -32,7 +32,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	public var entity: DbObject.DbEntityDescription
 	
 	public var uniquingID: UniquingID?
-	public var attributes: [DbObject.DbAttributeDescription: Any?]
+	public var attributes: [DbObject.DbAttributeDescription: Sendable?]
 	public var relationships: [DbObject.DbRelationshipDescription: RelationshipValue?]
 	
 	public var hasAttributesOrRelationships: Bool {
@@ -73,7 +73,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	public init(
 		entity: DbObject.DbEntityDescription,
 		uniquingID: UniquingID? = nil,
-		attributes: [DbObject.DbAttributeDescription : Any?] = [:],
+		attributes: [DbObject.DbAttributeDescription : Sendable?] = [:],
 		relationships: [DbObject.DbRelationshipDescription : RelationshipValue?] = [:]
 	) {
 		self.entity = entity
