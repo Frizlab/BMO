@@ -74,7 +74,7 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	 
 	 - Important: The `startedOnImportContext` does mean started on the **import** context, which might be different than the local db context.
 	 Indeed, the import context can be changed by the request helper. */
-	init(request: Request, localDb: Bridge.LocalDb, localDbContextOverride: Bridge.LocalDb.DbContext? = nil, helper: RequestHelperCollection, importerFactory: @escaping ImporterFactory, startedOnImportContext: Bool = false) {
+	public init(request: Request, localDb: Bridge.LocalDb, localDbContextOverride: Bridge.LocalDb.DbContext? = nil, helper: RequestHelperCollection, importerFactory: @escaping ImporterFactory, startedOnImportContext: Bool = false) {
 		self.request = request
 		self.localDb = localDb
 		self.localDbContextOverride = localDbContextOverride
