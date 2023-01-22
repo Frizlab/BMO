@@ -114,7 +114,7 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	}
 	
 	public func onContext_remoteToLocal_willImportRemoteResults(context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool {
-		assert(!context.hasChanges)
+		assert(!context.hasPersistentChanges)
 		return true
 	}
 	

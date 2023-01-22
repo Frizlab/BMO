@@ -20,6 +20,18 @@ import Foundation
 
 internal extension NSManagedObjectContext {
 	
+	/* If a transient property is modified on an object, the object (and thus the context) is marked as having changes.
+	 * This property checks if the only modification in the context is some updated objects that do not have persistent changes. */
+	var hasPersistentChanges: Bool {
+		guard hasChanges else {
+			return false
+		}
+		guard insertedObjects.isEmpty && deletedObjects.isEmpty else {
+			return true
+		}
+		return updatedObjects.contains{ $0.hasPersistentChangedValues }
+	}
+	
 	func saveOrRollback() {
 		do    {try save()}
 		catch {rollback()}
