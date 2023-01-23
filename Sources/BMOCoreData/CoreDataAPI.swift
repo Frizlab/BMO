@@ -30,14 +30,18 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		public var remoteIDPropertyName: String
 		
 		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
+		public var createObjectBridgeRequest: (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
 		public var updateObjectBridgeRequest: (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
+		public var deleteObjectBridgeRequest: (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
 		
 		public init(
 			remoteOperationQueue: OperationQueue,
 			computeOperationQueue: OperationQueue,
 			remoteIDPropertyName: String,
 			fetchRequestToBridgeRequest: @escaping (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest,
-			updateObjectBridgeRequest: @escaping (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
+			createObjectBridgeRequest: @escaping (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest,
+			updateObjectBridgeRequest: @escaping (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest,
+			deleteObjectBridgeRequest: @escaping (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
 		) {
 			self.remoteOperationQueue = remoteOperationQueue
 			self.computeOperationQueue = computeOperationQueue
@@ -45,7 +49,9 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 			self.remoteIDPropertyName = remoteIDPropertyName
 			
 			self.fetchRequestToBridgeRequest = fetchRequestToBridgeRequest
+			self.createObjectBridgeRequest = createObjectBridgeRequest
 			self.updateObjectBridgeRequest = updateObjectBridgeRequest
+			self.deleteObjectBridgeRequest = deleteObjectBridgeRequest
 		}
 		
 	}
@@ -184,6 +190,73 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 			} catch {
 				continuation.resume(throwing: error)
 			}
+		}
+	}
+	
+	@discardableResult
+	public func createAndSave<Object : NSManagedObject>(
+		_ objectType: Object.Type = Object.self,
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil,
+		autoStart: Bool = true,
+		discardableObjectCreator: @escaping @Sendable () -> Object,
+		handler: @escaping @Sendable @MainActor (Result<(createdObject: Object, results: Bridge.RequestResults), Error>) -> Void = { _ in }
+	) -> RequestOperation<Bridge> {
+		let settings = settings ?? defaultSettings
+		let requestUserInfo = requestUserInfo ?? defaultRequestUserInfo
+		
+		let discardableContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+		discardableContext.parent = localDb.context
+		
+		return discardableContext.performAndWaitRW{
+			let discardableObject = discardableObjectCreator()
+			
+			let bridgeRequest = settings.createObjectBridgeRequest(discardableObject, .doNothingChangeImportContext(localDb.context))
+			let opRequest = Request(localDb: localDb, localDbContextOverwrite: discardableContext, localRequest: bridgeRequest, remoteUserInfo: requestUserInfo)
+			let op = RequestOperation(bridge: bridge, request: opRequest, remoteOperationQueue: settings.remoteOperationQueue, computeOperationQueue: settings.computeOperationQueue, startedOnContext: true)
+			op.completionBlock = { /* We keep a strong ref to op but it’s not a problem because we nullify the completion block at the end of the block. */
+				DispatchQueue.main.async{
+					do {
+						let result = try op.result.get()
+						guard let importedObjects = result.dbChanges?.importedObjects,
+								let createdObject = importedObjects.first?.object as? Object,
+								importedObjects.count == 1
+						else {
+							throw Err.creationRequestResultDoesNotContainObject
+						}
+						handler(.success((createdObject, result)))
+					} catch {
+						handler(.failure(error))
+					}
+				}
+				op.completionBlock = nil /* In theory not needed anymore; I never tested that… */
+			}
+			if autoStart {
+				op.start() /* RequestOperations usually do not need to be queued at all: they mostly queue other info and don’t do much on their own. */
+			}
+			return op
+		}
+	}
+	
+	@discardableResult
+	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
+	public func createAndSave<Object : NSManagedObject>(
+		_ objectType: Object.Type = Object.self,
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil,
+		autoStart: Bool = true,
+		discardableObjectCreator: @escaping @Sendable () -> Object
+	) async throws -> (createdObject: Object, results: Bridge.RequestResults) {
+		return try await withCheckedThrowingContinuation{ continuation in
+			createAndSave(
+				objectType,
+				requestUserInfo: requestUserInfo,
+				settings: settings, autoStart: true,
+				discardableObjectCreator: discardableObjectCreator,
+				handler: { res in
+					continuation.resume(with: res)
+				}
+			)
 		}
 	}
 	
