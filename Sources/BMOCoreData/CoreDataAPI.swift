@@ -199,7 +199,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
 		autoStart: Bool = true,
-		discardableObjectCreator: @escaping @Sendable () -> Object,
+		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) -> Object,
 		handler: @escaping @Sendable @MainActor (Result<(createdObject: Object, results: Bridge.RequestResults), Error>) -> Void = { _ in }
 	) -> RequestOperation<Bridge> {
 		let settings = settings ?? defaultSettings
@@ -209,7 +209,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		discardableContext.parent = localDb.context
 		
 		return discardableContext.performAndWaitRW{
-			let discardableObject = discardableObjectCreator()
+			let discardableObject = discardableObjectCreator(discardableContext)
 			
 			let bridgeRequest = settings.createObjectBridgeRequest(discardableObject, .doNothingChangeImportContext(localDb.context))
 			let opRequest = Request(localDb: localDb, localDbContextOverwrite: discardableContext, localRequest: bridgeRequest, remoteUserInfo: requestUserInfo)
@@ -244,7 +244,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		_ objectType: Object.Type = Object.self,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
-		discardableObjectCreator: @escaping @Sendable () -> Object
+		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) -> Object
 	) async throws -> (createdObject: Object, results: Bridge.RequestResults) {
 		return try await withCheckedThrowingContinuation{ continuation in
 			createAndSave(
