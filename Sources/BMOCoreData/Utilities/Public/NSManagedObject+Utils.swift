@@ -18,7 +18,7 @@ import Foundation
 
 
 
-internal extension NSManagedObject {
+public extension NSManagedObject {
 	
 	var isUsable: Bool {
 		return !isDeleted && managedObjectContext != nil
