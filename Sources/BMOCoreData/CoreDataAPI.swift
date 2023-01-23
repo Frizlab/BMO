@@ -244,7 +244,6 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		_ objectType: Object.Type = Object.self,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
-		autoStart: Bool = true,
 		discardableObjectCreator: @escaping @Sendable () -> Object
 	) async throws -> (createdObject: Object, results: Bridge.RequestResults) {
 		return try await withCheckedThrowingContinuation{ continuation in
