@@ -136,7 +136,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
 		autoStart: Bool = true,
-		discardableUpdates: @escaping @Sendable (_ object: Object) -> Void,
+		discardableUpdates: @escaping @Sendable (_ object: Object) throws -> Void,
 		handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, RequestError<Bridge>>) -> Void = { _ in }
 	) throws -> RequestOperation<Bridge> {
 		let settings = settings ?? defaultSettings
@@ -149,7 +149,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 			guard let discardableObject = try discardableContext.existingObject(with: objectID) as? Object else {
 				throw Err.invalidObjectType
 			}
-			discardableUpdates(discardableObject)
+			try discardableUpdates(discardableObject)
 			
 			let bridgeRequest = settings.updateObjectBridgeRequest(discardableObject, .doNothingChangeImportContext(localDb.context))
 			let opRequest = Request(localDb: localDb, localDbContextOverwrite: discardableContext, localRequest: bridgeRequest, remoteUserInfo: requestUserInfo)
@@ -174,7 +174,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		objectID: NSManagedObjectID,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
-		discardableUpdates: @escaping @Sendable (_ object: Object) -> Void
+		discardableUpdates: @escaping @Sendable (_ object: Object) throws -> Void
 	) async throws -> Bridge.RequestResults {
 		return try await withCheckedThrowingContinuation{ continuation in
 			do {
@@ -199,17 +199,17 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
 		autoStart: Bool = true,
-		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) -> Object,
+		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) throws -> Object,
 		handler: @escaping @Sendable @MainActor (Result<(createdObject: Object, results: Bridge.RequestResults), Error>) -> Void = { _ in }
-	) -> RequestOperation<Bridge> {
+	) throws -> RequestOperation<Bridge> {
 		let settings = settings ?? defaultSettings
 		let requestUserInfo = requestUserInfo ?? defaultRequestUserInfo
 		
 		let discardableContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
 		discardableContext.parent = localDb.context
 		
-		return discardableContext.performAndWaitRW{
-			let discardableObject = discardableObjectCreator(discardableContext)
+		return try discardableContext.performAndWaitRW{
+			let discardableObject = try discardableObjectCreator(discardableContext)
 			
 			let bridgeRequest = settings.createObjectBridgeRequest(discardableObject, .doNothingChangeImportContext(localDb.context))
 			let opRequest = Request(localDb: localDb, localDbContextOverwrite: discardableContext, localRequest: bridgeRequest, remoteUserInfo: requestUserInfo)
@@ -244,18 +244,22 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		_ objectType: Object.Type = Object.self,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
-		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) -> Object
+		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) throws -> Object
 	) async throws -> (createdObject: Object, results: Bridge.RequestResults) {
 		return try await withCheckedThrowingContinuation{ continuation in
-			createAndSave(
-				objectType,
-				requestUserInfo: requestUserInfo,
-				settings: settings, autoStart: true,
-				discardableObjectCreator: discardableObjectCreator,
-				handler: { res in
-					continuation.resume(with: res)
-				}
-			)
+			do {
+				try createAndSave(
+					objectType,
+					requestUserInfo: requestUserInfo,
+					settings: settings, autoStart: true,
+					discardableObjectCreator: discardableObjectCreator,
+					handler: { res in
+						continuation.resume(with: res)
+					}
+				)
+			} catch {
+				continuation.resume(throwing: error)
+			}
 		}
 	}
 	
