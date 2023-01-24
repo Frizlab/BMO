@@ -19,7 +19,7 @@ import Foundation
 
 /* We’re not using RetryingOperation because it does not allow synchronous execution from start to startBaseOperation,
  *  and we want clients to be able to call start synchronously to guarantee being called on the context. */
-public final class RequestOperation<Bridge : BridgeProtocol> : Operation, @unchecked Sendable {
+public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public typealias Request = BMO.Request<Bridge.LocalDb, Bridge.RequestUserInfo>
 	public typealias RequestResult = BMO.RequestResult<Bridge.RemoteDb.RemoteOperation, Bridge.LocalDb.DbObject, Bridge.Metadata>

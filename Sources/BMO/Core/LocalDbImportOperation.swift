@@ -17,7 +17,7 @@ import Foundation
 
 
 
-public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation, @unchecked Sendable {
+public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public enum Request {
 		
