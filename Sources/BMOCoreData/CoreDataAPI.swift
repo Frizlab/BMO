@@ -194,13 +194,13 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 	}
 	
 	@discardableResult
-	public func createAndSave<Object : NSManagedObject>(
+	public func createAndSaveNoRetrievalOfCreated<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
 		autoStart: Bool = true,
 		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) throws -> Object,
-		handler: @escaping @Sendable @MainActor (Result<(createdObject: Object, results: Bridge.RequestResults), Error>) -> Void = { _ in }
+		handler: @escaping @Sendable @MainActor (Result<Bridge.RequestResults, RequestError<Bridge>>) -> Void = { _ in }
 	) throws -> RequestOperation<Bridge> {
 		let settings = settings ?? defaultSettings
 		let requestUserInfo = requestUserInfo ?? defaultRequestUserInfo
@@ -216,18 +216,7 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 			let op = RequestOperation(bridge: bridge, request: opRequest, remoteOperationQueue: settings.remoteOperationQueue, computeOperationQueue: settings.computeOperationQueue, startedOnContext: true)
 			op.completionBlock = { /* We keep a strong ref to op but it’s not a problem because we nullify the completion block at the end of the block. */
 				DispatchQueue.main.async{
-					do {
-						let result = try op.result.get()
-						guard let importedObjects = result.dbChanges?.importedObjects,
-								let createdObject = importedObjects.first?.object as? Object,
-								importedObjects.count == 1
-						else {
-							throw Err.creationRequestResultDoesNotContainObject
-						}
-						handler(.success((createdObject, result)))
-					} catch {
-						handler(.failure(error))
-					}
+					handler(op.result)
 				}
 				op.completionBlock = nil /* In theory not needed anymore; I never tested that… */
 			}
@@ -236,6 +225,60 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 			}
 			return op
 		}
+	}
+	
+	/**
+	 Same as createAndSave, but does not try and get the created object back.
+	 
+	 This is useful when the API does not return the same type of object as the one being created. */
+	@discardableResult
+	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
+	public func createAndSaveNoRetrievalOfCreated<Object : NSManagedObject>(
+		_ objectType: Object.Type = Object.self,
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil,
+		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) throws -> Object
+	) async throws -> Bridge.RequestResults {
+		return try await withCheckedThrowingContinuation{ continuation in
+			do {
+				try createAndSaveNoRetrievalOfCreated(
+					objectType,
+					requestUserInfo: requestUserInfo,
+					settings: settings, autoStart: true,
+					discardableObjectCreator: discardableObjectCreator,
+					handler: { res in
+						continuation.resume(with: res)
+					}
+				)
+			} catch {
+				continuation.resume(throwing: error)
+			}
+		}
+	}
+	
+	@discardableResult
+	public func createAndSave<Object : NSManagedObject>(
+		_ objectType: Object.Type = Object.self,
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil,
+		autoStart: Bool = true,
+		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) throws -> Object,
+		handler: @escaping @Sendable @MainActor (Result<(createdObject: Object, results: Bridge.RequestResults), Error>) -> Void = { _ in }
+	) throws -> RequestOperation<Bridge> {
+		return try createAndSaveNoRetrievalOfCreated(objectType, requestUserInfo: requestUserInfo, settings: settings, autoStart: autoStart, discardableObjectCreator: discardableObjectCreator, handler: { results in
+			do {
+				let result = try results.get()
+				guard let importedObjects = result.dbChanges?.importedObjects,
+						let createdObject = importedObjects.first?.object as? Object,
+						importedObjects.count == 1
+				else {
+					throw Err.creationRequestResultDoesNotContainObject
+				}
+				handler(.success((createdObject, result)))
+			} catch {
+				handler(.failure(error))
+			}
+		})
 	}
 	
 	@discardableResult
