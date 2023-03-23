@@ -32,9 +32,11 @@ internal extension NSManagedObjectContext {
 		return updatedObjects.contains{ $0.hasPersistentChangedValues }
 	}
 	
-	func saveOrRollback() {
-		do    {try save()}
-		catch {rollback()}
+	/** Returns the error encountered on save if any. */
+	@discardableResult
+	func saveOrRollback() -> Error? {
+		do    {try save(); return nil}
+		catch {rollback(); return error}
 	}
 	
 	func saveToDiskOrRollback() {
