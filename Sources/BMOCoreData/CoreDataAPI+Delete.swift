@@ -67,11 +67,10 @@ public extension CoreDataAPI {
 	
 	@discardableResult
 	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
-	func delete<Object : NSManagedObject>(
+	func delete(
 		objectID: NSManagedObjectID,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
-		settings: Settings? = nil,
-		discardableUpdates: @escaping @Sendable (_ object: Object, _ managedObjectContext: NSManagedObjectContext) throws -> Void
+		settings: Settings? = nil
 	) async throws -> Bridge.RequestResults {
 		return try await withCheckedThrowingContinuation{ continuation in
 			do {
