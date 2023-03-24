@@ -39,7 +39,7 @@ public extension CoreDataAPI {
 		 * So we use the saveBeforeGoingRemote save workflow (nothing will be saved as there should be no modifications in the context). */
 		let bridgeRequest = settings.deleteObjectBridgeRequest(object, .saveBeforeGoingRemote)
 		let opRequest = Request(localDb: localDb, localRequest: bridgeRequest, remoteUserInfo: requestUserInfo)
-		let op = RequestOperation(bridge: bridge, request: opRequest, remoteOperationQueue: settings.remoteOperationQueue, computeOperationQueue: settings.computeOperationQueue, startedOnContext: true)
+		let op = RequestOperation(bridge: bridge, request: opRequest, remoteOperationQueue: settings.remoteOperationQueue, computeOperationQueue: settings.computeOperationQueue, startedOnContext: false)
 		op.completionBlock = { /* We keep a strong ref to op but it’s not a problem because we nullify the completion block at the end of the block. */
 			DispatchQueue.main.async{
 				let result = op.result
