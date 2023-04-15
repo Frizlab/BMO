@@ -60,7 +60,7 @@ public extension CoreDataAPI {
 			op.completionBlock = nil /* In theory not needed anymore; I never tested that… */
 		}
 		if autoStart {
-			op.start() /* RequestOperations usually do not need to be queued at all: they mostly queue other info and don’t do much on their own. */
+			op.start() /* RequestOperations usually do not need to be queued at all: they mostly queue other operations and don’t do much on their own. */
 		}
 		return op
 	}
