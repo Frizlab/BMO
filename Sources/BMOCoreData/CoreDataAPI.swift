@@ -27,6 +27,13 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		public var remoteOperationQueue: OperationQueue
 		public var computeOperationQueue: OperationQueue
 		
+		/**
+		 The name of the property that contains the remote ID value in the CoreData representation of the objects.
+		 
+		 This is used by the ``CoreDataAPI/fetch(_:remoteID:fetchType:requestUserInfo:settings:autoStart:handler:)`` method,
+		  to create the `NSFetchRequest` required to search for the given remote ID.
+		 
+		 The property name will usually be the same as the one set in ``BMOCoreDataImporter/uniquingProperty``, but can be different. */
 		public var remoteIDPropertyName: String
 		
 		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
