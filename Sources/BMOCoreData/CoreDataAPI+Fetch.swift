@@ -76,7 +76,7 @@ public extension CoreDataAPI {
 		handler: @escaping @Sendable @MainActor (_ results: Result<Bridge.RequestResults, RequestError<Bridge>>) -> Void = { _ in }
 	) -> RequestOperation<Bridge> {
 		let fRequest = Object.fetchRequest()
-		fRequest.predicate = NSPredicate(format: "%K == %@", (settings ?? defaultSettings).remoteIDPropertyName, String(describing: remoteID))
+		fRequest.predicate = NSPredicate(format: "%K == %@", argumentArray: [(settings ?? defaultSettings).remoteIDPropertyName, remoteID])
 		fRequest.fetchLimit = 1
 		return fetch(fRequest, fetchType: fetchType, requestUserInfo: requestUserInfo, settings: settings, autoStart: autoStart, handler: handler)
 	}
