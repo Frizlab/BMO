@@ -128,7 +128,8 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	private func finishOperation(_ r: Result<RequestResult, RequestError>) {
 		lock.withLock{
 			assert(_result.failure?.underlyingError as? OperationLifecycleError == .inProgress)
-			assert(!(r.failure?.underlyingError is OperationLifecycleError))
+			assert(!(r.failure?.underlyingError is OperationLifecycleError) ||
+					 (r.failure?.underlyingError as? OperationLifecycleError == .cancelled))
 			_result = r
 		}
 	}
