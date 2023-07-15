@@ -119,13 +119,17 @@ where LocalDb.DbObject == NSManagedObject,
 		try throwIfCancelled()
 		
 		/* Next, let’s do the actual import. */
-		return try onContext_Import(
+		let changes = try onContext_Import(
 			representations: localRepresentations,
 			metadata: rootMetadata,
 			in: dbContext,
 			prefetchedObjectsByEntityAndUniquingIDs: &objectsByEntityAndUniquingIDs,
 			cancellationCheck: throwIfCancelled
 		)
+		/* Then we retrieve the persistent IDs of all the objects to avoid headaches with NSFetchedResultsController… */
+		try dbContext.obtainPermanentIDs(for: Array(changes.insertedDbObjects))
+		/* And we’re done. */
+		return changes
 	}
 	
 	private static func validate(representations: [GenericLocalDbObject], uniquingProperty: String) -> Bool {
