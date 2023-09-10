@@ -119,7 +119,7 @@ where LocalDb.DbObject == NSManagedObject,
 		try throwIfCancelled()
 		
 		/* Next, let’s do the actual import. */
-		let changes = try onContext_Import(
+		let changes = try onContext_import(
 			representations: localRepresentations,
 			metadata: rootMetadata,
 			in: dbContext,
@@ -144,7 +144,7 @@ where LocalDb.DbObject == NSManagedObject,
 		return representations.allSatisfy(validate(representation:))
 	}
 	
-	private func onContext_Import(
+	private func onContext_import(
 		representations: [GenericLocalDbObject],
 		metadata: Metadata?,
 		in db: NSManagedObjectContext,
@@ -238,7 +238,7 @@ where LocalDb.DbObject == NSManagedObject,
 					continue
 				}
 				
-				let subDbChanges = try onContext_Import(
+				let subDbChanges = try onContext_import(
 					representations: relationshipObjects,
 					metadata: subMetadata,
 					in: db,
