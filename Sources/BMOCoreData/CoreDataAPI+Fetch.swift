@@ -57,6 +57,28 @@ public extension CoreDataAPI {
 		return op
 	}
 	
+	@discardableResult
+	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
+	func fetch(
+		_ fetchRequest: NSFetchRequest<NSFetchRequestResult>,
+		fetchType: RemoteFetchType = .always,
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil
+	) async throws -> Bridge.RequestResults {
+		return try await withCheckedThrowingContinuation{ continuation in
+			fetch(
+				fetchRequest,
+				fetchType: fetchType,
+				requestUserInfo: requestUserInfo,
+				settings: settings,
+				autoStart: true,
+				handler: { res in
+					continuation.resume(with: res.mapError{ $0 as Error })
+				}
+			)
+		}
+	}
+	
 	/**
 	 Create and return the `RequestOperation` corresponding to a fetch of a specific object.
 	 
@@ -79,6 +101,30 @@ public extension CoreDataAPI {
 		fRequest.predicate = NSPredicate(format: "%K == %@", argumentArray: [(settings ?? defaultSettings).remoteIDPropertyName, remoteID])
 		fRequest.fetchLimit = 1
 		return fetch(fRequest, fetchType: fetchType, requestUserInfo: requestUserInfo, settings: settings, autoStart: autoStart, handler: handler)
+	}
+	
+	@discardableResult
+	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
+	func fetch<Object : NSManagedObject>(
+		_ objectType: Object.Type = Object.self,
+		remoteID: Bridge.LocalDb.UniquingID,
+		fetchType: RemoteFetchType = .always,
+		requestUserInfo: Bridge.RequestUserInfo? = nil,
+		settings: Settings? = nil
+	) async throws -> Bridge.RequestResults {
+		return try await withCheckedThrowingContinuation{ continuation in
+			fetch(
+				objectType,
+				remoteID: remoteID,
+				fetchType: fetchType,
+				requestUserInfo: requestUserInfo,
+				settings: settings,
+				autoStart: true,
+				handler: { res in
+					continuation.resume(with: res.mapError{ $0 as Error })
+				}
+			)
+		}
 	}
 	
 }
