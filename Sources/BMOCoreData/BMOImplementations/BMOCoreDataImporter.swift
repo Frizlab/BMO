@@ -226,7 +226,7 @@ where LocalDb.DbObject == NSManagedObject,
 			
 			assert(object.entity.isKindOf(entity: representation.entity))
 			for (k, v) in representation.attributes {
-				object.setValue(v, forKey: k)
+				object.setValue(v as! NSObject?, forKey: k)
 			}
 			
 			for (relationshipName, relationshipValue) in representation.relationships {
