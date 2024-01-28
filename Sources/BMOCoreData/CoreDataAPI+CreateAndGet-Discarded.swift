@@ -23,7 +23,7 @@ import BMO
 public extension CoreDataAPI {
 	
 	@discardableResult
-	func createAndGet<Object : NSManagedObject>(
+	func createDiscardedAndGet<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
@@ -31,7 +31,7 @@ public extension CoreDataAPI {
 		discardableObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) throws -> Object,
 		handler: @escaping @Sendable @MainActor (Result<(createdObject: Object, results: Bridge.RequestResults), Error>) -> Void = { _ in }
 	) throws -> RequestOperation<Bridge> {
-		return try create(objectType, requestUserInfo: requestUserInfo, settings: settings, autoStart: autoStart, discardableObjectCreator: discardableObjectCreator, handler: { results in
+		return try createDiscarded(objectType, requestUserInfo: requestUserInfo, settings: settings, autoStart: autoStart, discardableObjectCreator: discardableObjectCreator, handler: { results in
 			do {
 				let result = try results.get()
 				guard let importedObjects = result.dbChanges?.importedObjects,
@@ -49,7 +49,7 @@ public extension CoreDataAPI {
 	
 	@discardableResult
 	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
-	func createAndGet<Object : NSManagedObject>(
+	func createDiscardedAndGet<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
@@ -57,7 +57,7 @@ public extension CoreDataAPI {
 	) async throws -> (createdObject: Object, results: Bridge.RequestResults) {
 		return try await withCheckedThrowingContinuation{ continuation in
 			do {
-				try createAndGet(
+				try createDiscardedAndGet(
 					objectType,
 					requestUserInfo: requestUserInfo,
 					settings: settings, autoStart: true,

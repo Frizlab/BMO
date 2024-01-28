@@ -23,7 +23,7 @@ import BMO
 public extension CoreDataAPI {
 	
 	@discardableResult
-	func create<Object : NSManagedObject>(
+	func createDiscarded<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
@@ -62,7 +62,7 @@ public extension CoreDataAPI {
 	 This is useful when the API does not return the same type of object as the one being created. */
 	@discardableResult
 	@available(macOS 10.15, tvOS 13, iOS 13, watchOS 6, *)
-	func create<Object : NSManagedObject>(
+	func createDiscarded<Object : NSManagedObject>(
 		_ objectType: Object.Type = Object.self,
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
@@ -70,7 +70,7 @@ public extension CoreDataAPI {
 	) async throws -> Bridge.RequestResults {
 		return try await withCheckedThrowingContinuation{ continuation in
 			do {
-				try create(
+				try createDiscarded(
 					objectType,
 					requestUserInfo: requestUserInfo,
 					settings: settings, autoStart: true,
