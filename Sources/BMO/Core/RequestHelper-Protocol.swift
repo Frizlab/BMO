@@ -35,7 +35,7 @@ public protocol RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata> {
 	  ``BMOCoreDataFetchRequestHelper`` allows setting a fetch type.
 	 
 	 If the fetch type is ``BMOCoreDataFetchRequestHelper/FetchType/onlyIfNoLocalResults``,
-	 this helper method will check whether the fetch request has local results already.
+	  this helper method will check whether the fetch request has local results already.
 	 
 	 If it does, there are no needs for a remote operation and the method will return `false`. */
 	func onContext_localToRemote_prepareRemoteConversion(context: LocalDbContext, cancellationCheck throwIfCancelled: () throws -> Void) throws -> Bool

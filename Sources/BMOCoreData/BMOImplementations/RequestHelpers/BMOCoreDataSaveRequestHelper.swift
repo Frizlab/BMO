@@ -15,6 +15,7 @@ limitations under the License. */
 
 import CoreData
 import Foundation
+import os.log
 
 import BMO
 
@@ -85,11 +86,19 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	}
 	
 	public func onContext_localToRemoteFailed(_ error: Error, context: NSManagedObjectContext) {
-		/* In case of the saveBeforeGoingRemote we rollback because we want the context to stay clean.
-		 * For doNothingChangeImportContext it is assumed the context is throwable so we do nothing. */
 		switch saveWorkflow {
-			case .saveBeforeGoingRemote:        context.rollback()
-			case .doNothingChangeImportContext: (/*nop*/)
+			case .doNothingChangeImportContext:
+				(/* The context is assumed to be a throwable scratch pad, so we do nothing. */)
+				
+			case .saveBeforeGoingRemote:
+				/* Here we want to keep a clean context.
+				 * The goal of the saveBeforeGoingRemote workflow is to not lose the object that was created,
+				 *  so we try and save the context when we have a failure.
+				 * We rollback if the save fails in order to have our clean context! */
+				if let error = context.saveOrRollback() {
+					if #available(macOS 11.0, *) {Logger.saveRequestHelper.warning("Failed saving the context after local to remote conversion failed: \(error).")}
+					else                         {os_log("Failed saving the context after local to remote conversion failed: %@.", log: .saveRequestHelper, type: .error, String(describing: error))}
+				}
 		}
 	}
 	
