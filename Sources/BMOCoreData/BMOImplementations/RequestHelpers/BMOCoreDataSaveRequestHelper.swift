@@ -96,8 +96,8 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 				 *  so we try and save the context when we have a failure.
 				 * We rollback if the save fails in order to have our clean context! */
 				if let error = context.saveOrRollback() {
-					if #available(macOS 11.0, *) {Logger.saveRequestHelper.warning("Failed saving the context after local to remote conversion failed: \(error).")}
-					else                         {os_log("Failed saving the context after local to remote conversion failed: %@.", log: .saveRequestHelper, type: .error, String(describing: error))}
+					if #available(macOS 11.0, tvOS 14.0, iOS 14.0, watchOS 7.0, *) {Logger.saveRequestHelper.warning("Failed saving the context after local to remote conversion failed: \(error).")}
+					else                                                           {os_log("Failed saving the context after local to remote conversion failed: %@.", log: .saveRequestHelper, type: .error, String(describing: error))}
 				}
 		}
 	}

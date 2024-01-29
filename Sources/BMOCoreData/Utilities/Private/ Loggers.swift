@@ -3,7 +3,7 @@ import os.log
 
 
 
-@available(macOS 11.0, *)
+@available(macOS 11.0, tvOS 14.0, iOS 14.0, watchOS 7.0, *)
 extension Logger {
 	
 	static let saveRequestHelper = {
