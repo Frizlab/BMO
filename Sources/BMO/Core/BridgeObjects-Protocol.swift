@@ -89,9 +89,13 @@ public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
 	public var attributes: [DbObject.DbAttributeDescription: Sendable?]
 	public var relationships: [DbObject.DbRelationshipDescription: (objects: BridgeObjects, mergeType: MergeType)?]
 	
+	/** If non-`nil`, the importer should not try to create a new object from the ``GenericLocalDbObject`` but should instead update the object with this ID. */
+	public var updatedExistingObjectID: DbObject.DbID?
+	
 	public init(
 		entity: DbObject.DbEntityDescription,
 		uniquingID: BridgeObjects.LocalDb.UniquingID? = nil,
+		updatedExistingObjectID: DbObject.DbID? = nil,
 		attributes: [DbObject.DbAttributeDescription : Sendable?] = [:],
 		relationships: [DbObject.DbRelationshipDescription: (BridgeObjects, MergeType)?] = [:]
 	) {
@@ -99,6 +103,7 @@ public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
 		self.uniquingID = uniquingID
 		self.attributes = attributes
 		self.relationships = relationships
+		self.updatedExistingObjectID = updatedExistingObjectID
 	}
 	
 }

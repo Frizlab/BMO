@@ -35,6 +35,9 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	public var attributes: [DbObject.DbAttributeDescription: Sendable?]
 	public var relationships: [DbObject.DbRelationshipDescription: RelationshipValue?]
 	
+	/** If non-`nil`, the importer should not try to create a new object from the ``GenericLocalDbObject`` but should instead update the object with this ID. */
+	public var updatedExistingObjectID: DbObject.DbID?
+	
 	public var hasAttributesOrRelationships: Bool {
 		return !attributes.isEmpty || !relationships.isEmpty
 	}
@@ -58,6 +61,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 			return self.init(
 				entity: mixedRepresentation.entity,
 				uniquingID: mixedRepresentation.uniquingID,
+				updatedExistingObjectID: mixedRepresentation.updatedExistingObjectID,
 				attributes: mixedRepresentation.attributes,
 				relationships: try mixedRepresentation.relationships.mapValues{ relationshipBridgeObjectsAndMergeType in
 					guard let (relationshipBridgeObjects, mergeType) = relationshipBridgeObjectsAndMergeType else {
@@ -73,6 +77,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 	public init(
 		entity: DbObject.DbEntityDescription,
 		uniquingID: UniquingID? = nil,
+		updatedExistingObjectID: DbObject.DbID? = nil,
 		attributes: [DbObject.DbAttributeDescription : Sendable?] = [:],
 		relationships: [DbObject.DbRelationshipDescription : RelationshipValue?] = [:]
 	) {
@@ -80,6 +85,7 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 		self.uniquingID = uniquingID
 		self.attributes = attributes
 		self.relationships = relationships
+		self.updatedExistingObjectID = updatedExistingObjectID
 	}
 	
 	public func insertUniquingIDsPerEntities(in uniquingIDsPerEntities: inout [DbObject.DbEntityDescription: Set<UniquingID>], cancellationCheck throwIfCancelled: () throws -> Void) rethrows {
