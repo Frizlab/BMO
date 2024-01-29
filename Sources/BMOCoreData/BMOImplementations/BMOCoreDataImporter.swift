@@ -109,7 +109,7 @@ where LocalDb.DbObject == NSManagedObject,
 			
 			for object in objects {
 				guard let uid = object.value(forKey: uniquingProperty) as? LocalDb.UniquingID else {
-					assertionFailure("Invalid CoreData model for BMOCoreDataImporter: Didn't get a \(LocalDb.UniquingID.self) value for UID of object \(object) (property “\(uniquingProperty)”)")
+					assertionFailure("Invalid CoreData model for BMOCoreDataImporter: Didn't get a \(LocalDb.UniquingID.self) value for UID of object \(object) (property “\(uniquingProperty)”).")
 					continue
 				}
 				objectsByEntityAndUniquingIDs[entity, default: [:]][uid] = object
@@ -119,10 +119,12 @@ where LocalDb.DbObject == NSManagedObject,
 		try throwIfCancelled()
 		
 		/* Next, let’s do the actual import. */
+#warning("TODO: Object update…")
 		let changes = try onContext_import(
 			representations: localRepresentations,
 			metadata: rootMetadata,
 			in: dbContext,
+			updatingObject: nil,
 			prefetchedObjectsByEntityAndUniquingIDs: &objectsByEntityAndUniquingIDs,
 			cancellationCheck: throwIfCancelled
 		)
@@ -148,7 +150,7 @@ where LocalDb.DbObject == NSManagedObject,
 		representations: [GenericLocalDbObject],
 		metadata: Metadata?,
 		in db: NSManagedObjectContext,
-		updatingObject updatedObject: NSManagedObject? = nil,
+		updatingObject updatedObject: NSManagedObject?,
 		prefetchedObjectsByEntityAndUniquingIDs uniqIDAndEntityToObject: inout [NSEntityDescription: [LocalDb.UniquingID: NSManagedObject]],
 		cancellationCheck throwIfCancelled: () throws -> Void
 	) throws -> LocalDbChanges<NSManagedObject, Metadata> {
@@ -241,6 +243,7 @@ where LocalDb.DbObject == NSManagedObject,
 					representations: relationshipObjects,
 					metadata: subMetadata,
 					in: db,
+					updatingObject: nil,
 					prefetchedObjectsByEntityAndUniquingIDs: &uniqIDAndEntityToObject,
 					cancellationCheck: throwIfCancelled
 				)
