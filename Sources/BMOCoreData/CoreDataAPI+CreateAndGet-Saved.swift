@@ -29,9 +29,9 @@ public extension CoreDataAPI {
 		settings: Settings? = nil,
 		autoStart: Bool = true,
 		savedObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) throws -> Object,
-		handler: @escaping @Sendable @MainActor (Result<(createdObject: Object, results: Bridge.RequestResults), Error>) -> Void = { _ in }
+		handler: @escaping @Sendable @MainActor (_ createdObjectIDBeforeImport: NSManagedObjectID, Result<(importedCreatedObject: Object, results: Bridge.RequestResults), Error>) -> Void = { _, _ in }
 	) throws -> RequestOperation<Bridge> {
-		return try createSaved(objectType, requestUserInfo: requestUserInfo, settings: settings, autoStart: autoStart, savedObjectCreator: savedObjectCreator, handler: { results in
+		return try createSaved(objectType, requestUserInfo: requestUserInfo, settings: settings, autoStart: autoStart, savedObjectCreator: savedObjectCreator, handler: { createdObjectID, results in
 			do {
 				let result = try results.get()
 				guard let importedObjects = result.dbChanges?.importedObjects,
@@ -40,9 +40,9 @@ public extension CoreDataAPI {
 				else {
 					throw Err.creationRequestResultDoesNotContainObject
 				}
-				handler(.success((createdObject, result)))
+				handler(createdObjectID, .success((createdObject, result)))
 			} catch {
-				handler(.failure(error))
+				handler(createdObjectID, .failure(error))
 			}
 		})
 	}
@@ -54,7 +54,7 @@ public extension CoreDataAPI {
 		requestUserInfo: Bridge.RequestUserInfo? = nil,
 		settings: Settings? = nil,
 		savedObjectCreator: @escaping @Sendable (_ managedObjectContext: NSManagedObjectContext) throws -> Object
-	) async throws -> (createdObject: Object, results: Bridge.RequestResults) {
+	) async throws -> (importedCreatedObject: Object, results: Bridge.RequestResults) {
 		return try await withCheckedThrowingContinuation{ continuation in
 			do {
 				try createSavedAndGet(
@@ -62,7 +62,7 @@ public extension CoreDataAPI {
 					requestUserInfo: requestUserInfo,
 					settings: settings, autoStart: true,
 					savedObjectCreator: savedObjectCreator,
-					handler: { res in
+					handler: { _, res in
 						continuation.resume(with: res)
 					}
 				)
