@@ -119,7 +119,6 @@ where LocalDb.DbObject == NSManagedObject,
 		try throwIfCancelled()
 		
 		/* Next, let’s do the actual import. */
-#warning("TODO: Object update…")
 		let changes = try onContext_import(
 			representations: localRepresentations,
 			metadata: rootMetadata,

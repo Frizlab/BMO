@@ -52,7 +52,7 @@ public protocol BridgeProtocol {
 	 Returns a request helper for the given request.
 	 
 	 The lifecycle of a request in BMO is something relatively complex.
-	 The remote operation is first retrieved,
+	 First the remote operation is retrieved,
 	  then the results of the operation are transformed into generic local db objects,
 	  then the local db objects are imported.
 	 
@@ -82,6 +82,7 @@ public protocol BridgeProtocol {
 		localRepresentations: [GenericLocalDbObject<LocalDb.DbObject, LocalDb.UniquingID, Metadata>],
 		rootMetadata: Metadata?,
 		uniquingIDsPerEntities: [LocalDb.DbObject.DbEntityDescription: Set<LocalDb.UniquingID>],
+		updatedObjectIDsPerEntities: [LocalDb.DbObject.DbEntityDescription: Set<LocalDb.DbObject.DbID>],
 		cancellationCheck throwIfCancelled: () throws -> Void
 	) throws -> LocalDbImporter
 	

@@ -33,8 +33,9 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public typealias GenericLocalDbObject = BMO.GenericLocalDbObject<Bridge.LocalDb.DbObject, Bridge.LocalDb.UniquingID, Bridge.BridgeObjects.Metadata>
 	public typealias UniquingIDsPerEntities = [Bridge.LocalDb.DbObject.DbEntityDescription: Set<Bridge.LocalDb.UniquingID>]
+	public typealias UpdatedObjectIDsPerEntities = [Bridge.LocalDb.DbObject.DbEntityDescription: Set<Bridge.LocalDb.DbObject.DbID>]
 	
-	public typealias ImporterFactory = ([GenericLocalDbObject], Bridge.Metadata?, UniquingIDsPerEntities, _ cancellationCheck: () throws -> Void) throws -> Bridge.LocalDbImporter
+	public typealias ImporterFactory = ([GenericLocalDbObject], Bridge.Metadata?, UniquingIDsPerEntities, UpdatedObjectIDsPerEntities, _ cancellationCheck: () throws -> Void) throws -> Bridge.LocalDbImporter
 	
 	public var request: Request
 	public var localDb: Bridge.LocalDb
@@ -156,7 +157,7 @@ private extension LocalDbImportOperation {
 		}
 	}
 	
-	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], rootMetadata: Bridge.Metadata?, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> Result<RequestResult, RequestError> {
+	func startFrom(genericLocalDbObjects: [GenericLocalDbObject], rootMetadata: Bridge.Metadata?, uniquingIDsPerEntities: UniquingIDsPerEntities? = nil, updatedObjectIDsPerEntities: UpdatedObjectIDsPerEntities? = nil, remoteOperation: Bridge.RemoteDb.RemoteOperation? = nil) -> Result<RequestResult, RequestError> {
 		var step: RequestError.FailureStep = .none
 		do {
 			guard let newContext = helper.newContextForImportingRemoteResults() ?? localDbContext else {
@@ -171,9 +172,14 @@ private extension LocalDbImportOperation {
 				try genericLocalDbObjects.forEach{ try $0.insertUniquingIDsPerEntities(in: &res, cancellationCheck: throwIfCancelled) }
 				return res
 			}()
+			let updatedObjectIDsPerEntities = try updatedObjectIDsPerEntities ?? {
+				var res = UpdatedObjectIDsPerEntities()
+				try genericLocalDbObjects.forEach{ try $0.insertUpdatedObjectIDsPerEntities(in: &res, cancellationCheck: throwIfCancelled) }
+				return res
+			}()
 			try throwIfCancelled()
 			step = .bridge_importerForResults
-			let importer = try importerFactory(genericLocalDbObjects, rootMetadata, uniquingIDsPerEntities, throwIfCancelled)
+			let importer = try importerFactory(genericLocalDbObjects, rootMetadata, uniquingIDsPerEntities, updatedObjectIDsPerEntities, throwIfCancelled)
 			if startedOnContext {return                                   onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, context: newContext, remoteOperation: remoteOperation)}
 			else                {return localDb.context.performAndWaitRW{ onContext_startFrom(genericLocalDbObjects: genericLocalDbObjects, importer: importer, context: newContext, remoteOperation: remoteOperation) }}
 		} catch {

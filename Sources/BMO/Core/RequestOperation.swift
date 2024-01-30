@@ -202,7 +202,7 @@ private extension RequestOperation {
 			let operation = LocalDbImportOperation(
 				request: .finishedRemoteOperation(finishedRemoteOperation, userInfo: userInfo, bridge: bridge),
 				localDb: request.localDb, localDbContextOverride: request.localDbContextOverwrite,
-				helper: helper, importerFactory: bridge.importerForRemoteResults(localRepresentations:rootMetadata:uniquingIDsPerEntities:cancellationCheck:)
+				helper: helper, importerFactory: bridge.importerForRemoteResults(localRepresentations:rootMetadata:uniquingIDsPerEntities:updatedObjectIDsPerEntities:cancellationCheck:)
 			)
 			importOperation = operation
 			let completionOperation = BlockOperation{ self.continueOperation{

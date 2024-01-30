@@ -101,4 +101,17 @@ public struct GenericLocalDbObject<DbObject : LocalDbObjectProtocol, UniquingID 
 		}
 	}
 	
+	public func insertUpdatedObjectIDsPerEntities(in updatedObjectIDsPerEntities: inout [DbObject.DbEntityDescription: Set<DbObject.DbID>], cancellationCheck throwIfCancelled: () throws -> Void) rethrows {
+		try relationships.forEach{
+			try throwIfCancelled()
+			try $0.value?.value.forEach{
+				try throwIfCancelled()
+				try $0.insertUpdatedObjectIDsPerEntities(in: &updatedObjectIDsPerEntities, cancellationCheck: throwIfCancelled)
+			}
+		}
+		if let updatedExistingObjectID {
+			updatedObjectIDsPerEntities[entity, default: []].insert(updatedExistingObjectID)
+		}
+	}
+	
 }
