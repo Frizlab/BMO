@@ -70,6 +70,7 @@ where LocalDb.DbObject == NSManagedObject,
 	
 	public let localRepresentations: [GenericLocalDbObject]
 	public let uniquingIDsPerEntities: [NSEntityDescription: Set<LocalDb.UniquingID>]
+	public let updatedObjectIDsPerEntities: [NSEntityDescription: Set<LocalDb.DbObject.DbID>]
 	
 	public let rootMetadata: Metadata?
 	
@@ -78,12 +79,14 @@ where LocalDb.DbObject == NSManagedObject,
 		localRepresentations: [GenericLocalDbObject],
 		rootMetadata: Metadata?,
 		uniquingIDsPerEntities: [NSEntityDescription: Set<LocalDb.UniquingID>],
+		updatedObjectIDsPerEntities: [NSEntityDescription: Set<LocalDb.DbObject.DbID>],
 		cancellationCheck throwIfCancelled: () throws -> Void = { }
 	) throws {
 		self.uniquingProperty = uniquingProperty
 		
 		self.localRepresentations = localRepresentations
 		self.uniquingIDsPerEntities = uniquingIDsPerEntities
+		self.updatedObjectIDsPerEntities = updatedObjectIDsPerEntities
 		
 		self.rootMetadata = rootMetadata
 		
@@ -115,6 +118,26 @@ where LocalDb.DbObject == NSManagedObject,
 				objectsByEntityAndUniquingIDs[entity, default: [:]][uid] = object
 			}
 		}
+		/* Note: The pre-fetch of the updated objects is maybe an overkill and could probably be skipped.
+		 *       We */
+		var objectsByEntityAndUpdatedObjectIDs = [NSEntityDescription: [LocalDb.DbObject.DbID: NSManagedObject]]()
+		for (entity, objectIDs) in updatedObjectIDsPerEntities {
+			try throwIfCancelled()
+			
+			let request = NSFetchRequest<NSManagedObject>()
+			request.entity = entity
+			if dbContext.parent == nil {
+				/* If setting propertiesToFetch when context has a parent we get a CoreData exception (corrupt database).
+				 * Tested on iOS 10. */
+				request.propertiesToFetch = [uniquingProperty]
+			}
+			request.predicate = NSPredicate(format: "self IN %@", argumentArray: [objectIDs])
+			let objects = try dbContext.fetch(request)
+			
+			for object in objects {
+				objectsByEntityAndUpdatedObjectIDs[entity, default: [:]][object.objectID] = object
+			}
+		}
 		
 		try throwIfCancelled()
 		
@@ -123,8 +146,8 @@ where LocalDb.DbObject == NSManagedObject,
 			representations: localRepresentations,
 			metadata: rootMetadata,
 			in: dbContext,
-			updatingObject: nil,
 			prefetchedObjectsByEntityAndUniquingIDs: &objectsByEntityAndUniquingIDs,
+			objectsByEntityAndUpdatedObjectIDs: objectsByEntityAndUpdatedObjectIDs,
 			cancellationCheck: throwIfCancelled
 		)
 		/* Then we retrieve the persistent IDs of all the objects to avoid headaches with NSFetchedResultsController… */
@@ -149,22 +172,41 @@ where LocalDb.DbObject == NSManagedObject,
 		representations: [GenericLocalDbObject],
 		metadata: Metadata?,
 		in db: NSManagedObjectContext,
-		updatingObject updatedObject: NSManagedObject?,
 		prefetchedObjectsByEntityAndUniquingIDs uniqIDAndEntityToObject: inout [NSEntityDescription: [LocalDb.UniquingID: NSManagedObject]],
+		objectsByEntityAndUpdatedObjectIDs: [NSEntityDescription: [NSManagedObjectID: NSManagedObject]],
 		cancellationCheck throwIfCancelled: () throws -> Void
 	) throws -> LocalDbChanges<NSManagedObject, Metadata> {
 		var res = LocalDbChanges<NSManagedObject, Metadata>(metadata: metadata)
-		
-		if let updatedObject = updatedObject, updatedObject.isUsable {
-			guard representations.count <= 1 else {
-				throw Err.tooManyRepresentationsToUpdateObject
+		for representation in representations {
+			try throwIfCancelled()
+			
+			/* Is the representation updating an existing object? */
+			let updatedObject: NSManagedObject?
+			if let updatedID = representation.updatedExistingObjectID {
+				if let object = objectsByEntityAndUpdatedObjectIDs[representation.entity]?[updatedID] {
+					if object.isUsable {
+						updatedObject = object
+					} else {
+						if #available(macOS 11.0, tvOS 14.0, iOS 14.0, watchOS 7.0, *) {Logger.importer.notice("Asked to update object with ID \(updatedID, privacy: .public) but the object has been deleted.")}
+						else                                                           {os_log("Asked to update object with ID %{public}@ but the object has been deleted.", log: .importer, type: .default, updatedID)}
+						updatedObject = nil
+					}
+				} else {
+					if #available(macOS 11.0, tvOS 14.0, iOS 14.0, watchOS 7.0, *) {Logger.importer.notice("Asked to update object with ID \(updatedID, privacy: .public) but there is no such object.")}
+					else                                                           {os_log("Asked to update object with ID %{public}@ but there is no such object.", log: .importer, type: .default, updatedID)}
+					updatedObject = nil
+				}
+			} else {
+				updatedObject = nil
 			}
-			if let r = representations.first {
-				guard updatedObject.entity.isKindOf(entity: r.entity) else {
+			if let updatedObject = updatedObject {
+				assert(updatedObject.isUsable)
+				/* Let’s try and update the updated object. */
+				guard updatedObject.entity.isKindOf(entity: representation.entity) else {
 					throw Err.updatedObjectAndRepresentedObjectEntitiesDoNotMatch
 				}
-				if let uid = r.uniquingID {
-					if let currentObjectForUID = uniqIDAndEntityToObject[r.entity]?[uid] {
+				if let uid = representation.uniquingID {
+					if let currentObjectForUID = uniqIDAndEntityToObject[representation.entity]?[uid] {
 						if currentObjectForUID != updatedObject {
 							/* We’re told to forcibly update an object, but another object has already been created for the given UID.
 							 * We must delete the object we were told to update; the caller will have to check whether its object has been deleted before using it. */
@@ -179,19 +221,15 @@ where LocalDb.DbObject == NSManagedObject,
 								/* Object we’re asked to update does not have the same UID as the one we're given in the representation.
 								 * We’ll update the UID of the object but print a message in the logs first! */
 								if #available(macOS 11.0, tvOS 14.0, iOS 14.0, watchOS 7.0, *) {Logger.importer.warning("Asked to update object \(updatedObject) but representation has UID \(String(describing: uid)). Updating UID (property “\(uniquingProperty, privacy: .public)”) of updated object (experimental; might lead to unexpected results).")}
-								else                                                           {os_log("Asked to update object %@ but representation has UID %@. Updating UID (property “%{public}@”) of updated object (experimental; might lead to unexpected results).", log: .importer, type: .info, updatedObject, String(describing: uid), uniquingProperty)}
+								else                                                           {os_log("Asked to update object %@ but representation has UID %@. Updating UID (property “%{public}@”) of updated object (experimental; might lead to unexpected results).", log: .importer, type: .error, updatedObject, String(describing: uid), uniquingProperty)}
 							}
 							updatedObject.setValue(uid, forKey: uniquingProperty)
 							res.updatedDbObjects.insert(updatedObject)
 						}
-						uniqIDAndEntityToObject[r.entity, default: [:]][uid] = updatedObject
+						uniqIDAndEntityToObject[representation.entity, default: [:]][uid] = updatedObject
 					}
 				}
 			}
-		}
-		
-		for representation in representations {
-			try throwIfCancelled()
 			
 			let object: NSManagedObject
 			if let uid = representation.uniquingID {
@@ -242,8 +280,8 @@ where LocalDb.DbObject == NSManagedObject,
 					representations: relationshipObjects,
 					metadata: subMetadata,
 					in: db,
-					updatingObject: nil,
 					prefetchedObjectsByEntityAndUniquingIDs: &uniqIDAndEntityToObject,
+					objectsByEntityAndUpdatedObjectIDs: objectsByEntityAndUpdatedObjectIDs,
 					cancellationCheck: throwIfCancelled
 				)
 				builtImportedObject.modifiedRelationships[relationshipName] = subDbChanges

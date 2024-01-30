@@ -19,12 +19,10 @@ import Foundation
 
 public enum BMOCoreDataError : Error {
 	
-	case tooManyRepresentationsToUpdateObject
-	case updatedObjectAndRepresentedObjectEntitiesDoNotMatch
-	
+	case invalidObjectType
 	case creationRequestResultDoesNotContainObject
 	
-	case invalidObjectType
+	case updatedObjectAndRepresentedObjectEntitiesDoNotMatch
 	
 }
 
