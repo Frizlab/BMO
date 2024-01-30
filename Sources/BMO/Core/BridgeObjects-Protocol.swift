@@ -106,7 +106,7 @@ public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
 		self.updatedExistingObjectID = updatedExistingObjectID
 	}
 	
-	public func forUpdatingExistingObjectID(_ objectID: DbObject.DbID) -> Self {
+	public func changingUpdatedExistingObjectID(_ objectID: DbObject.DbID?) -> Self {
 		var ret = self
 		ret.updatedExistingObjectID = objectID
 		return ret
