@@ -41,14 +41,14 @@ public extension CoreDataAPI {
 			let bridgeRequest = settings.deleteObjectBridgeRequest(object, .saveBeforeGoingRemote)
 			let opRequest = Request(localDb: localDb, localRequest: bridgeRequest, remoteUserInfo: requestUserInfo)
 			let op = RequestOperation(bridge: bridge, request: opRequest, remoteOperationQueue: settings.remoteOperationQueue, computeOperationQueue: settings.computeOperationQueue, startedOnContext: autoStart)
-			op.completionBlock = { /* We keep a strong ref to op but it’s not a problem because we nullify the completion block at the end of the block. */
+			op.completionBlock = { [context = CompletionContext(object: object, localDb: localDb)] in /* We keep a strong ref to op but it’s not a problem because we nullify the completion block at the end of the block. */
 				DispatchQueue.main.async{
 					let result = op.result
 					if case .success = result {
 						/* If the request succeeded, we try and remove the Core Data object. */
-						localDb.context.perform{
-							localDb.context.delete(object)
-							if let error = localDb.context.saveOrRollback() {
+						context.localDb.context.perform{
+							context.localDb.context.delete(context.object)
+							if let error = context.localDb.context.saveOrRollback() {
 								handler(.failure(error))
 							} else {
 								handler(result.mapError{ $0 as Error })
@@ -88,6 +88,12 @@ public extension CoreDataAPI {
 				continuation.resume(throwing: error)
 			}
 		}
+	}
+	
+	/* Workaround a Sendability warning. */
+	private struct CompletionContext : @unchecked Sendable {
+		let object: NSManagedObject
+		let localDb: Bridge.LocalDb
 	}
 	
 }
