@@ -38,7 +38,7 @@ public protocol BridgeProtocol {
 	 Whose fields were requested usually cannot be known with certainty without some additional info.
 	 
 	 This is an example, but there are loads of cases that cannot be solved without user info. */
-	associatedtype UserInfo
+	associatedtype UserInfo : Sendable
 	
 	associatedtype LocalDbImporter : LocalDbImporterProtocol where LocalDbImporter.LocalDb == LocalDb, LocalDbImporter.Metadata == Metadata
 	
