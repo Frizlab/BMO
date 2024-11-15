@@ -187,7 +187,7 @@ private extension RequestOperation {
 			/* Finally we report everything went well to the caller. */
 			return nil
 		} catch {
-			/* Let’s inform theh helper(s) there was an issue. */
+			/* Let’s inform the helper(s) there was an issue. */
 			helper.onContext_localToRemoteFailed(error, context: request.localDbContext)
 			/* Then wrap the error in a RequestError and return it. */
 			return RequestError(failureStep: step, checkedUnderlyingError: error)
