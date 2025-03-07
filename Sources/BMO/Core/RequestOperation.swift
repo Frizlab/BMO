@@ -27,14 +27,14 @@ public final class RequestOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public typealias RequestHelperCollection = RequestHelperCollectionForOldRuntimes<Bridge.LocalDb.DbContext, Bridge.LocalDb.DbObject, Bridge.Metadata>
 	
-	public var bridge: Bridge
-	public var request: Request
-	public var helper: RequestHelperCollection /* When Swift’s runtime allows it, this will be an “any RequestHelperProtocol<Bridge.LocalDb.DbObject, Bridge.Metadata>” instead. */
+	public let bridge: Bridge
+	public let request: Request
+	public let helper: RequestHelperCollection /* When Swift’s runtime allows it, this will be an “any RequestHelperProtocol<Bridge.LocalDb.DbObject, Bridge.Metadata>” instead. */
 	
-	public var remoteOperationQueue: OperationQueue
-	public var computeOperationQueue: OperationQueue
+	public let remoteOperationQueue: OperationQueue
+	public let computeOperationQueue: OperationQueue
 	
-	public var startedOnContext: Bool
+	public let startedOnContext: Bool
 	
 	public var result: Result<RequestResult, RequestError> {
 		lock.withLock{ _result }

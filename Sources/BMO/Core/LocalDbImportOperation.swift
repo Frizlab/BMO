@@ -37,9 +37,9 @@ public final class LocalDbImportOperation<Bridge : BridgeProtocol> : Operation {
 	
 	public typealias ImporterFactory = ([GenericLocalDbObject], Bridge.Metadata?, UniquingIDsPerEntities, UpdatedObjectIDsPerEntities, _ cancellationCheck: () throws -> Void) throws -> Bridge.LocalDbImporter
 	
-	public var request: Request
-	public var localDb: Bridge.LocalDb
-	public var localDbContextOverride: Bridge.LocalDb.DbContext?
+	public let request: Request
+	public let localDb: Bridge.LocalDb
+	public let localDbContextOverride: Bridge.LocalDb.DbContext?
 	public var localDbContext: Bridge.LocalDb.DbContext {localDbContextOverride ?? localDb.context}
 	/**
 	 A collection of request helpers.
