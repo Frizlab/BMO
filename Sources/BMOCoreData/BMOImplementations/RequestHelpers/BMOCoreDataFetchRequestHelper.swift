@@ -61,6 +61,9 @@ public struct BMOCoreDataFetchRequestHelper<Metadata> : RequestHelperProtocol {
 	public func onContext_localToRemoteFailed(_ error: Error, context: NSManagedObjectContext) {
 	}
 	
+	public func onContext_localToRemoteSkipped(context: NSManagedObjectContext) {
+	}
+	
 	/* ************************************************************
 	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
 	   ************************************************************ */

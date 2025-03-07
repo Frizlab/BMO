@@ -26,7 +26,7 @@ public protocol RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata> {
 	/* *****************************************************************
 	   MARK: Request Lifecycle Part 1: Local Request to Remote Operation
 	   *****************************************************************
-	   The three methods that follow are guaranteed to all be called within the same “perform” block (if called at all). */
+	   The four methods that follow are guaranteed to all be called within the same “perform” block (if called at all). */
 	
 	/**
 	 Prepare the remote conversion, returns whether the conversion is required.
@@ -45,6 +45,11 @@ public protocol RequestHelperProtocol<LocalDbContext, LocalDbObject, Metadata> {
 	 
 	 - Important: Can be called even _before_ ``onContext_localToRemote_prepareRemoteConversion(cancellationCheck:)`` is called (in which case it will obviously not be called). */
 	func onContext_localToRemoteFailed(_ error: Error, context: LocalDbContext)
+	/**
+	 Called if either
+	  the helper function ``onContext_localToRemote_prepareRemoteConversion(context:cancellationCheck:)`` return `false` or
+	  if the bridge returns a `nil` remote operation. */
+	func onContext_localToRemoteSkipped(context: LocalDbContext)
 	
 	/* ************************************************************
 	   MARK: Request Lifecycle Part 2: Receiving the Remote Results

@@ -60,6 +60,12 @@ public struct RequestHelperCollectionForOldRuntimes<LocalDbContext : LocalDbCont
 		requestHelper3?.onContext_localToRemoteFailed(error, context: context)
 	}
 	
+	public func onContext_localToRemoteSkipped(context: LocalDbContext) {
+		requestHelper1?.onContext_localToRemoteSkipped(context: context)
+		requestHelper2?.onContext_localToRemoteSkipped(context: context)
+		requestHelper3?.onContext_localToRemoteSkipped(context: context)
+	}
+	
 	/* ************************************************************
 	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
 	   ************************************************************ */

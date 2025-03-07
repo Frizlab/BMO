@@ -159,6 +159,7 @@ private extension RequestOperation {
 			try throwIfCancelled()
 			step = .helper_prepareRemoteConversion
 			guard try helper.onContext_localToRemote_prepareRemoteConversion(context: request.localDbContext, cancellationCheck: throwIfCancelled) else {
+				helper.onContext_localToRemoteSkipped(context: request.localDbContext)
 				finishOperation(.success(.successNoop))
 				return nil
 			}
@@ -167,6 +168,7 @@ private extension RequestOperation {
 			try throwIfCancelled()
 			step = .bridge_getRemoteOperation
 			guard let (operation, userInfo) = try bridge.onContext_remoteOperation(for: request) else {
+				helper.onContext_localToRemoteSkipped(context: request.localDbContext)
 				finishOperation(.success(.successNoop))
 				return nil
 			}

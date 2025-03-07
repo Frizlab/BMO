@@ -33,6 +33,9 @@ public struct DummyRequestHelper<LocalDbContext : LocalDbContextProtocol, LocalD
 	public func onContext_localToRemoteFailed(_ error: Error, context: LocalDbContext) {
 	}
 	
+	public func onContext_localToRemoteSkipped(context: LocalDbContext) {
+	}
+	
 	/* ************************************************************
 	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
 	   ************************************************************ */

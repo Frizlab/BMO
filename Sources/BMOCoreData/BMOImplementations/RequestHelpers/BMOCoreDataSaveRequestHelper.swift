@@ -80,12 +80,17 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 	
 	public func onContext_localToRemote_willGoRemote(context: NSManagedObjectContext, cancellationCheck throwIfCancelled: () throws -> Void) throws {
 		switch saveWorkflow {
-			case .saveBeforeGoingRemote:        try context.save()
 			case .doNothingChangeImportContext: (/*nop*/)
+			case .saveBeforeGoingRemote:        try context.save()
 		}
 	}
 	
 	public func onContext_localToRemoteFailed(_ error: Error, context: NSManagedObjectContext) {
+		/* We do not do anything in particular wrt the error, so the flow is exactly the same as having the remote skipped. */
+		onContext_localToRemoteSkipped(context: context)
+	}
+	
+	public func onContext_localToRemoteSkipped(context: NSManagedObjectContext) {
 		switch saveWorkflow {
 			case .doNothingChangeImportContext:
 				(/* The context is assumed to be a throwable scratch pad, so we do nothing. */)
@@ -93,8 +98,8 @@ public struct BMOCoreDataSaveRequestHelper<Metadata> : RequestHelperProtocol {
 			case .saveBeforeGoingRemote:
 				/* Here we want to keep a clean context.
 				 * The goal of the saveBeforeGoingRemote workflow is to not lose the object that was created,
-				 *  so we try and save the context when we have a failure.
-				 * We rollback if the save fails in order to have our clean context! */
+				 *  so we try and save the context if the move to remote never happens.
+				 * We rollback if the save fails in order to have our clean context. */
 				if let error = context.saveOrRollback() {
 					if #available(macOS 11.0, tvOS 14.0, iOS 14.0, watchOS 7.0, *) {Logger.saveRequestHelper.warning("Failed saving the context after local to remote conversion failed: \(error).")}
 					else                                                           {os_log("Failed saving the context after local to remote conversion failed: %@.", log: .saveRequestHelper, type: .error, String(describing: error))}

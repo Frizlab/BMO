@@ -53,6 +53,10 @@ public struct RequestHelperCollection<LocalDbContext : LocalDbContextProtocol, L
 		requestHelpers.forEach{ $0.onContext_localToRemoteFailed(error, context: context) }
 	}
 	
+	public func onContext_localToRemoteSkipped(context: LocalDbContext) {
+		requestHelpers.forEach{ $0.onContext_localToRemoteSkipped(context: context) }
+	}
+	
 	/* ************************************************************
 	   MARK: Request Lifecycle Part 2: Receiving the Remote Results
 	   ************************************************************ */
