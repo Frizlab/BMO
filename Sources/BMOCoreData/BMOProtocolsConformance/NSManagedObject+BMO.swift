@@ -30,7 +30,7 @@ extension NSManagedObject : LocalDbObjectProtocol {
 	 * Not sure if that’s still true but it makes low-key sense.
 	 * Also NSPropertyDescription used to have a critical issue: the hash could be different for two equal NSPropertyDescriptions in some circumstances.
 	 * (See <https://gitlab.com/frizlab-demo-projects/nspropertydescription-hash-bug>).
-	 * Finally, a String utlimately easier to use than an NSPropertyDescription though it’s less “safe.”
+	 * Finally, a String ultimately easier to use than an NSPropertyDescription though it’s less “safe.”
 	 * And as we do not need to retrieve the entity bound to the attribute or relationship description, we use a String. */
 	public typealias DbAttributeDescription = String
 	public typealias DbRelationshipDescription = String
