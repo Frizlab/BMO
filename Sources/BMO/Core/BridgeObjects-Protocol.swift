@@ -96,7 +96,7 @@ public struct MixedRepresentation<BridgeObjects : BridgeObjectsProtocol> {
 		entity: DbObject.DbEntityDescription,
 		uniquingID: BridgeObjects.LocalDb.UniquingID? = nil,
 		updatedExistingObjectID: DbObject.DbID? = nil,
-		attributes: [DbObject.DbAttributeDescription : Sendable?] = [:],
+		attributes: [DbObject.DbAttributeDescription: Sendable?] = [:],
 		relationships: [DbObject.DbRelationshipDescription: (BridgeObjects, MergeType)?] = [:]
 	) {
 		self.entity = entity

@@ -20,9 +20,9 @@ import BMO
 
 
 
-public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContext == NSManagedObjectContext {
+public struct CoreDataAPI<Bridge : BridgeProtocol & Sendable> : Sendable where Bridge.LocalDb.DbContext == NSManagedObjectContext {
 	
-	public struct Settings {
+	public struct Settings : Sendable {
 		
 		public var remoteOperationQueue: OperationQueue
 		public var computeOperationQueue: OperationQueue
@@ -36,19 +36,19 @@ public struct CoreDataAPI<Bridge : BridgeProtocol> where Bridge.LocalDb.DbContex
 		 The property name will usually be the same as the one set in ``BMOCoreDataImporter/uniquingProperty``, but can be different. */
 		public var remoteIDPropertyName: String
 		
-		public var fetchRequestToBridgeRequest: (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
-		public var createObjectBridgeRequest: (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
-		public var updateObjectBridgeRequest: (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
-		public var deleteObjectBridgeRequest: (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
+		public var fetchRequestToBridgeRequest: @Sendable (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest
+		public var createObjectBridgeRequest: @Sendable (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
+		public var updateObjectBridgeRequest: @Sendable (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
+		public var deleteObjectBridgeRequest: @Sendable (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
 		
 		public init(
 			remoteOperationQueue: OperationQueue,
 			computeOperationQueue: OperationQueue,
 			remoteIDPropertyName: String,
-			fetchRequestToBridgeRequest: @escaping (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest,
-			createObjectBridgeRequest: @escaping (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest,
-			updateObjectBridgeRequest: @escaping (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest,
-			deleteObjectBridgeRequest: @escaping (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
+			fetchRequestToBridgeRequest: @escaping @Sendable (NSFetchRequest<NSFetchRequestResult>, RemoteFetchType) -> Bridge.LocalDb.DbRequest,
+			createObjectBridgeRequest: @escaping @Sendable (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest,
+			updateObjectBridgeRequest: @escaping @Sendable (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest,
+			deleteObjectBridgeRequest: @escaping @Sendable (NSManagedObject, BMOCoreDataSaveRequestHelper<Bridge.Metadata>.SaveWorkflow) -> Bridge.LocalDb.DbRequest
 		) {
 			self.remoteOperationQueue = remoteOperationQueue
 			self.computeOperationQueue = computeOperationQueue

@@ -17,14 +17,14 @@ import Foundation
 
 
 
-public protocol LocalDbContextProtocol {
+public protocol LocalDbContextProtocol : Sendable {
 	
 	/* We do not need that in BMO. */
-//	func performRO(_ block: @escaping () -> Void)
-//	func performAndWaitRO<T>(_ block: () throws -> T) rethrows -> T
+//	func performRO(_ block: @escaping @Sendable () -> Void)
+//	func performAndWaitRO<T>(_ block: @Sendable () throws -> T) rethrows -> T
 	
-	func performRW(_ block: @escaping () -> Void)
-	func performAndWaitRW<T>(_ block: () throws -> T) rethrows -> T
+	func performRW(_ block: @escaping @Sendable () -> Void)
+	func performAndWaitRW<T>(_ block: @Sendable () throws -> T) rethrows -> T
 	
 }
 

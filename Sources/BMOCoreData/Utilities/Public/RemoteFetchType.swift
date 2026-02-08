@@ -18,13 +18,13 @@ import Foundation
 
 
 
-public enum RemoteFetchType {
+public enum RemoteFetchType : Sendable {
 	
 	case always
 	case onlyIfNoLocalResults
 	case never
 	
 	/* E.g. fetch only if latest fetch was more than n minutes ago. */
-	case custom((NSFetchRequest<NSFetchRequestResult>) throws -> Bool)
+	case custom(@Sendable (NSFetchRequest<NSFetchRequestResult>) throws -> Bool)
 	
 }
